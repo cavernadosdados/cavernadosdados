@@ -49,10 +49,10 @@ export default {
         },
         cavern: {
           dark: "hsl(var(--cavern-dark))",
-          gold: "hsl(var(--gold-accent))",
-          copper: "hsl(var(--copper-accent))",
-          parchment: "hsl(var(--parchment))",
-          torch: "hsl(var(--torch-glow))",
+          cyan: "hsl(var(--cyan-accent))",
+          lime: "hsl(var(--lime-accent))",
+          deep: "hsl(var(--green-deep))",
+          glow: "hsl(var(--cyan-glow))",
         },
       },
       borderRadius: {

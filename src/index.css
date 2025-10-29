@@ -8,55 +8,55 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Caverna dos Dados - Dark mystical theme */
-    --background: 0 0% 10%;
-    --foreground: 40 30% 95%;
+    /* Caverna dos Dados - Green & Cyan theme */
+    --background: 150 45% 12%;
+    --foreground: 0 0% 98%;
 
-    --card: 0 0% 15%;
-    --card-foreground: 40 30% 95%;
+    --card: 150 40% 18%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 12%;
-    --popover-foreground: 40 30% 95%;
+    --popover: 150 45% 15%;
+    --popover-foreground: 0 0% 98%;
 
-    /* Gold accent - torchlight glow */
-    --primary: 40 45% 58%;
-    --primary-foreground: 0 0% 10%;
+    /* Cyan accent - dragon highlights */
+    --primary: 190 100% 50%;
+    --primary-foreground: 150 45% 12%;
 
-    /* Copper accent - warm metal */
-    --secondary: 15 70% 45%;
-    --secondary-foreground: 40 30% 95%;
+    /* Lime green - dragon body */
+    --secondary: 100 45% 65%;
+    --secondary-foreground: 150 45% 12%;
 
-    /* Parchment tones */
-    --muted: 40 25% 85%;
-    --muted-foreground: 0 0% 35%;
+    /* Light green tones */
+    --muted: 150 20% 30%;
+    --muted-foreground: 0 0% 85%;
 
-    --accent: 15 70% 45%;
-    --accent-foreground: 40 30% 95%;
+    --accent: 190 100% 50%;
+    --accent-foreground: 150 45% 12%;
 
     --destructive: 0 70% 50%;
-    --destructive-foreground: 40 30% 95%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 18%;
-    --ring: 40 45% 58%;
+    --border: 150 30% 25%;
+    --input: 150 35% 20%;
+    --ring: 190 100% 50%;
 
     --radius: 0.75rem;
     
     /* Custom tokens */
-    --cavern-dark: 0 0% 10%;
-    --gold-accent: 40 45% 58%;
-    --copper-accent: 15 70% 45%;
-    --parchment: 40 25% 85%;
-    --torch-glow: 40 100% 60%;
+    --cavern-dark: 150 45% 12%;
+    --cyan-accent: 190 100% 50%;
+    --lime-accent: 100 45% 65%;
+    --green-deep: 150 50% 20%;
+    --cyan-glow: 190 100% 65%;
     
     /* Gradients */
-    --gradient-gold: linear-gradient(135deg, hsl(40 45% 58%), hsl(40 55% 68%));
-    --gradient-cavern: linear-gradient(180deg, hsl(0 0% 8%), hsl(0 0% 15%));
-    --gradient-mystical: linear-gradient(135deg, hsl(15 70% 45% / 0.2), hsl(40 45% 58% / 0.2));
+    --gradient-green: linear-gradient(135deg, hsl(150 45% 25%), hsl(150 50% 35%));
+    --gradient-cavern: linear-gradient(180deg, hsl(150 45% 10%), hsl(150 45% 18%));
+    --gradient-mystical: linear-gradient(135deg, hsl(190 100% 50% / 0.2), hsl(100 45% 65% / 0.2));
     
     /* Shadows */
-    --shadow-gold: 0 4px 20px hsl(40 100% 60% / 0.3);
-    --shadow-deep: 0 8px 32px hsl(0 0% 0% / 0.6);
+    --shadow-cyan: 0 4px 20px hsl(190 100% 50% / 0.4);
+    --shadow-deep: 0 8px 32px hsl(0 0% 0% / 0.7);
     
     /* Animations */
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -94,12 +94,12 @@ All colors MUST be HSL.
   }
   
   /* Mystical glow effects */
-  .glow-gold {
-    text-shadow: 0 0 20px hsl(var(--torch-glow) / 0.5);
+  .glow-cyan {
+    text-shadow: 0 0 20px hsl(var(--cyan-glow) / 0.6);
   }
   
-  .glow-copper {
-    box-shadow: 0 0 30px hsl(var(--copper-accent) / 0.4);
+  .glow-lime {
+    box-shadow: 0 0 30px hsl(var(--lime-accent) / 0.5);
   }
   
   /* Smooth transitions */
