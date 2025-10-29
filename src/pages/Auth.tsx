@@ -71,7 +71,7 @@ const Auth = () => {
             title: "Cadastro realizado!",
             description: "Você já pode começar a usar a plataforma.",
           });
-          navigate('/');
+          navigate('/dashboard');
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -94,7 +94,7 @@ const Auth = () => {
             title: "Login realizado!",
             description: "Bem-vindo de volta à Caverna.",
           });
-          navigate('/');
+          navigate('/dashboard');
         }
       }
     } catch (error) {
