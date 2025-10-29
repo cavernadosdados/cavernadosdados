@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { Dices, Scroll, Users } from "lucide-react";
 
 export const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Mystical background gradient */}
@@ -22,7 +25,7 @@ export const Hero = () => {
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-            Onde <span className="text-primary glow-gold">Mestres</span> e{" "}
+            Onde <span className="text-primary glow-cyan">Mestres</span> e{" "}
             <span className="text-secondary">Jogadores</span> se Encontram
           </h1>
 
@@ -32,11 +35,11 @@ export const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Button variant="hero" size="lg" className="min-w-[200px]">
+            <Button variant="hero" size="lg" className="min-w-[200px]" onClick={() => navigate('/auth')}>
               <Scroll className="w-5 h-5" />
               Sou Jogador
             </Button>
-            <Button variant="mystical" size="lg" className="min-w-[200px]">
+            <Button variant="mystical" size="lg" className="min-w-[200px]" onClick={() => navigate('/auth')}>
               <Users className="w-5 h-5" />
               Sou Mestre
             </Button>
