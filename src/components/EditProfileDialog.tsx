@@ -18,18 +18,54 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { X } from 'lucide-react';
 import { useProfile, Profile } from '@/hooks/useProfile';
+
+const RPG_SYSTEMS = [
+  'D&D 5e',
+  'Pathfinder',
+  'Tormenta20',
+  'Call of Cthulhu',
+  'Vampiro: A Máscara',
+  'Fate',
+  'Savage Worlds',
+  '3D&T',
+  'Old Dragon',
+  'Outro',
+];
+
+const THEMES = [
+  'Fantasia Medieval',
+  'Cyberpunk',
+  'Horror',
+  'Sci-Fi',
+  'Steampunk',
+  'Pós-Apocalíptico',
+  'Histórico',
+  'Super-Heróis',
+  'Mistério',
+  'Aventura',
+  'Outro',
+];
 
 const profileSchema = z.object({
   display_name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(50),
   bio: z.string().max(500, 'Bio deve ter no máximo 500 caracteres').optional(),
   experience_years: z.number().min(0).max(100).optional(),
-  master_systems: z.string().optional(),
-  preferred_themes: z.string().optional(),
+  master_systems: z.array(z.string()).optional(),
+  preferred_themes: z.array(z.string()).optional(),
   plays_in_person: z.boolean().optional(),
   apps_used: z.string().optional(),
   discord_link: z.string().url('Link inválido').or(z.literal('')).optional(),
@@ -53,6 +89,8 @@ export const EditProfileDialog = ({
   isMaster,
 }: EditProfileDialogProps) => {
   const { updateProfile, isUpdating } = useProfile(userId);
+  const [selectedSystem, setSelectedSystem] = useState<string>('');
+  const [selectedTheme, setSelectedTheme] = useState<string>('');
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -60,13 +98,39 @@ export const EditProfileDialog = ({
       display_name: profile?.display_name || '',
       bio: profile?.bio || '',
       experience_years: profile?.experience_years || 0,
-      master_systems: profile?.master_systems?.join(', ') || '',
-      preferred_themes: profile?.preferred_themes?.join(', ') || '',
+      master_systems: profile?.master_systems || [],
+      preferred_themes: profile?.preferred_themes || [],
       plays_in_person: profile?.plays_in_person || false,
       apps_used: profile?.apps_used?.join(', ') || '',
       discord_link: profile?.discord_link || '',
     },
   });
+
+  const addSystem = () => {
+    if (selectedSystem && !form.getValues('master_systems')?.includes(selectedSystem)) {
+      const current = form.getValues('master_systems') || [];
+      form.setValue('master_systems', [...current, selectedSystem]);
+      setSelectedSystem('');
+    }
+  };
+
+  const removeSystem = (system: string) => {
+    const current = form.getValues('master_systems') || [];
+    form.setValue('master_systems', current.filter(s => s !== system));
+  };
+
+  const addTheme = () => {
+    if (selectedTheme && !form.getValues('preferred_themes')?.includes(selectedTheme)) {
+      const current = form.getValues('preferred_themes') || [];
+      form.setValue('preferred_themes', [...current, selectedTheme]);
+      setSelectedTheme('');
+    }
+  };
+
+  const removeTheme = (theme: string) => {
+    const current = form.getValues('preferred_themes') || [];
+    form.setValue('preferred_themes', current.filter(t => t !== theme));
+  };
 
   const onSubmit = (values: ProfileFormValues) => {
     const updateData: any = {
@@ -76,12 +140,8 @@ export const EditProfileDialog = ({
 
     if (isMaster) {
       updateData.experience_years = values.experience_years || 0;
-      updateData.master_systems = values.master_systems
-        ? values.master_systems.split(',').map(s => s.trim()).filter(Boolean)
-        : [];
-      updateData.preferred_themes = values.preferred_themes
-        ? values.preferred_themes.split(',').map(s => s.trim()).filter(Boolean)
-        : [];
+      updateData.master_systems = values.master_systems || [];
+      updateData.preferred_themes = values.preferred_themes || [];
       updateData.plays_in_person = values.plays_in_person || false;
       updateData.apps_used = values.apps_used
         ? values.apps_used.split(',').map(s => s.trim()).filter(Boolean)
@@ -173,15 +233,37 @@ export const EditProfileDialog = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Sistemas que Domina</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="D&D 5e, Pathfinder, Tormenta"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Separe múltiplos sistemas por vírgula
-                      </FormDescription>
+                      <div className="flex gap-2">
+                        <Select value={selectedSystem} onValueChange={setSelectedSystem}>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Selecione um sistema" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {RPG_SYSTEMS.map((system) => (
+                              <SelectItem key={system} value={system}>
+                                {system}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button type="button" onClick={addSystem} variant="secondary">
+                          Adicionar
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {field.value?.map((system) => (
+                          <Badge key={system} variant="secondary" className="gap-1">
+                            {system}
+                            <button
+                              type="button"
+                              onClick={() => removeSystem(system)}
+                              className="ml-1 hover:text-destructive"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -193,15 +275,37 @@ export const EditProfileDialog = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Temas Preferidos</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Fantasia Medieval, Cyberpunk, Horror"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Separe múltiplos temas por vírgula
-                      </FormDescription>
+                      <div className="flex gap-2">
+                        <Select value={selectedTheme} onValueChange={setSelectedTheme}>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Selecione um tema" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {THEMES.map((theme) => (
+                              <SelectItem key={theme} value={theme}>
+                                {theme}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button type="button" onClick={addTheme} variant="secondary">
+                          Adicionar
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {field.value?.map((theme) => (
+                          <Badge key={theme} variant="secondary" className="gap-1">
+                            {theme}
+                            <button
+                              type="button"
+                              onClick={() => removeTheme(theme)}
+                              className="ml-1 hover:text-destructive"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
