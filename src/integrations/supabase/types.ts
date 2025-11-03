@@ -16,26 +16,50 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          active_tables_count: number | null
+          apps_used: string[] | null
           avatar_url: string | null
+          bio: string | null
           created_at: string
+          discord_link: string | null
           display_name: string | null
+          experience_years: number | null
           id: string
+          master_systems: string[] | null
+          plays_in_person: boolean | null
+          preferred_themes: string[] | null
           updated_at: string
           user_type: Database["public"]["Enums"]["user_type"]
         }
         Insert: {
+          active_tables_count?: number | null
+          apps_used?: string[] | null
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
+          discord_link?: string | null
           display_name?: string | null
+          experience_years?: number | null
           id: string
+          master_systems?: string[] | null
+          plays_in_person?: boolean | null
+          preferred_themes?: string[] | null
           updated_at?: string
           user_type: Database["public"]["Enums"]["user_type"]
         }
         Update: {
+          active_tables_count?: number | null
+          apps_used?: string[] | null
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
+          discord_link?: string | null
           display_name?: string | null
+          experience_years?: number | null
           id?: string
+          master_systems?: string[] | null
+          plays_in_person?: boolean | null
+          preferred_themes?: string[] | null
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
         }
