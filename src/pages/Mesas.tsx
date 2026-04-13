@@ -63,6 +63,22 @@ const Mesas = () => {
     rejected: 'Recusado',
   };
 
+  const handleDelete = async () => {
+    if (!deleteTableId) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from('tables').delete().eq('id', deleteTableId);
+      if (error) throw error;
+      toast({ title: 'Mesa excluída', description: 'A mesa foi removida com sucesso.' });
+      refetch();
+    } catch (err: any) {
+      toast({ title: 'Erro ao excluir', description: err.message, variant: 'destructive' });
+    } finally {
+      setDeleting(false);
+      setDeleteTableId(null);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
