@@ -4,11 +4,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, Clock, Monitor, Gamepad2, Send, Inbox } from "lucide-react";
+import { Plus, Users, Clock, Monitor, Gamepad2, Send, Inbox, Pencil, Trash2 } from "lucide-react";
 import { CreateTableDialog } from "@/components/CreateTableDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 import { TableApplicationsDialog } from "@/components/TableApplicationsDialog";
+import { EditTableDialog } from "@/components/EditTableDialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -18,6 +21,9 @@ const Mesas = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
   const [viewAppsTable, setViewAppsTable] = useState<{ id: string; title: string } | null>(null);
+  const [editTable, setEditTable] = useState<any | null>(null);
+  const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const { data: tables, isLoading, refetch } = useQuery({
     queryKey: ['tables', userType === 'master' ? user?.id : 'all'],
@@ -55,6 +61,22 @@ const Mesas = () => {
     pending: 'Candidatura Enviada',
     accepted: 'Aceito',
     rejected: 'Recusado',
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTableId) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from('tables').delete().eq('id', deleteTableId);
+      if (error) throw error;
+      toast({ title: 'Mesa excluída', description: 'A mesa foi removida com sucesso.' });
+      refetch();
+    } catch (err: any) {
+      toast({ title: 'Erro ao excluir', description: err.message, variant: 'destructive' });
+    } finally {
+      setDeleting(false);
+      setDeleteTableId(null);
+    }
   };
 
   return (
@@ -139,11 +161,17 @@ const Mesas = () => {
                       </div>
                     )}
 
-                    {/* Master: view applications */}
+                    {/* Master: actions */}
                     {userType === 'master' && (
-                      <div className="pt-2">
+                      <div className="pt-2 flex gap-2 flex-wrap">
                         <Button size="sm" variant="outline" className="gap-1" onClick={() => setViewAppsTable({ id: table.id, title: table.title })}>
-                          <Inbox className="h-3 w-3" /> Ver Candidaturas
+                          <Inbox className="h-3 w-3" /> Candidaturas
+                        </Button>
+                        <Button size="sm" variant="outline" className="gap-1" onClick={() => setEditTable(table)}>
+                          <Pencil className="h-3 w-3" /> Editar
+                        </Button>
+                        <Button size="sm" variant="destructive" className="gap-1" onClick={() => setDeleteTableId(table.id)}>
+                          <Trash2 className="h-3 w-3" /> Excluir
                         </Button>
                       </div>
                     )}
@@ -193,6 +221,32 @@ const Mesas = () => {
           tableTitle={viewAppsTable.title}
         />
       )}
+
+      {editTable && (
+        <EditTableDialog
+          open={!!editTable}
+          onOpenChange={(o) => !o && setEditTable(null)}
+          table={editTable}
+          onUpdated={refetch}
+        />
+      )}
+
+      <AlertDialog open={!!deleteTableId} onOpenChange={(o) => !o && setDeleteTableId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir mesa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação é irreversível. Todas as candidaturas associadas também serão perdidas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleting}>
+              {deleting ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };
