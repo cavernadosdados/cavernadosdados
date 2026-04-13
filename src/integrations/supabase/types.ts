@@ -65,6 +65,104 @@ export type Database = {
         }
         Relationships: []
       }
+      table_applications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          player_id: string
+          status: string
+          table_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          player_id: string
+          status?: string
+          table_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          player_id?: string
+          status?: string
+          table_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "table_applications_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "table_applications_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tables: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration: string
+          id: string
+          master_id: string
+          max_players: number
+          platform: string
+          status: string
+          system: string
+          theme: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration: string
+          id?: string
+          master_id: string
+          max_players?: number
+          platform: string
+          status?: string
+          system: string
+          theme: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration?: string
+          id?: string
+          master_id?: string
+          max_players?: number
+          platform?: string
+          status?: string
+          system?: string
+          theme?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tables_master_id_fkey"
+            columns: ["master_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
