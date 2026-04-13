@@ -4,8 +4,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, Clock, Monitor, Gamepad2 } from "lucide-react";
+import { Plus, Users, Clock, Monitor, Gamepad2, Send, Inbox } from "lucide-react";
 import { CreateTableDialog } from "@/components/CreateTableDialog";
+import { ApplyTableDialog } from "@/components/ApplyTableDialog";
+import { TableApplicationsDialog } from "@/components/TableApplicationsDialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +16,8 @@ const Mesas = () => {
   const { user } = useAuth();
   const userType = user?.user_metadata?.user_type;
   const [createOpen, setCreateOpen] = useState(false);
+  const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
+  const [viewAppsTable, setViewAppsTable] = useState<{ id: string; title: string } | null>(null);
 
   const { data: tables, isLoading, refetch } = useQuery({
     queryKey: ['tables', userType === 'master' ? user?.id : 'all'],
@@ -28,6 +32,30 @@ const Mesas = () => {
     },
     enabled: !!user,
   });
+
+  // Fetch player's existing applications to know which tables they already applied to
+  const { data: myApplications } = useQuery({
+    queryKey: ['my-applications', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('table_applications')
+        .select('table_id, status')
+        .eq('player_id', user!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && userType !== 'master',
+  });
+
+  const getApplicationStatus = (tableId: string) => {
+    return myApplications?.find(a => a.table_id === tableId);
+  };
+
+  const appStatusLabel: Record<string, string> = {
+    pending: 'Candidatura Enviada',
+    accepted: 'Aceito',
+    rejected: 'Recusado',
+  };
 
   return (
     <DashboardLayout>
@@ -59,43 +87,70 @@ const Mesas = () => {
           </div>
         ) : tables && tables.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2">
-            {tables.map((table: any) => (
-              <Card key={table.id} className="bg-card border-border hover:border-primary transition-all">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg">{table.title}</CardTitle>
-                    <Badge variant={table.status === 'open' ? 'default' : 'secondary'}>
-                      {table.status === 'open' ? 'Aberta' : 'Fechada'}
-                    </Badge>
-                  </div>
-                  {userType !== 'master' && table.profiles && (
-                    <p className="text-xs text-muted-foreground">
-                      Mestre: {table.profiles.display_name}
-                    </p>
-                  )}
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {table.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">{table.description}</p>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline" className="gap-1">
-                      <Gamepad2 className="h-3 w-3" /> {table.system}
-                    </Badge>
-                    <Badge variant="outline">{table.theme}</Badge>
-                    <Badge variant="outline" className="gap-1">
-                      <Clock className="h-3 w-3" /> {table.duration}
-                    </Badge>
-                    <Badge variant="outline" className="gap-1">
-                      <Users className="h-3 w-3" /> {table.max_players} jogadores
-                    </Badge>
-                    <Badge variant="outline" className="gap-1">
-                      <Monitor className="h-3 w-3" /> {table.platform}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {tables.map((table: any) => {
+              const appStatus = userType !== 'master' ? getApplicationStatus(table.id) : null;
+              return (
+                <Card key={table.id} className="bg-card border-border hover:border-primary transition-all">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">{table.title}</CardTitle>
+                      <Badge variant={table.status === 'open' ? 'default' : 'secondary'}>
+                        {table.status === 'open' ? 'Aberta' : 'Fechada'}
+                      </Badge>
+                    </div>
+                    {userType !== 'master' && table.profiles && (
+                      <p className="text-xs text-muted-foreground">
+                        Mestre: {table.profiles.display_name}
+                      </p>
+                    )}
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {table.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">{table.description}</p>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline" className="gap-1">
+                        <Gamepad2 className="h-3 w-3" /> {table.system}
+                      </Badge>
+                      <Badge variant="outline">{table.theme}</Badge>
+                      <Badge variant="outline" className="gap-1">
+                        <Clock className="h-3 w-3" /> {table.duration}
+                      </Badge>
+                      <Badge variant="outline" className="gap-1">
+                        <Users className="h-3 w-3" /> {table.max_players} jogadores
+                      </Badge>
+                      <Badge variant="outline" className="gap-1">
+                        <Monitor className="h-3 w-3" /> {table.platform}
+                      </Badge>
+                    </div>
+
+                    {/* Player: apply button or status */}
+                    {userType !== 'master' && table.status === 'open' && (
+                      <div className="pt-2">
+                        {appStatus ? (
+                          <Badge variant={appStatus.status === 'accepted' ? 'default' : appStatus.status === 'rejected' ? 'destructive' : 'secondary'}>
+                            {appStatusLabel[appStatus.status] || appStatus.status}
+                          </Badge>
+                        ) : (
+                          <Button size="sm" className="gap-1" onClick={() => setApplyTable({ id: table.id, title: table.title })}>
+                            <Send className="h-3 w-3" /> Candidatar-se
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Master: view applications */}
+                    {userType === 'master' && (
+                      <div className="pt-2">
+                        <Button size="sm" variant="outline" className="gap-1" onClick={() => setViewAppsTable({ id: table.id, title: table.title })}>
+                          <Inbox className="h-3 w-3" /> Ver Candidaturas
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         ) : (
           <Card className="bg-gradient-to-br from-card to-card/50">
@@ -119,6 +174,25 @@ const Mesas = () => {
       </div>
 
       <CreateTableDialog open={createOpen} onOpenChange={setCreateOpen} onCreated={refetch} />
+
+      {applyTable && (
+        <ApplyTableDialog
+          open={!!applyTable}
+          onOpenChange={(o) => !o && setApplyTable(null)}
+          tableId={applyTable.id}
+          tableTitle={applyTable.title}
+          onApplied={refetch}
+        />
+      )}
+
+      {viewAppsTable && (
+        <TableApplicationsDialog
+          open={!!viewAppsTable}
+          onOpenChange={(o) => !o && setViewAppsTable(null)}
+          tableId={viewAppsTable.id}
+          tableTitle={viewAppsTable.title}
+        />
+      )}
     </DashboardLayout>
   );
 };

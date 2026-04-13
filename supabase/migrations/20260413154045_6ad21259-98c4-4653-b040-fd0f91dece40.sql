@@ -1,0 +1,1 @@
+ALTER TABLE public.table_applications ADD CONSTRAINT unique_player_table UNIQUE (player_id, table_id);
