@@ -161,11 +161,17 @@ const Mesas = () => {
                       </div>
                     )}
 
-                    {/* Master: view applications */}
+                    {/* Master: actions */}
                     {userType === 'master' && (
-                      <div className="pt-2">
+                      <div className="pt-2 flex gap-2 flex-wrap">
                         <Button size="sm" variant="outline" className="gap-1" onClick={() => setViewAppsTable({ id: table.id, title: table.title })}>
-                          <Inbox className="h-3 w-3" /> Ver Candidaturas
+                          <Inbox className="h-3 w-3" /> Candidaturas
+                        </Button>
+                        <Button size="sm" variant="outline" className="gap-1" onClick={() => setEditTable(table)}>
+                          <Pencil className="h-3 w-3" /> Editar
+                        </Button>
+                        <Button size="sm" variant="destructive" className="gap-1" onClick={() => setDeleteTableId(table.id)}>
+                          <Trash2 className="h-3 w-3" /> Excluir
                         </Button>
                       </div>
                     )}
@@ -215,6 +221,32 @@ const Mesas = () => {
           tableTitle={viewAppsTable.title}
         />
       )}
+
+      {editTable && (
+        <EditTableDialog
+          open={!!editTable}
+          onOpenChange={(o) => !o && setEditTable(null)}
+          table={editTable}
+          onUpdated={refetch}
+        />
+      )}
+
+      <AlertDialog open={!!deleteTableId} onOpenChange={(o) => !o && setDeleteTableId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir mesa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação é irreversível. Todas as candidaturas associadas também serão perdidas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleting}>
+              {deleting ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };
