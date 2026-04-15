@@ -151,12 +151,12 @@ export const EditProfileDialog = ({
     const updateData: any = {
       display_name: values.display_name,
       bio: values.bio || null,
+      master_systems: values.master_systems || [],
+      preferred_themes: values.preferred_themes || [],
     };
 
     if (isMaster) {
       updateData.experience_years = values.experience_years || 0;
-      updateData.master_systems = values.master_systems || [];
-      updateData.preferred_themes = values.preferred_themes || [];
       updateData.plays_in_person = values.plays_in_person || false;
       updateData.apps_used = values.apps_used
         ? values.apps_used.split(',').map(s => s.trim()).filter(Boolean)
