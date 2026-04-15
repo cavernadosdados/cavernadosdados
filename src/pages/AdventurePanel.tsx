@@ -412,7 +412,7 @@ const AdventurePanel = () => {
             <Card className="border-border bg-card/60">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Ban className="h-4 w-4 text-orange-500" />
+                  <Ban className="h-4 w-4 text-destructive" />
                   Restrições do Cenário
                 </CardTitle>
               </CardHeader>
@@ -520,7 +520,7 @@ const AdventurePanel = () => {
               <Card className="border-border bg-card/60">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-orange-500" />
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
                     Faltas e Atrasos
                   </CardTitle>
                 </CardHeader>
