@@ -14,6 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
+      campaign_details: {
+        Row: {
+          absence_policy: string | null
+          campaign_objectives: string | null
+          combat_rules: string | null
+          created_at: string
+          frequency: string | null
+          house_rules: string | null
+          id: string
+          lateness_policy: string | null
+          progression_expectation: string | null
+          pvp_rules: string | null
+          restricted_classes: string | null
+          restricted_races: string | null
+          restricted_spells: string | null
+          safety_lines: string | null
+          safety_veils: string | null
+          schedule_time: string | null
+          table_id: string
+          timezone: string | null
+          updated_at: string
+        }
+        Insert: {
+          absence_policy?: string | null
+          campaign_objectives?: string | null
+          combat_rules?: string | null
+          created_at?: string
+          frequency?: string | null
+          house_rules?: string | null
+          id?: string
+          lateness_policy?: string | null
+          progression_expectation?: string | null
+          pvp_rules?: string | null
+          restricted_classes?: string | null
+          restricted_races?: string | null
+          restricted_spells?: string | null
+          safety_lines?: string | null
+          safety_veils?: string | null
+          schedule_time?: string | null
+          table_id: string
+          timezone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          absence_policy?: string | null
+          campaign_objectives?: string | null
+          combat_rules?: string | null
+          created_at?: string
+          frequency?: string | null
+          house_rules?: string | null
+          id?: string
+          lateness_policy?: string | null
+          progression_expectation?: string | null
+          pvp_rules?: string | null
+          restricted_classes?: string | null
+          restricted_races?: string | null
+          restricted_spells?: string | null
+          safety_lines?: string | null
+          safety_veils?: string | null
+          schedule_time?: string | null
+          table_id?: string
+          timezone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_details_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: true
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           active_tables_count: number | null
@@ -64,6 +138,56 @@ export type Database = {
           user_type?: Database["public"]["Enums"]["user_type"]
         }
         Relationships: []
+      }
+      session_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating_1: number
+          rating_2: number
+          rating_3: number
+          reviewed_id: string
+          reviewer_id: string
+          reviewer_role: string
+          session_number: number
+          table_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating_1?: number
+          rating_2?: number
+          rating_3?: number
+          reviewed_id: string
+          reviewer_id: string
+          reviewer_role?: string
+          session_number?: number
+          table_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating_1?: number
+          rating_2?: number
+          rating_3?: number
+          reviewed_id?: string
+          reviewer_id?: string
+          reviewer_role?: string
+          session_number?: number
+          table_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_feedback_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       table_applications: {
         Row: {
