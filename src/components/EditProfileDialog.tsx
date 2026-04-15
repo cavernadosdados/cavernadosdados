@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -106,6 +106,21 @@ export const EditProfileDialog = ({
     },
   });
 
+  useEffect(() => {
+    if (open && profile) {
+      form.reset({
+        display_name: profile.display_name || '',
+        bio: profile.bio || '',
+        experience_years: profile.experience_years || 0,
+        master_systems: profile.master_systems || [],
+        preferred_themes: profile.preferred_themes || [],
+        plays_in_person: profile.plays_in_person || false,
+        apps_used: profile.apps_used?.join(', ') || '',
+        discord_link: profile.discord_link || '',
+      });
+    }
+  }, [open, profile]);
+
   const addSystem = () => {
     if (selectedSystem && !form.getValues('master_systems')?.includes(selectedSystem)) {
       const current = form.getValues('master_systems') || [];
@@ -136,12 +151,12 @@ export const EditProfileDialog = ({
     const updateData: any = {
       display_name: values.display_name,
       bio: values.bio || null,
+      master_systems: values.master_systems || [],
+      preferred_themes: values.preferred_themes || [],
     };
 
     if (isMaster) {
       updateData.experience_years = values.experience_years || 0;
-      updateData.master_systems = values.master_systems || [];
-      updateData.preferred_themes = values.preferred_themes || [];
       updateData.plays_in_person = values.plays_in_person || false;
       updateData.apps_used = values.apps_used
         ? values.apps_used.split(',').map(s => s.trim()).filter(Boolean)
@@ -205,6 +220,90 @@ export const EditProfileDialog = ({
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="master_systems"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{isMaster ? 'Sistemas que Domina' : 'Sistemas de Interesse'}</FormLabel>
+                  <div className="flex gap-2">
+                    <Select value={selectedSystem} onValueChange={setSelectedSystem}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Selecione um sistema" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {RPG_SYSTEMS.map((system) => (
+                          <SelectItem key={system} value={system}>
+                            {system}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button type="button" onClick={addSystem} variant="secondary">
+                      Adicionar
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {field.value?.map((system) => (
+                      <Badge key={system} variant="secondary" className="gap-1">
+                        {system}
+                        <button
+                          type="button"
+                          onClick={() => removeSystem(system)}
+                          className="ml-1 hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="preferred_themes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Temas Preferidos</FormLabel>
+                  <div className="flex gap-2">
+                    <Select value={selectedTheme} onValueChange={setSelectedTheme}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Selecione um tema" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {THEMES.map((theme) => (
+                          <SelectItem key={theme} value={theme}>
+                            {theme}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button type="button" onClick={addTheme} variant="secondary">
+                      Adicionar
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {field.value?.map((theme) => (
+                      <Badge key={theme} variant="secondary" className="gap-1">
+                        {theme}
+                        <button
+                          type="button"
+                          onClick={() => removeTheme(theme)}
+                          className="ml-1 hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {isMaster && (
               <>
                 <FormField
@@ -222,90 +321,6 @@ export const EditProfileDialog = ({
                           onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                         />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="master_systems"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Sistemas que Domina</FormLabel>
-                      <div className="flex gap-2">
-                        <Select value={selectedSystem} onValueChange={setSelectedSystem}>
-                          <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Selecione um sistema" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {RPG_SYSTEMS.map((system) => (
-                              <SelectItem key={system} value={system}>
-                                {system}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button type="button" onClick={addSystem} variant="secondary">
-                          Adicionar
-                        </Button>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {field.value?.map((system) => (
-                          <Badge key={system} variant="secondary" className="gap-1">
-                            {system}
-                            <button
-                              type="button"
-                              onClick={() => removeSystem(system)}
-                              className="ml-1 hover:text-destructive"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="preferred_themes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Temas Preferidos</FormLabel>
-                      <div className="flex gap-2">
-                        <Select value={selectedTheme} onValueChange={setSelectedTheme}>
-                          <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Selecione um tema" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {THEMES.map((theme) => (
-                              <SelectItem key={theme} value={theme}>
-                                {theme}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button type="button" onClick={addTheme} variant="secondary">
-                          Adicionar
-                        </Button>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {field.value?.map((theme) => (
-                          <Badge key={theme} variant="secondary" className="gap-1">
-                            {theme}
-                            <button
-                              type="button"
-                              onClick={() => removeTheme(theme)}
-                              className="ml-1 hover:text-destructive"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
