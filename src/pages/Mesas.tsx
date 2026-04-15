@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, Clock, Monitor, Gamepad2, Send, Inbox, Pencil, Trash2 } from "lucide-react";
+import { Plus, Users, Clock, Monitor, Gamepad2, Send, Inbox, Pencil, Trash2, ScrollText } from "lucide-react";
 import { CreateTableDialog } from "@/components/CreateTableDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 import { TableApplicationsDialog } from "@/components/TableApplicationsDialog";
@@ -17,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const Mesas = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const userType = user?.user_metadata?.user_type;
   const [createOpen, setCreateOpen] = useState(false);
   const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
@@ -164,6 +166,9 @@ const Mesas = () => {
                     {/* Master: actions */}
                     {userType === 'master' && (
                       <div className="pt-2 flex gap-2 flex-wrap">
+                        <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate(`/dashboard/mesa/${table.id}`)}>
+                          <ScrollText className="h-3 w-3" /> Gerenciar
+                        </Button>
                         <Button size="sm" variant="outline" className="gap-1" onClick={() => setViewAppsTable({ id: table.id, title: table.title })}>
                           <Inbox className="h-3 w-3" /> Candidaturas
                         </Button>
