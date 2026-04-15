@@ -220,6 +220,90 @@ export const EditProfileDialog = ({
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="master_systems"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{isMaster ? 'Sistemas que Domina' : 'Sistemas de Interesse'}</FormLabel>
+                  <div className="flex gap-2">
+                    <Select value={selectedSystem} onValueChange={setSelectedSystem}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Selecione um sistema" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {RPG_SYSTEMS.map((system) => (
+                          <SelectItem key={system} value={system}>
+                            {system}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button type="button" onClick={addSystem} variant="secondary">
+                      Adicionar
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {field.value?.map((system) => (
+                      <Badge key={system} variant="secondary" className="gap-1">
+                        {system}
+                        <button
+                          type="button"
+                          onClick={() => removeSystem(system)}
+                          className="ml-1 hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="preferred_themes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Temas Preferidos</FormLabel>
+                  <div className="flex gap-2">
+                    <Select value={selectedTheme} onValueChange={setSelectedTheme}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Selecione um tema" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {THEMES.map((theme) => (
+                          <SelectItem key={theme} value={theme}>
+                            {theme}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button type="button" onClick={addTheme} variant="secondary">
+                      Adicionar
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {field.value?.map((theme) => (
+                      <Badge key={theme} variant="secondary" className="gap-1">
+                        {theme}
+                        <button
+                          type="button"
+                          onClick={() => removeTheme(theme)}
+                          className="ml-1 hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {isMaster && (
               <>
                 <FormField
@@ -237,90 +321,6 @@ export const EditProfileDialog = ({
                           onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                         />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="master_systems"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Sistemas que Domina</FormLabel>
-                      <div className="flex gap-2">
-                        <Select value={selectedSystem} onValueChange={setSelectedSystem}>
-                          <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Selecione um sistema" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {RPG_SYSTEMS.map((system) => (
-                              <SelectItem key={system} value={system}>
-                                {system}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button type="button" onClick={addSystem} variant="secondary">
-                          Adicionar
-                        </Button>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {field.value?.map((system) => (
-                          <Badge key={system} variant="secondary" className="gap-1">
-                            {system}
-                            <button
-                              type="button"
-                              onClick={() => removeSystem(system)}
-                              className="ml-1 hover:text-destructive"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="preferred_themes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Temas Preferidos</FormLabel>
-                      <div className="flex gap-2">
-                        <Select value={selectedTheme} onValueChange={setSelectedTheme}>
-                          <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Selecione um tema" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {THEMES.map((theme) => (
-                              <SelectItem key={theme} value={theme}>
-                                {theme}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button type="button" onClick={addTheme} variant="secondary">
-                          Adicionar
-                        </Button>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {field.value?.map((theme) => (
-                          <Badge key={theme} variant="secondary" className="gap-1">
-                            {theme}
-                            <button
-                              type="button"
-                              onClick={() => removeTheme(theme)}
-                              className="ml-1 hover:text-destructive"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
