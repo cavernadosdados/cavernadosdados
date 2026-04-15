@@ -106,6 +106,21 @@ export const EditProfileDialog = ({
     },
   });
 
+  useEffect(() => {
+    if (open && profile) {
+      form.reset({
+        display_name: profile.display_name || '',
+        bio: profile.bio || '',
+        experience_years: profile.experience_years || 0,
+        master_systems: profile.master_systems || [],
+        preferred_themes: profile.preferred_themes || [],
+        plays_in_person: profile.plays_in_person || false,
+        apps_used: profile.apps_used?.join(', ') || '',
+        discord_link: profile.discord_link || '',
+      });
+    }
+  }, [open, profile]);
+
   const addSystem = () => {
     if (selectedSystem && !form.getValues('master_systems')?.includes(selectedSystem)) {
       const current = form.getValues('master_systems') || [];
