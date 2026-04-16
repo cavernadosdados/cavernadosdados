@@ -431,6 +431,12 @@ const AdventurePanel = () => {
               <UserX className="h-4 w-4" />
               Logística
             </TabsTrigger>
+            {isMaster && (
+              <TabsTrigger value="integrations" className="gap-1">
+                <Plug className="h-4 w-4" />
+                Integrações
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* ===== VISÃO GERAL ===== */}
