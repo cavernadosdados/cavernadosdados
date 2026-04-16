@@ -40,7 +40,16 @@ import {
   Ban,
   Flag,
   Star,
+  Plug,
+  HelpCircle,
+  Send,
+  Loader2,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const AdventurePanel = () => {
   const { tableId } = useParams<{ tableId: string }>();
