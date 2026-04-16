@@ -142,6 +142,7 @@ export type Database = {
       session_feedback: {
         Row: {
           comment: string | null
+          compliments: string[] | null
           created_at: string
           id: string
           rating_1: number
@@ -155,6 +156,7 @@ export type Database = {
         }
         Insert: {
           comment?: string | null
+          compliments?: string[] | null
           created_at?: string
           id?: string
           rating_1?: number
@@ -168,6 +170,7 @@ export type Database = {
         }
         Update: {
           comment?: string | null
+          compliments?: string[] | null
           created_at?: string
           id?: string
           rating_1?: number
