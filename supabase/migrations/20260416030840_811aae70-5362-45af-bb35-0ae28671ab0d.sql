@@ -1,0 +1,1 @@
+ALTER TABLE public.campaign_details ADD COLUMN discord_webhook_url text DEFAULT '';

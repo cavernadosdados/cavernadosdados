@@ -20,6 +20,7 @@ export type Database = {
           campaign_objectives: string | null
           combat_rules: string | null
           created_at: string
+          discord_webhook_url: string | null
           frequency: string | null
           house_rules: string | null
           id: string
@@ -41,6 +42,7 @@ export type Database = {
           campaign_objectives?: string | null
           combat_rules?: string | null
           created_at?: string
+          discord_webhook_url?: string | null
           frequency?: string | null
           house_rules?: string | null
           id?: string
@@ -62,6 +64,7 @@ export type Database = {
           campaign_objectives?: string | null
           combat_rules?: string | null
           created_at?: string
+          discord_webhook_url?: string | null
           frequency?: string | null
           house_rules?: string | null
           id?: string
