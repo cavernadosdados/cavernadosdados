@@ -152,6 +152,7 @@ const AdventurePanel = () => {
         lateness_policy: campaign.lateness_policy || "",
         frequency: campaign.frequency || "",
         schedule_time: campaign.schedule_time || "",
+        discord_webhook_url: (campaign as any).discord_webhook_url || "",
       });
     }
   }, [campaign]);
