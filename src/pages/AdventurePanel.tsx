@@ -271,6 +271,9 @@ const AdventurePanel = () => {
 
     refetchTable();
 
+    // Send Discord notification
+    await sendDiscordSessionEnd();
+
     // Start sequential player evaluation
     if (acceptedPlayers && acceptedPlayers.length > 0) {
       setCurrentPlayerIndex(0);
