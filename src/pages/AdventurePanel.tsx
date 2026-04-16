@@ -196,6 +196,38 @@ const AdventurePanel = () => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleTestWebhook = async () => {
+    if (!form.discord_webhook_url) {
+      toast({ title: "URL vazia", description: "Cole a URL do webhook do Discord primeiro.", variant: "destructive" });
+      return;
+    }
+    setTestingWebhook(true);
+    try {
+      const res = await supabase.functions.invoke("discord-webhook", {
+        body: { webhook_url: form.discord_webhook_url, type: "test" },
+      });
+      if (res.error) throw res.error;
+      if (res.data?.error) throw new Error(res.data.error);
+      toast({ title: "Sucesso! 🎲", description: "Mensagem enviada ao Discord." });
+    } catch (err: any) {
+      toast({ title: "Erro no webhook", description: err.message, variant: "destructive" });
+    } finally {
+      setTestingWebhook(false);
+    }
+  };
+
+  const sendDiscordSessionEnd = async () => {
+    const webhookUrl = form.discord_webhook_url || (campaign as any)?.discord_webhook_url;
+    if (!webhookUrl) return;
+    try {
+      await supabase.functions.invoke("discord-webhook", {
+        body: { webhook_url: webhookUrl, type: "session_end", table_title: table?.title, table_id: tableId },
+      });
+    } catch (err) {
+      console.error("Discord webhook error:", err);
+    }
+  };
+
   const handleSave = async () => {
     if (!tableId || !user) return;
     setSaving(true);
