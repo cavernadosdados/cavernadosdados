@@ -130,7 +130,10 @@ const AdventurePanel = () => {
     lateness_policy: "",
     frequency: "",
     schedule_time: "",
+    discord_webhook_url: "",
   });
+
+  const [testingWebhook, setTestingWebhook] = useState(false);
 
   useEffect(() => {
     if (campaign) {
