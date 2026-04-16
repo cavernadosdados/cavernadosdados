@@ -40,7 +40,16 @@ import {
   Ban,
   Flag,
   Star,
+  Plug,
+  HelpCircle,
+  Send,
+  Loader2,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const AdventurePanel = () => {
   const { tableId } = useParams<{ tableId: string }>();
@@ -121,7 +130,10 @@ const AdventurePanel = () => {
     lateness_policy: "",
     frequency: "",
     schedule_time: "",
+    discord_webhook_url: "",
   });
+
+  const [testingWebhook, setTestingWebhook] = useState(false);
 
   useEffect(() => {
     if (campaign) {
@@ -140,6 +152,7 @@ const AdventurePanel = () => {
         lateness_policy: campaign.lateness_policy || "",
         frequency: campaign.frequency || "",
         schedule_time: campaign.schedule_time || "",
+        discord_webhook_url: (campaign as any).discord_webhook_url || "",
       });
     }
   }, [campaign]);
@@ -181,6 +194,38 @@ const AdventurePanel = () => {
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleTestWebhook = async () => {
+    if (!form.discord_webhook_url) {
+      toast({ title: "URL vazia", description: "Cole a URL do webhook do Discord primeiro.", variant: "destructive" });
+      return;
+    }
+    setTestingWebhook(true);
+    try {
+      const res = await supabase.functions.invoke("discord-webhook", {
+        body: { webhook_url: form.discord_webhook_url, type: "test" },
+      });
+      if (res.error) throw res.error;
+      if (res.data?.error) throw new Error(res.data.error);
+      toast({ title: "Sucesso! 🎲", description: "Mensagem enviada ao Discord." });
+    } catch (err: any) {
+      toast({ title: "Erro no webhook", description: err.message, variant: "destructive" });
+    } finally {
+      setTestingWebhook(false);
+    }
+  };
+
+  const sendDiscordSessionEnd = async () => {
+    const webhookUrl = form.discord_webhook_url || (campaign as any)?.discord_webhook_url;
+    if (!webhookUrl) return;
+    try {
+      await supabase.functions.invoke("discord-webhook", {
+        body: { webhook_url: webhookUrl, type: "session_end", table_title: table?.title, table_id: tableId },
+      });
+    } catch (err) {
+      console.error("Discord webhook error:", err);
+    }
   };
 
   const handleSave = async () => {
@@ -225,6 +270,9 @@ const AdventurePanel = () => {
     }
 
     refetchTable();
+
+    // Send Discord notification
+    await sendDiscordSessionEnd();
 
     // Start sequential player evaluation
     if (acceptedPlayers && acceptedPlayers.length > 0) {
@@ -383,6 +431,12 @@ const AdventurePanel = () => {
               <UserX className="h-4 w-4" />
               Logística
             </TabsTrigger>
+            {isMaster && (
+              <TabsTrigger value="integrations" className="gap-1">
+                <Plug className="h-4 w-4" />
+                Integrações
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* ===== VISÃO GERAL ===== */}
@@ -626,6 +680,72 @@ const AdventurePanel = () => {
               </div>
             )}
           </TabsContent>
+
+          {/* ===== INTEGRAÇÕES ===== */}
+          {isMaster && (
+            <TabsContent value="integrations" className="space-y-6">
+              <Card className="border-border bg-card/60">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Plug className="h-4 w-4 text-primary" />
+                    Webhook do Discord
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-xs text-sm">
+                        <p className="font-medium mb-1">Como obter a URL do Webhook:</p>
+                        <ol className="list-decimal pl-4 space-y-1">
+                          <li>Abra as Configurações do canal no Discord</li>
+                          <li>Vá em <strong>Integrações → Webhooks</strong></li>
+                          <li>Clique em <strong>Novo Webhook</strong></li>
+                          <li>Copie a <strong>URL do Webhook</strong></li>
+                        </ol>
+                      </TooltipContent>
+                    </Tooltip>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium">URL do Webhook</Label>
+                    <Input
+                      value={form.discord_webhook_url}
+                      onChange={(e) => handleChange("discord_webhook_url", e.target.value)}
+                      placeholder="https://discord.com/api/webhooks/..."
+                      className="mt-1 bg-background/50 font-mono text-xs"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Ao finalizar uma sessão, uma mensagem será enviada automaticamente ao canal configurado.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleTestWebhook}
+                      disabled={testingWebhook || !form.discord_webhook_url}
+                      className="gap-2"
+                    >
+                      {testingWebhook ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                      Testar Conexão
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="flex justify-end">
+                <Button onClick={handleSave} disabled={saving} className="gap-2">
+                  <Save className="h-4 w-4" />
+                  {saving ? "Salvando..." : "Salvar Alterações"}
+                </Button>
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </main>
 
