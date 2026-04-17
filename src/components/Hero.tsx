@@ -6,7 +6,7 @@ export const Hero = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+    <section className="relative min-h-screen flex items-center justify-center overflow-x-hidden pt-20">
       {/* Mystical background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-card/50" />
       
@@ -24,22 +24,22 @@ export const Hero = () => {
             <span className="text-sm font-medium">Plataforma #1 para Mestres de RPG</span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold leading-tight">
             Onde <span className="text-primary glow-cyan">Mestres</span> e{" "}
             <span className="text-secondary">Jogadores</span> se Encontram
           </h1>
 
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Entre na caverna e descubra aventuras épicas. Conecte-se com mestres experientes 
             ou comece sua jornada como narrador. Seus dados aguardam.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Button variant="hero" size="lg" className="min-w-[200px]" onClick={() => navigate('/auth')}>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 w-full max-w-md sm:max-w-none mx-auto">
+            <Button variant="hero" size="lg" className="w-full sm:w-auto sm:min-w-[200px] min-h-12" onClick={() => navigate('/auth')}>
               <Scroll className="w-5 h-5" />
               Sou Jogador
             </Button>
-            <Button variant="mystical" size="lg" className="min-w-[200px]" onClick={() => navigate('/auth')}>
+            <Button variant="mystical" size="lg" className="w-full sm:w-auto sm:min-w-[200px] min-h-12" onClick={() => navigate('/auth')}>
               <Users className="w-5 h-5" />
               Sou Mestre
             </Button>
