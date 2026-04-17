@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SessionFeedbackDialog } from "@/components/SessionFeedbackDialog";
+import { CampaignDiary } from "@/components/CampaignDiary";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +45,7 @@ import {
   HelpCircle,
   Send,
   Loader2,
+  BookOpen,
 } from "lucide-react";
 import {
   Tooltip,
@@ -431,6 +433,10 @@ const AdventurePanel = () => {
               <UserX className="h-4 w-4" />
               Logística
             </TabsTrigger>
+            <TabsTrigger value="diary" className="gap-1">
+              <BookOpen className="h-4 w-4" />
+              Diário
+            </TabsTrigger>
             {isMaster && (
               <TabsTrigger value="integrations" className="gap-1">
                 <Plug className="h-4 w-4" />
@@ -681,7 +687,18 @@ const AdventurePanel = () => {
             )}
           </TabsContent>
 
-          {/* ===== INTEGRAÇÕES ===== */}
+          {/* ===== DIÁRIO DA CAMPANHA ===== */}
+          <TabsContent value="diary" className="space-y-6">
+            <CampaignDiary
+              tableId={tableId!}
+              tableTitle={table.title}
+              tableSystem={table.system}
+              isMaster={isMaster}
+              webhookUrl={form.discord_webhook_url}
+            />
+          </TabsContent>
+
+
           {isMaster && (
             <TabsContent value="integrations" className="space-y-6">
               <Card className="border-border bg-card/60">
