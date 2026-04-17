@@ -749,22 +749,34 @@ const AdventurePanel = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div>
-                    <Label className="text-sm font-medium">Política de Faltas</Label>
-                    {isMaster ? (
-                      <Textarea value={form.absence_policy} onChange={(e) => handleChange("absence_policy", e.target.value)} placeholder="O que acontece quando um jogador falta?" className="mt-1 bg-background/50" />
-                    ) : (
+                  {isMaster ? (
+                    <ChipSelector
+                      label="Política de Faltas"
+                      chips={CHIPS.absence_policy}
+                      value={form.absence_policy}
+                      onChange={(v) => handleChange("absence_policy", v)}
+                      placeholder="O que acontece quando um jogador falta?"
+                    />
+                  ) : (
+                    <div>
+                      <Label className="text-sm font-medium">Política de Faltas</Label>
                       <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.absence_policy || "Não definida"}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Política de Atrasos</Label>
-                    {isMaster ? (
-                      <Textarea value={form.lateness_policy} onChange={(e) => handleChange("lateness_policy", e.target.value)} placeholder="Tolerância para atrasos, consequências..." className="mt-1 bg-background/50" />
-                    ) : (
+                    </div>
+                  )}
+                  {isMaster ? (
+                    <ChipSelector
+                      label="Política de Atrasos"
+                      chips={CHIPS.lateness_policy}
+                      value={form.lateness_policy}
+                      onChange={(v) => handleChange("lateness_policy", v)}
+                      placeholder="Tolerância para atrasos, consequências..."
+                    />
+                  ) : (
+                    <div>
+                      <Label className="text-sm font-medium">Política de Atrasos</Label>
                       <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.lateness_policy || "Não definida"}</p>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
