@@ -714,11 +714,20 @@ const AdventurePanel = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <Label className="text-sm font-medium">Frequência</Label>
                     {isMaster ? (
-                      <Input value={form.frequency} onChange={(e) => handleChange("frequency", e.target.value)} placeholder="Ex: Semanal, Quinzenal..." className="mt-1 bg-background/50" />
+                      <ChipSelector
+                        label="Frequência"
+                        chips={CHIPS.frequency}
+                        value={form.frequency}
+                        onChange={(v) => handleChange("frequency", v)}
+                        placeholder="Ex: Semanal, Quinzenal..."
+                        mode="single"
+                      />
                     ) : (
-                      <p className="text-sm text-muted-foreground mt-1">{form.frequency || "Não definida"}</p>
+                      <>
+                        <Label className="text-sm font-medium">Frequência</Label>
+                        <p className="text-sm text-muted-foreground mt-1">{form.frequency || "Não definida"}</p>
+                      </>
                     )}
                   </div>
                   <div>
