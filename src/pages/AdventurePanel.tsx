@@ -603,23 +603,37 @@ const AdventurePanel = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium">Linhas (Temas proibidos)</Label>
-                  {isMaster ? (
-                    <Textarea value={form.safety_lines} onChange={(e) => handleChange("safety_lines", e.target.value)} placeholder="Temas que NUNCA aparecerão no jogo..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Linhas (Temas proibidos)"
+                    helperText="Temas que NUNCA aparecerão no jogo. Selecione os que se aplicam."
+                    chips={CHIPS.safety_lines}
+                    value={form.safety_lines}
+                    onChange={(v) => handleChange("safety_lines", v)}
+                    placeholder="Adicione outros temas se necessário..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Linhas (Temas proibidos)</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.safety_lines || "Nenhuma linha definida."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
                 <Separator />
-                <div>
-                  <Label className="text-sm font-medium">Véus / Gatilhos</Label>
-                  {isMaster ? (
-                    <Textarea value={form.safety_veils} onChange={(e) => handleChange("safety_veils", e.target.value)} placeholder="Temas que podem ser mencionados mas não detalhados..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Véus / Gatilhos"
+                    helperText="Temas que podem ser mencionados mas não detalhados."
+                    chips={CHIPS.safety_veils}
+                    value={form.safety_veils}
+                    onChange={(v) => handleChange("safety_veils", v)}
+                    placeholder="Adicione outros gatilhos se necessário..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Véus / Gatilhos</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.safety_veils || "Nenhum véu/gatilho definido."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
