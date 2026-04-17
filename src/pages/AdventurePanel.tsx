@@ -512,11 +512,12 @@ const AdventurePanel = () => {
                 </CardHeader>
                 <CardContent>
                   {isMaster ? (
-                    <Textarea
+                    <ChipSelector
+                      chips={CHIPS.progression_expectation}
                       value={form.progression_expectation}
-                      onChange={(e) => handleChange("progression_expectation", e.target.value)}
+                      onChange={(v) => handleChange("progression_expectation", v)}
                       placeholder="Como os personagens vão progredir? Ritmo de XP, marcos..."
-                      className="min-h-[160px] bg-background/50"
+                      helperText="Selecione o ritmo de progressão e marcos."
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">
