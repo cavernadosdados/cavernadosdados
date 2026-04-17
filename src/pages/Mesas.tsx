@@ -84,19 +84,19 @@ const Mesas = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold glow-gold">
+            <h1 className="text-2xl sm:text-3xl font-bold glow-gold">
               {userType === 'master' ? 'Minhas Mesas' : 'Mesas Disponíveis'}
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
               {userType === 'master'
                 ? 'Gerencie suas campanhas e sessões'
                 : 'Encontre e participe de aventuras'}
             </p>
           </div>
           {userType === 'master' && (
-            <Button className="gap-2" onClick={() => setCreateOpen(true)}>
+            <Button className="gap-2 w-full sm:w-auto min-h-11" onClick={() => setCreateOpen(true)}>
               <Plus className="h-4 w-4" />
               Criar Nova Mesa
             </Button>
@@ -156,7 +156,7 @@ const Mesas = () => {
                             {appStatusLabel[appStatus.status] || appStatus.status}
                           </Badge>
                         ) : (
-                          <Button size="sm" className="gap-1" onClick={() => setApplyTable({ id: table.id, title: table.title })}>
+                          <Button size="sm" className="gap-1 w-full sm:w-auto min-h-10" onClick={() => setApplyTable({ id: table.id, title: table.title })}>
                             <Send className="h-3 w-3" /> Candidatar-se
                           </Button>
                         )}
@@ -165,17 +165,17 @@ const Mesas = () => {
 
                     {/* Master: actions */}
                     {userType === 'master' && (
-                      <div className="pt-2 flex gap-2 flex-wrap">
-                        <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate(`/dashboard/mesa/${table.id}`)}>
+                      <div className="pt-2 grid grid-cols-2 sm:flex gap-2 sm:flex-wrap">
+                        <Button size="sm" variant="outline" className="gap-1 min-h-10 w-full sm:w-auto" onClick={() => navigate(`/dashboard/mesa/${table.id}`)}>
                           <ScrollText className="h-3 w-3" /> Gerenciar
                         </Button>
-                        <Button size="sm" variant="outline" className="gap-1" onClick={() => setViewAppsTable({ id: table.id, title: table.title })}>
+                        <Button size="sm" variant="outline" className="gap-1 min-h-10 w-full sm:w-auto" onClick={() => setViewAppsTable({ id: table.id, title: table.title })}>
                           <Inbox className="h-3 w-3" /> Candidaturas
                         </Button>
-                        <Button size="sm" variant="outline" className="gap-1" onClick={() => setEditTable(table)}>
+                        <Button size="sm" variant="outline" className="gap-1 min-h-10 w-full sm:w-auto" onClick={() => setEditTable(table)}>
                           <Pencil className="h-3 w-3" /> Editar
                         </Button>
-                        <Button size="sm" variant="destructive" className="gap-1" onClick={() => setDeleteTableId(table.id)}>
+                        <Button size="sm" variant="destructive" className="gap-1 min-h-10 w-full sm:w-auto" onClick={() => setDeleteTableId(table.id)}>
                           <Trash2 className="h-3 w-3" /> Excluir
                         </Button>
                       </div>
