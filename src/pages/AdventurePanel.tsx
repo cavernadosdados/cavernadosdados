@@ -488,11 +488,12 @@ const AdventurePanel = () => {
                 </CardHeader>
                 <CardContent>
                   {isMaster ? (
-                    <Textarea
+                    <ChipSelector
+                      chips={CHIPS.campaign_objectives}
                       value={form.campaign_objectives}
-                      onChange={(e) => handleChange("campaign_objectives", e.target.value)}
+                      onChange={(v) => handleChange("campaign_objectives", v)}
                       placeholder="Descreva os objetivos principais desta campanha..."
-                      className="min-h-[160px] bg-background/50"
+                      helperText="Clique nos tons de campanha para preencher rapidamente."
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">
