@@ -645,32 +645,50 @@ const AdventurePanel = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium">Raças Proibidas</Label>
-                  {isMaster ? (
-                    <Textarea value={form.restricted_races} onChange={(e) => handleChange("restricted_races", e.target.value)} placeholder="Raças não permitidas nesta campanha..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Raças Proibidas"
+                    chips={CHIPS.restricted_races}
+                    value={form.restricted_races}
+                    onChange={(v) => handleChange("restricted_races", v)}
+                    placeholder="Adicione outras raças se necessário..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Raças Proibidas</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.restricted_races || "Nenhuma restrição de raça."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
                 <Separator />
-                <div>
-                  <Label className="text-sm font-medium">Classes Proibidas</Label>
-                  {isMaster ? (
-                    <Textarea value={form.restricted_classes} onChange={(e) => handleChange("restricted_classes", e.target.value)} placeholder="Classes não permitidas nesta campanha..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Classes Proibidas"
+                    chips={CHIPS.restricted_classes}
+                    value={form.restricted_classes}
+                    onChange={(v) => handleChange("restricted_classes", v)}
+                    placeholder="Adicione outras classes se necessário..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Classes Proibidas</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.restricted_classes || "Nenhuma restrição de classe."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
                 <Separator />
-                <div>
-                  <Label className="text-sm font-medium">Magias Proibidas</Label>
-                  {isMaster ? (
-                    <Textarea value={form.restricted_spells} onChange={(e) => handleChange("restricted_spells", e.target.value)} placeholder="Magias ou habilidades proibidas..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Magias Proibidas"
+                    chips={CHIPS.restricted_spells}
+                    value={form.restricted_spells}
+                    onChange={(v) => handleChange("restricted_spells", v)}
+                    placeholder="Adicione outras magias se necessário..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Magias Proibidas</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.restricted_spells || "Nenhuma restrição de magia."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
