@@ -84,9 +84,17 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
-  body {
+  html, body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
     font-feature-settings: "liga" 1, "calt" 1;
+  }
+
+  /* Touch targets confortáveis no mobile */
+  @media (max-width: 640px) {
+    button, [role="button"], a {
+      touch-action: manipulation;
+    }
   }
   
   /* Cavern glow effects */
@@ -106,5 +114,14 @@ All colors MUST be HSL.
   /* Torch cursor effect */
   .torch-cursor {
     cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%23CBA35C"><circle cx="12" cy="12" r="3"/></svg>'), auto;
+  }
+
+  /* Scroll horizontal sem barra (para Tabs em mobile) */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
