@@ -378,18 +378,28 @@ const AdventurePanel = () => {
 
       {/* Header */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="flex items-center justify-between px-4 md:px-6 h-16">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard/mesas")}>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-3 sm:px-6 py-3 sm:py-0 sm:h-16 max-w-screen-xl mx-auto w-full">
+          <div className="flex items-center gap-3 min-w-0">
+            <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10" onClick={() => navigate("/dashboard/mesas")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div>
-              <h1 className="text-lg font-bold glow-gold leading-tight">{table.title}</h1>
-              <p className="text-xs text-muted-foreground">{table.system}</p>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-base sm:text-lg font-bold glow-gold leading-tight truncate">{table.title}</h1>
+              <p className="text-xs text-muted-foreground truncate">{table.system}</p>
             </div>
+            {isMaster && (
+              <Button
+                variant="destructive"
+                size="sm"
+                className="shrink-0 sm:hidden min-h-10"
+                onClick={() => setConfirmEndOpen(true)}
+              >
+                <Flag className="h-4 w-4" />
+              </Button>
+            )}
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap justify-end">
+          <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="outline" className="gap-1 text-xs">
               <Calendar className="h-3 w-3" />
               {form.frequency || "Sem frequência"}
@@ -407,6 +417,7 @@ const AdventurePanel = () => {
               <Button
                 variant="destructive"
                 size="sm"
+                className="hidden sm:inline-flex min-h-10"
                 onClick={() => setConfirmEndOpen(true)}
               >
                 <Flag className="h-4 w-4 mr-1" />
@@ -418,32 +429,34 @@ const AdventurePanel = () => {
       </header>
 
       {/* Content */}
-      <main className="flex-1 p-4 md:p-6 max-w-6xl mx-auto w-full">
+      <main className="flex-1 p-3 sm:p-6 max-w-screen-xl mx-auto w-full overflow-x-hidden">
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full justify-start mb-6 bg-card border border-border">
-            <TabsTrigger value="overview" className="gap-1">
-              <Target className="h-4 w-4" />
-              Visão Geral
-            </TabsTrigger>
-            <TabsTrigger value="rules" className="gap-1">
-              <Gavel className="h-4 w-4" />
-              Regras & Limites
-            </TabsTrigger>
-            <TabsTrigger value="logistics" className="gap-1">
-              <UserX className="h-4 w-4" />
-              Logística
-            </TabsTrigger>
-            <TabsTrigger value="diary" className="gap-1">
-              <BookOpen className="h-4 w-4" />
-              Diário
-            </TabsTrigger>
-            {isMaster && (
-              <TabsTrigger value="integrations" className="gap-1">
-                <Plug className="h-4 w-4" />
-                Integrações
+          <div className="overflow-x-auto scrollbar-hide -mx-3 sm:mx-0 mb-6">
+            <TabsList className="w-max sm:w-full sm:justify-start bg-card border border-border mx-3 sm:mx-0">
+              <TabsTrigger value="overview" className="gap-1 min-h-10">
+                <Target className="h-4 w-4" />
+                Visão Geral
               </TabsTrigger>
-            )}
-          </TabsList>
+              <TabsTrigger value="rules" className="gap-1 min-h-10">
+                <Gavel className="h-4 w-4" />
+                Regras & Limites
+              </TabsTrigger>
+              <TabsTrigger value="logistics" className="gap-1 min-h-10">
+                <UserX className="h-4 w-4" />
+                Logística
+              </TabsTrigger>
+              <TabsTrigger value="diary" className="gap-1 min-h-10">
+                <BookOpen className="h-4 w-4" />
+                Diário
+              </TabsTrigger>
+              {isMaster && (
+                <TabsTrigger value="integrations" className="gap-1 min-h-10">
+                  <Plug className="h-4 w-4" />
+                  Integrações
+                </TabsTrigger>
+              )}
+            </TabsList>
+          </div>
 
           {/* ===== VISÃO GERAL ===== */}
           <TabsContent value="overview" className="space-y-6">
