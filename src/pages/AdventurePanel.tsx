@@ -687,7 +687,18 @@ const AdventurePanel = () => {
             )}
           </TabsContent>
 
-          {/* ===== INTEGRAÇÕES ===== */}
+          {/* ===== DIÁRIO DA CAMPANHA ===== */}
+          <TabsContent value="diary" className="space-y-6">
+            <CampaignDiary
+              tableId={tableId!}
+              tableTitle={table.title}
+              tableSystem={table.system}
+              isMaster={isMaster}
+              webhookUrl={form.discord_webhook_url}
+            />
+          </TabsContent>
+
+
           {isMaster && (
             <TabsContent value="integrations" className="space-y-6">
               <Card className="border-border bg-card/60">
