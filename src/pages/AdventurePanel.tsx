@@ -548,32 +548,50 @@ const AdventurePanel = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium">Modificações Gerais</Label>
-                  {isMaster ? (
-                    <Textarea value={form.house_rules} onChange={(e) => handleChange("house_rules", e.target.value)} placeholder="Regras homebrew, ajustes de sistema..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Modificações Gerais"
+                    chips={CHIPS.house_rules}
+                    value={form.house_rules}
+                    onChange={(v) => handleChange("house_rules", v)}
+                    placeholder="Regras homebrew, ajustes de sistema..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Modificações Gerais</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.house_rules || "Nenhuma regra da casa definida."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
                 <Separator />
-                <div>
-                  <Label className="text-sm font-medium">Regras de Combate</Label>
-                  {isMaster ? (
-                    <Textarea value={form.combat_rules} onChange={(e) => handleChange("combat_rules", e.target.value)} placeholder="Regras específicas de combate, iniciativa..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Regras de Combate"
+                    chips={CHIPS.combat_rules}
+                    value={form.combat_rules}
+                    onChange={(v) => handleChange("combat_rules", v)}
+                    placeholder="Regras específicas de combate, iniciativa..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Regras de Combate</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.combat_rules || "Nenhuma regra de combate definida."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
                 <Separator />
-                <div>
-                  <Label className="text-sm font-medium">Regras de PVP</Label>
-                  {isMaster ? (
-                    <Textarea value={form.pvp_rules} onChange={(e) => handleChange("pvp_rules", e.target.value)} placeholder="PVP permitido? Em quais condições?" className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Regras de PVP"
+                    chips={CHIPS.pvp_rules}
+                    value={form.pvp_rules}
+                    onChange={(v) => handleChange("pvp_rules", v)}
+                    placeholder="PVP permitido? Em quais condições?"
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Regras de PVP</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.pvp_rules || "Nenhuma regra de PVP definida."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
