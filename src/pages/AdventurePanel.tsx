@@ -14,6 +14,24 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SessionFeedbackDialog } from "@/components/SessionFeedbackDialog";
 import { CampaignDiary } from "@/components/CampaignDiary";
+import { ChipSelector } from "@/components/ChipSelector";
+
+// Chip presets for quick-fill multi-select
+const CHIPS = {
+  campaign_objectives: ["Salvar o reino", "Vingança pessoal", "Exploração de ruínas", "Política e intriga", "Sobrevivência", "Ascensão ao poder", "Mistério/investigação"],
+  progression_expectation: ["XP por sessão", "XP por marcos", "Subida lenta", "Subida rápida", "Nível máximo 10", "Nível máximo 20", "Sem level cap"],
+  house_rules: ["Inspiração heroica", "Crítico = dano máximo + rolagem", "Ponto de heroísmo", "Flanqueamento", "Sem multiclasse", "HP máximo no nível 1"],
+  combat_rules: ["Iniciativa em grupo", "Iniciativa lateral", "Ataques de oportunidade simplificados", "Morte instantânea em -CON", "Healing surges"],
+  pvp_rules: ["PVP proibido", "PVP só com consenso", "PVP em arenas específicas", "PVP narrativo apenas"],
+  safety_lines: ["Violência sexual", "Tortura gráfica", "Abuso infantil", "Automutilação", "Racismo explícito", "Violência contra animais"],
+  safety_veils: ["Cenas românticas", "Violência gráfica", "Drogas/vícios", "Terror psicológico", "Doenças graves", "Morte de NPCs próximos"],
+  restricted_races: ["Drow", "Tiefling", "Aasimar", "Goliath", "Kender", "Warforged", "Goblin", "Kobold"],
+  restricted_classes: ["Bruxo", "Feiticeiro", "Monge", "Artífice", "Bárbaro Berserker", "Necromante"],
+  restricted_spells: ["Ressurreição", "Desejo", "Bola de Fogo", "Conjurar Elemental", "Teleporte", "Meteoros"],
+  frequency: ["Semanal", "Quinzenal", "Mensal", "Esporádico"],
+  absence_policy: ["NPC controlado pelo mestre", "Personagem fica em background", "Sessão cancelada se >2 faltas", "Aviso com 24h de antecedência", "Tolerância máxima de 3 faltas"],
+  lateness_policy: ["Tolerância de 15min", "Tolerância de 30min", "Sessão começa no horário", "Resumo rápido para atrasados", "Sem tolerância"],
+};
 import {
   AlertDialog,
   AlertDialogAction,
