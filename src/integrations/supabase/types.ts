@@ -91,6 +91,47 @@ export type Database = {
           },
         ]
       }
+      player_reports: {
+        Row: {
+          character_avatar_url: string | null
+          character_name: string
+          content: string
+          created_at: string
+          id: string
+          player_id: string
+          session_log_id: string
+          updated_at: string
+        }
+        Insert: {
+          character_avatar_url?: string | null
+          character_name?: string
+          content: string
+          created_at?: string
+          id?: string
+          player_id: string
+          session_log_id: string
+          updated_at?: string
+        }
+        Update: {
+          character_avatar_url?: string | null
+          character_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          player_id?: string
+          session_log_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_reports_session_log_id_fkey"
+            columns: ["session_log_id"]
+            isOneToOne: false
+            referencedRelation: "session_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           active_tables_count: number | null
@@ -142,6 +183,38 @@ export type Database = {
         }
         Relationships: []
       }
+      report_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          report_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          report_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          report_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_reactions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "player_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_feedback: {
         Row: {
           comment: string | null
@@ -188,6 +261,63 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "session_feedback_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_logs: {
+        Row: {
+          ai_epic_summary: string | null
+          created_at: string
+          id: string
+          master_narrative: string | null
+          pinned_report_id: string | null
+          sent_to_discord: boolean
+          session_date: string
+          session_number: number
+          table_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          ai_epic_summary?: string | null
+          created_at?: string
+          id?: string
+          master_narrative?: string | null
+          pinned_report_id?: string | null
+          sent_to_discord?: boolean
+          session_date?: string
+          session_number?: number
+          table_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          ai_epic_summary?: string | null
+          created_at?: string
+          id?: string
+          master_narrative?: string | null
+          pinned_report_id?: string | null
+          sent_to_discord?: boolean
+          session_date?: string
+          session_number?: number
+          table_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_pinned_report"
+            columns: ["pinned_report_id"]
+            isOneToOne: false
+            referencedRelation: "player_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_logs_table_id_fkey"
             columns: ["table_id"]
             isOneToOne: false
             referencedRelation: "tables"
