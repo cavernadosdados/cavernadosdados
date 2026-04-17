@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SessionFeedbackDialog } from "@/components/SessionFeedbackDialog";
+import { CampaignDiary } from "@/components/CampaignDiary";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +45,7 @@ import {
   HelpCircle,
   Send,
   Loader2,
+  BookOpen,
 } from "lucide-react";
 import {
   Tooltip,
