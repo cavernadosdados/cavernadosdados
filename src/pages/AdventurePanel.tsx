@@ -14,6 +14,24 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SessionFeedbackDialog } from "@/components/SessionFeedbackDialog";
 import { CampaignDiary } from "@/components/CampaignDiary";
+import { ChipSelector } from "@/components/ChipSelector";
+
+// Chip presets for quick-fill multi-select
+const CHIPS = {
+  campaign_objectives: ["Salvar o reino", "Vingança pessoal", "Exploração de ruínas", "Política e intriga", "Sobrevivência", "Ascensão ao poder", "Mistério/investigação"],
+  progression_expectation: ["XP por sessão", "XP por marcos", "Subida lenta", "Subida rápida", "Nível máximo 10", "Nível máximo 20", "Sem level cap"],
+  house_rules: ["Inspiração heroica", "Crítico = dano máximo + rolagem", "Ponto de heroísmo", "Flanqueamento", "Sem multiclasse", "HP máximo no nível 1"],
+  combat_rules: ["Iniciativa em grupo", "Iniciativa lateral", "Ataques de oportunidade simplificados", "Morte instantânea em -CON", "Healing surges"],
+  pvp_rules: ["PVP proibido", "PVP só com consenso", "PVP em arenas específicas", "PVP narrativo apenas"],
+  safety_lines: ["Violência sexual", "Tortura gráfica", "Abuso infantil", "Automutilação", "Racismo explícito", "Violência contra animais"],
+  safety_veils: ["Cenas românticas", "Violência gráfica", "Drogas/vícios", "Terror psicológico", "Doenças graves", "Morte de NPCs próximos"],
+  restricted_races: ["Drow", "Tiefling", "Aasimar", "Goliath", "Kender", "Warforged", "Goblin", "Kobold"],
+  restricted_classes: ["Bruxo", "Feiticeiro", "Monge", "Artífice", "Bárbaro Berserker", "Necromante"],
+  restricted_spells: ["Ressurreição", "Desejo", "Bola de Fogo", "Conjurar Elemental", "Teleporte", "Meteoros"],
+  frequency: ["Semanal", "Quinzenal", "Mensal", "Esporádico"],
+  absence_policy: ["NPC controlado pelo mestre", "Personagem fica em background", "Sessão cancelada se >2 faltas", "Aviso com 24h de antecedência", "Tolerância máxima de 3 faltas"],
+  lateness_policy: ["Tolerância de 15min", "Tolerância de 30min", "Sessão começa no horário", "Resumo rápido para atrasados", "Sem tolerância"],
+};
 import {
   AlertDialog,
   AlertDialogAction,
@@ -470,11 +488,12 @@ const AdventurePanel = () => {
                 </CardHeader>
                 <CardContent>
                   {isMaster ? (
-                    <Textarea
+                    <ChipSelector
+                      chips={CHIPS.campaign_objectives}
                       value={form.campaign_objectives}
-                      onChange={(e) => handleChange("campaign_objectives", e.target.value)}
+                      onChange={(v) => handleChange("campaign_objectives", v)}
                       placeholder="Descreva os objetivos principais desta campanha..."
-                      className="min-h-[160px] bg-background/50"
+                      helperText="Clique nos tons de campanha para preencher rapidamente."
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">
@@ -493,11 +512,12 @@ const AdventurePanel = () => {
                 </CardHeader>
                 <CardContent>
                   {isMaster ? (
-                    <Textarea
+                    <ChipSelector
+                      chips={CHIPS.progression_expectation}
                       value={form.progression_expectation}
-                      onChange={(e) => handleChange("progression_expectation", e.target.value)}
+                      onChange={(v) => handleChange("progression_expectation", v)}
                       placeholder="Como os personagens vão progredir? Ritmo de XP, marcos..."
-                      className="min-h-[160px] bg-background/50"
+                      helperText="Selecione o ritmo de progressão e marcos."
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">
@@ -528,32 +548,50 @@ const AdventurePanel = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium">Modificações Gerais</Label>
-                  {isMaster ? (
-                    <Textarea value={form.house_rules} onChange={(e) => handleChange("house_rules", e.target.value)} placeholder="Regras homebrew, ajustes de sistema..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Modificações Gerais"
+                    chips={CHIPS.house_rules}
+                    value={form.house_rules}
+                    onChange={(v) => handleChange("house_rules", v)}
+                    placeholder="Regras homebrew, ajustes de sistema..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Modificações Gerais</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.house_rules || "Nenhuma regra da casa definida."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
                 <Separator />
-                <div>
-                  <Label className="text-sm font-medium">Regras de Combate</Label>
-                  {isMaster ? (
-                    <Textarea value={form.combat_rules} onChange={(e) => handleChange("combat_rules", e.target.value)} placeholder="Regras específicas de combate, iniciativa..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Regras de Combate"
+                    chips={CHIPS.combat_rules}
+                    value={form.combat_rules}
+                    onChange={(v) => handleChange("combat_rules", v)}
+                    placeholder="Regras específicas de combate, iniciativa..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Regras de Combate</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.combat_rules || "Nenhuma regra de combate definida."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
                 <Separator />
-                <div>
-                  <Label className="text-sm font-medium">Regras de PVP</Label>
-                  {isMaster ? (
-                    <Textarea value={form.pvp_rules} onChange={(e) => handleChange("pvp_rules", e.target.value)} placeholder="PVP permitido? Em quais condições?" className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Regras de PVP"
+                    chips={CHIPS.pvp_rules}
+                    value={form.pvp_rules}
+                    onChange={(v) => handleChange("pvp_rules", v)}
+                    placeholder="PVP permitido? Em quais condições?"
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Regras de PVP</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.pvp_rules || "Nenhuma regra de PVP definida."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -565,23 +603,37 @@ const AdventurePanel = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium">Linhas (Temas proibidos)</Label>
-                  {isMaster ? (
-                    <Textarea value={form.safety_lines} onChange={(e) => handleChange("safety_lines", e.target.value)} placeholder="Temas que NUNCA aparecerão no jogo..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Linhas (Temas proibidos)"
+                    helperText="Temas que NUNCA aparecerão no jogo. Selecione os que se aplicam."
+                    chips={CHIPS.safety_lines}
+                    value={form.safety_lines}
+                    onChange={(v) => handleChange("safety_lines", v)}
+                    placeholder="Adicione outros temas se necessário..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Linhas (Temas proibidos)</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.safety_lines || "Nenhuma linha definida."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
                 <Separator />
-                <div>
-                  <Label className="text-sm font-medium">Véus / Gatilhos</Label>
-                  {isMaster ? (
-                    <Textarea value={form.safety_veils} onChange={(e) => handleChange("safety_veils", e.target.value)} placeholder="Temas que podem ser mencionados mas não detalhados..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Véus / Gatilhos"
+                    helperText="Temas que podem ser mencionados mas não detalhados."
+                    chips={CHIPS.safety_veils}
+                    value={form.safety_veils}
+                    onChange={(v) => handleChange("safety_veils", v)}
+                    placeholder="Adicione outros gatilhos se necessário..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Véus / Gatilhos</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.safety_veils || "Nenhum véu/gatilho definido."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -593,32 +645,50 @@ const AdventurePanel = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium">Raças Proibidas</Label>
-                  {isMaster ? (
-                    <Textarea value={form.restricted_races} onChange={(e) => handleChange("restricted_races", e.target.value)} placeholder="Raças não permitidas nesta campanha..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Raças Proibidas"
+                    chips={CHIPS.restricted_races}
+                    value={form.restricted_races}
+                    onChange={(v) => handleChange("restricted_races", v)}
+                    placeholder="Adicione outras raças se necessário..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Raças Proibidas</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.restricted_races || "Nenhuma restrição de raça."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
                 <Separator />
-                <div>
-                  <Label className="text-sm font-medium">Classes Proibidas</Label>
-                  {isMaster ? (
-                    <Textarea value={form.restricted_classes} onChange={(e) => handleChange("restricted_classes", e.target.value)} placeholder="Classes não permitidas nesta campanha..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Classes Proibidas"
+                    chips={CHIPS.restricted_classes}
+                    value={form.restricted_classes}
+                    onChange={(v) => handleChange("restricted_classes", v)}
+                    placeholder="Adicione outras classes se necessário..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Classes Proibidas</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.restricted_classes || "Nenhuma restrição de classe."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
                 <Separator />
-                <div>
-                  <Label className="text-sm font-medium">Magias Proibidas</Label>
-                  {isMaster ? (
-                    <Textarea value={form.restricted_spells} onChange={(e) => handleChange("restricted_spells", e.target.value)} placeholder="Magias ou habilidades proibidas..." className="mt-1 bg-background/50" />
-                  ) : (
+                {isMaster ? (
+                  <ChipSelector
+                    label="Magias Proibidas"
+                    chips={CHIPS.restricted_spells}
+                    value={form.restricted_spells}
+                    onChange={(v) => handleChange("restricted_spells", v)}
+                    placeholder="Adicione outras magias se necessário..."
+                  />
+                ) : (
+                  <div>
+                    <Label className="text-sm font-medium">Magias Proibidas</Label>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.restricted_spells || "Nenhuma restrição de magia."}</p>
-                  )}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -644,11 +714,20 @@ const AdventurePanel = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <Label className="text-sm font-medium">Frequência</Label>
                     {isMaster ? (
-                      <Input value={form.frequency} onChange={(e) => handleChange("frequency", e.target.value)} placeholder="Ex: Semanal, Quinzenal..." className="mt-1 bg-background/50" />
+                      <ChipSelector
+                        label="Frequência"
+                        chips={CHIPS.frequency}
+                        value={form.frequency}
+                        onChange={(v) => handleChange("frequency", v)}
+                        placeholder="Ex: Semanal, Quinzenal..."
+                        mode="single"
+                      />
                     ) : (
-                      <p className="text-sm text-muted-foreground mt-1">{form.frequency || "Não definida"}</p>
+                      <>
+                        <Label className="text-sm font-medium">Frequência</Label>
+                        <p className="text-sm text-muted-foreground mt-1">{form.frequency || "Não definida"}</p>
+                      </>
                     )}
                   </div>
                   <div>
@@ -670,22 +749,34 @@ const AdventurePanel = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div>
-                    <Label className="text-sm font-medium">Política de Faltas</Label>
-                    {isMaster ? (
-                      <Textarea value={form.absence_policy} onChange={(e) => handleChange("absence_policy", e.target.value)} placeholder="O que acontece quando um jogador falta?" className="mt-1 bg-background/50" />
-                    ) : (
+                  {isMaster ? (
+                    <ChipSelector
+                      label="Política de Faltas"
+                      chips={CHIPS.absence_policy}
+                      value={form.absence_policy}
+                      onChange={(v) => handleChange("absence_policy", v)}
+                      placeholder="O que acontece quando um jogador falta?"
+                    />
+                  ) : (
+                    <div>
+                      <Label className="text-sm font-medium">Política de Faltas</Label>
                       <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.absence_policy || "Não definida"}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Política de Atrasos</Label>
-                    {isMaster ? (
-                      <Textarea value={form.lateness_policy} onChange={(e) => handleChange("lateness_policy", e.target.value)} placeholder="Tolerância para atrasos, consequências..." className="mt-1 bg-background/50" />
-                    ) : (
+                    </div>
+                  )}
+                  {isMaster ? (
+                    <ChipSelector
+                      label="Política de Atrasos"
+                      chips={CHIPS.lateness_policy}
+                      value={form.lateness_policy}
+                      onChange={(v) => handleChange("lateness_policy", v)}
+                      placeholder="Tolerância para atrasos, consequências..."
+                    />
+                  ) : (
+                    <div>
+                      <Label className="text-sm font-medium">Política de Atrasos</Label>
                       <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{form.lateness_policy || "Não definida"}</p>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
