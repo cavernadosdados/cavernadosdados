@@ -29,16 +29,16 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="min-h-screen flex w-full bg-background overflow-x-hidden">
         <AppSidebar />
         
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
           <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
-            <div className="h-full px-4 flex items-center justify-between">
-              <div className="flex items-center gap-4 flex-1 max-w-2xl">
-                <SidebarTrigger className="text-foreground hover:text-primary" />
-                <div className="relative flex-1">
+            <div className="h-full px-3 sm:px-4 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0 max-w-2xl">
+                <SidebarTrigger className="text-foreground hover:text-primary shrink-0 h-10 w-10" />
+                <div className="relative flex-1 hidden sm:block">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input 
                     placeholder="Procurar mestres, mesas ou sistemas..." 
@@ -47,15 +47,18 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" size="icon" className="relative">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                <Button variant="ghost" size="icon" className="relative sm:hidden h-10 w-10" aria-label="Buscar">
+                  <Search className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="relative h-10 w-10">
                   <Bell className="h-5 w-5" />
                   <span className="absolute top-1 right-1 h-2 w-2 bg-destructive rounded-full" />
                 </Button>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
                       <Avatar>
                         <AvatarFallback className="bg-primary text-primary-foreground">
                           {initials}
@@ -67,7 +70,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium">{displayName}</p>
-                        <p className="text-xs text-muted-foreground">{user?.email}</p>
+                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
@@ -88,7 +91,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="flex-1 p-4 sm:p-6 overflow-x-hidden overflow-y-auto max-w-screen-xl w-full mx-auto">
             {children}
           </main>
         </div>
