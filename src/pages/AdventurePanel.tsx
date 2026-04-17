@@ -433,6 +433,10 @@ const AdventurePanel = () => {
               <UserX className="h-4 w-4" />
               Logística
             </TabsTrigger>
+            <TabsTrigger value="diary" className="gap-1">
+              <BookOpen className="h-4 w-4" />
+              Diário
+            </TabsTrigger>
             {isMaster && (
               <TabsTrigger value="integrations" className="gap-1">
                 <Plug className="h-4 w-4" />
