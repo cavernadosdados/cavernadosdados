@@ -16,6 +16,7 @@ import { SessionFeedbackDialog } from "@/components/SessionFeedbackDialog";
 import { CampaignDiary } from "@/components/CampaignDiary";
 import { ChipSelector } from "@/components/ChipSelector";
 import { ClockTimePicker } from "@/components/ClockTimePicker";
+import { WeekdaySelector, composeSchedule, parseSchedule } from "@/components/WeekdaySelector";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Chip presets for quick-fill multi-select
