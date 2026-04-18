@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
-import { Star, Clock, Dice1, MapPin, Gamepad2 } from "lucide-react";
+import { Star, Clock, Dice1, MapPin, Gamepad2, Users, Monitor, Send, ScrollText } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Perfil = () => {
