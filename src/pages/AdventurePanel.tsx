@@ -367,10 +367,49 @@ const AdventurePanel = () => {
     toast({ title: "Obrigado!", description: "Sua avaliação foi enviada." });
   };
 
-  if (!table) {
+  if (!table || (!isMaster && loadingApp)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  // Access control: non-masters need an accepted application
+  const hasAccess = isMaster || myApplication?.status === "accepted";
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="border-b border-border bg-card/80 backdrop-blur-sm">
+          <div className="flex items-center gap-3 px-3 sm:px-6 h-16 max-w-screen-xl mx-auto w-full">
+            <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => navigate("/dashboard/mesas")}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-base sm:text-lg font-bold glow-gold truncate">{table.title}</h1>
+          </div>
+        </header>
+        <main className="flex-1 flex items-center justify-center p-6">
+          <Card className="max-w-md w-full border-primary/20 bg-card/80">
+            <CardContent className="pt-8 pb-6 text-center space-y-4">
+              <div className="flex justify-center">
+                <div className="p-4 rounded-full bg-primary/10 border border-primary/30 shadow-[0_0_30px_hsl(var(--cavern-gold)/0.2)]">
+                  <Lock className="h-8 w-8 text-primary" />
+                </div>
+              </div>
+              <h2 className="text-xl font-bold glow-gold">Acesso restrito</h2>
+              <p className="text-sm text-muted-foreground">
+                {myApplication?.status === "pending"
+                  ? "Sua candidatura ainda está em análise pelo Mestre. Aguarde a aprovação para ver os detalhes desta mesa."
+                  : myApplication?.status === "rejected"
+                  ? "Sua candidatura para esta mesa não foi aceita."
+                  : "Apenas jogadores aceitos podem ver os detalhes desta mesa. Candidate-se primeiro na lista de mesas."}
+              </p>
+              <Button className="w-full" onClick={() => navigate("/dashboard/mesas")}>
+                Voltar para Mesas
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
       </div>
     );
   }
