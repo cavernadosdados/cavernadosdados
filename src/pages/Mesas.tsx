@@ -212,7 +212,7 @@ const Mesas = () => {
                               className="gap-1 w-full sm:w-auto min-h-10"
                               onClick={() => setApplyTable({ id: table.id, title: table.title })}
                             >
-                              <Send className="h-3 w-3" /> Quero jogar essa mesa
+                              <Send className="h-3 w-3" /> Quero jogar essa mesa!
                             </Button>
                           ))}
                       </div>
