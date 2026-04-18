@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, Clock, Monitor, Gamepad2, Send, Inbox, Pencil, Trash2, ScrollText } from "lucide-react";
+import { Plus, Users, Clock, Monitor, Gamepad2, Send, Inbox, Pencil, Trash2, ScrollText, Flame, Sparkles, AlertTriangle } from "lucide-react";
 import { CreateTableDialog } from "@/components/CreateTableDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 import { TableApplicationsDialog } from "@/components/TableApplicationsDialog";
@@ -53,6 +53,26 @@ const Mesas = () => {
       return data;
     },
     enabled: !!user,
+  });
+
+  // Aggregate counts of accepted applications per table (for FOMO badges)
+  const { data: acceptedCounts } = useQuery({
+    queryKey: ["accepted-counts", (tables ?? []).map((t: any) => t.id).join(",")],
+    enabled: !!tables && tables.length > 0,
+    queryFn: async () => {
+      const ids = (tables ?? []).map((t: any) => t.id);
+      const { data, error } = await supabase
+        .from("table_applications")
+        .select("table_id, status")
+        .in("table_id", ids)
+        .eq("status", "accepted");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      (data ?? []).forEach((a) => {
+        counts[a.table_id] = (counts[a.table_id] ?? 0) + 1;
+      });
+      return counts;
+    },
   });
 
   // Fetch player's existing applications to know which tables they already applied to
@@ -125,14 +145,32 @@ const Mesas = () => {
           <div className="grid gap-4 md:grid-cols-2">
             {tables.map((table: any) => {
               const appStatus = userType !== "master" ? getApplicationStatus(table.id) : null;
+              const acceptedCount = acceptedCounts?.[table.id] ?? 0;
+              const seatsLeft = Math.max(0, (table.max_players ?? 0) - acceptedCount);
+              const isFull = seatsLeft === 0;
+              const isAlmostFull = !isFull && seatsLeft <= 1 && table.max_players > 1;
+              const ageMs = Date.now() - new Date(table.created_at).getTime();
+              const isFresh = ageMs < 1000 * 60 * 60 * 48; // < 48h
               return (
                 <Card key={table.id} className="bg-card border-border hover:border-primary transition-all">
                   <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start gap-2">
                       <CardTitle className="text-lg">{table.title}</CardTitle>
-                      <Badge variant={table.status === "open" ? "default" : "secondary"}>
-                        {table.status === "open" ? "Aberta" : "Fechada"}
-                      </Badge>
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge variant={table.status === "open" ? "default" : "secondary"}>
+                          {table.status === "open" ? "Aberta" : "Fechada"}
+                        </Badge>
+                        {table.status === "open" && isAlmostFull && (
+                          <Badge variant="destructive" className="gap-1 animate-pulse">
+                            <AlertTriangle className="h-3 w-3" /> Últimas vagas
+                          </Badge>
+                        )}
+                        {table.status === "open" && !isAlmostFull && isFresh && (
+                          <Badge className="gap-1 bg-secondary text-secondary-foreground">
+                            <Sparkles className="h-3 w-3" /> Nova
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     {userType !== "master" && table.profiles && (
                       <button
@@ -173,12 +211,22 @@ const Mesas = () => {
                       <Badge variant="outline" className="gap-1">
                         <Clock className="h-3 w-3" /> {table.duration}
                       </Badge>
-                      <Badge variant="outline" className="gap-1">
-                        <Users className="h-3 w-3" /> {table.max_players} jogadores
+                      <Badge
+                        variant={isFull ? "secondary" : isAlmostFull ? "destructive" : "outline"}
+                        className="gap-1"
+                      >
+                        <Users className="h-3 w-3" />
+                        {acceptedCount}/{table.max_players} vagas
+                        {isFull && " · cheia"}
                       </Badge>
                       <Badge variant="outline" className="gap-1">
                         <Monitor className="h-3 w-3" /> {table.platform}
                       </Badge>
+                      {acceptedCount > 0 && !isFull && (
+                        <Badge variant="outline" className="gap-1 border-secondary/50 text-secondary">
+                          <Flame className="h-3 w-3" /> {acceptedCount} confirmado{acceptedCount > 1 ? "s" : ""}
+                        </Badge>
+                      )}
                     </div>
 
                     {/* Player: view details + apply / status */}
@@ -206,6 +254,8 @@ const Mesas = () => {
                             >
                               {appStatusLabel[appStatus.status] || appStatus.status}
                             </Badge>
+                          ) : isFull ? (
+                            <Badge variant="secondary" className="self-center">Mesa cheia</Badge>
                           ) : (
                             <Button
                               size="sm"
