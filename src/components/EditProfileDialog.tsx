@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -18,20 +18,12 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
 import { useProfile, Profile } from '@/hooks/useProfile';
+import { SearchableMultiAdd } from '@/components/SearchableMultiAdd';
 
 const RPG_SYSTEMS = [
   'D&D 5e',
@@ -43,7 +35,6 @@ const RPG_SYSTEMS = [
   'Savage Worlds',
   '3D&T',
   'Old Dragon',
-  'Outro',
 ];
 
 const THEMES = [
@@ -57,7 +48,17 @@ const THEMES = [
   'Super-Heróis',
   'Mistério',
   'Aventura',
-  'Outro',
+];
+
+const APPS = [
+  'Discord',
+  'Roll20',
+  'Foundry VTT',
+  'Alchemy RPG',
+  'Owlbear Rodeo',
+  'D&D Beyond',
+  'Tabletop Simulator',
+  'Fantasy Grounds',
 ];
 
 const profileSchema = z.object({
@@ -67,7 +68,7 @@ const profileSchema = z.object({
   master_systems: z.array(z.string()).optional(),
   preferred_themes: z.array(z.string()).optional(),
   plays_in_person: z.boolean().optional(),
-  apps_used: z.string().optional(),
+  apps_used: z.array(z.string()).optional(),
   discord_link: z.string().url('Link inválido').or(z.literal('')).optional(),
 });
 
@@ -89,8 +90,6 @@ export const EditProfileDialog = ({
   isMaster,
 }: EditProfileDialogProps) => {
   const { updateProfile, isUpdating } = useProfile(userId);
-  const [selectedSystem, setSelectedSystem] = useState<string>('');
-  const [selectedTheme, setSelectedTheme] = useState<string>('');
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -101,7 +100,7 @@ export const EditProfileDialog = ({
       master_systems: profile?.master_systems || [],
       preferred_themes: profile?.preferred_themes || [],
       plays_in_person: profile?.plays_in_person || false,
-      apps_used: profile?.apps_used?.join(', ') || '',
+      apps_used: profile?.apps_used || [],
       discord_link: profile?.discord_link || '',
     },
   });
@@ -115,37 +114,11 @@ export const EditProfileDialog = ({
         master_systems: profile.master_systems || [],
         preferred_themes: profile.preferred_themes || [],
         plays_in_person: profile.plays_in_person || false,
-        apps_used: profile.apps_used?.join(', ') || '',
+        apps_used: profile.apps_used || [],
         discord_link: profile.discord_link || '',
       });
     }
   }, [open, profile]);
-
-  const addSystem = () => {
-    if (selectedSystem && !form.getValues('master_systems')?.includes(selectedSystem)) {
-      const current = form.getValues('master_systems') || [];
-      form.setValue('master_systems', [...current, selectedSystem]);
-      setSelectedSystem('');
-    }
-  };
-
-  const removeSystem = (system: string) => {
-    const current = form.getValues('master_systems') || [];
-    form.setValue('master_systems', current.filter(s => s !== system));
-  };
-
-  const addTheme = () => {
-    if (selectedTheme && !form.getValues('preferred_themes')?.includes(selectedTheme)) {
-      const current = form.getValues('preferred_themes') || [];
-      form.setValue('preferred_themes', [...current, selectedTheme]);
-      setSelectedTheme('');
-    }
-  };
-
-  const removeTheme = (theme: string) => {
-    const current = form.getValues('preferred_themes') || [];
-    form.setValue('preferred_themes', current.filter(t => t !== theme));
-  };
 
   const onSubmit = (values: ProfileFormValues) => {
     const updateData: any = {
@@ -158,9 +131,7 @@ export const EditProfileDialog = ({
     if (isMaster) {
       updateData.experience_years = values.experience_years || 0;
       updateData.plays_in_person = values.plays_in_person || false;
-      updateData.apps_used = values.apps_used
-        ? values.apps_used.split(',').map(s => s.trim()).filter(Boolean)
-        : [];
+      updateData.apps_used = values.apps_used || [];
       updateData.discord_link = values.discord_link || null;
     }
 
@@ -176,9 +147,7 @@ export const EditProfileDialog = ({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Editar Perfil</DialogTitle>
-          <DialogDescription>
-            Atualize suas informações pessoais
-          </DialogDescription>
+          <DialogDescription>Atualize suas informações pessoais</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -220,43 +189,43 @@ export const EditProfileDialog = ({
               )}
             />
 
+            {isMaster && (
+              <FormField
+                control={form.control}
+                name="experience_years"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Anos de Experiência</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="number"
+                        min="0"
+                        max="100"
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             <FormField
               control={form.control}
               name="master_systems"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{isMaster ? 'Sistemas que Domina' : 'Sistemas de Interesse'}</FormLabel>
-                  <div className="flex gap-2">
-                    <Select value={selectedSystem} onValueChange={setSelectedSystem}>
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="Selecione um sistema" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {RPG_SYSTEMS.map((system) => (
-                          <SelectItem key={system} value={system}>
-                            {system}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button type="button" onClick={addSystem} variant="secondary">
-                      Adicionar
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {field.value?.map((system) => (
-                      <Badge key={system} variant="secondary" className="gap-1">
-                        {system}
-                        <button
-                          type="button"
-                          onClick={() => removeSystem(system)}
-                          className="ml-1 hover:text-destructive"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
+                  <FormLabel>
+                    {isMaster ? 'Sistemas que Domina' : 'Sistemas de Interesse'}
+                  </FormLabel>
+                  <SearchableMultiAdd
+                    options={RPG_SYSTEMS}
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    placeholder="Selecione um sistema"
+                    searchPlaceholder="Procurar ou adicionar outro..."
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -268,64 +237,40 @@ export const EditProfileDialog = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Temas Preferidos</FormLabel>
-                  <div className="flex gap-2">
-                    <Select value={selectedTheme} onValueChange={setSelectedTheme}>
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="Selecione um tema" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {THEMES.map((theme) => (
-                          <SelectItem key={theme} value={theme}>
-                            {theme}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button type="button" onClick={addTheme} variant="secondary">
-                      Adicionar
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {field.value?.map((theme) => (
-                      <Badge key={theme} variant="secondary" className="gap-1">
-                        {theme}
-                        <button
-                          type="button"
-                          onClick={() => removeTheme(theme)}
-                          className="ml-1 hover:text-destructive"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
+                  <SearchableMultiAdd
+                    options={THEMES}
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    placeholder="Selecione um tema"
+                    searchPlaceholder="Procurar ou adicionar outro..."
+                  />
                   <FormMessage />
                 </FormItem>
               )}
             />
 
             {isMaster && (
-              <>
-                <FormField
-                  control={form.control}
-                  name="experience_years"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Anos de Experiência</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="number"
-                          min="0"
-                          max="100"
-                          onChange={e => field.onChange(parseInt(e.target.value) || 0)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="apps_used"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Aplicativos Utilizados</FormLabel>
+                    <SearchableMultiAdd
+                      options={APPS}
+                      value={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Selecione um aplicativo"
+                      searchPlaceholder="Procurar ou adicionar outro..."
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
+            {isMaster && (
+              <>
                 <FormField
                   control={form.control}
                   name="plays_in_person"
@@ -338,31 +283,8 @@ export const EditProfileDialog = ({
                         </FormDescription>
                       </div>
                       <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="apps_used"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Aplicativos Utilizados</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Discord, Roll20, Foundry VTT"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Separe múltiplos apps por vírgula
-                      </FormDescription>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -374,10 +296,7 @@ export const EditProfileDialog = ({
                     <FormItem>
                       <FormLabel>Link do Discord</FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="https://discord.gg/seu-servidor"
-                        />
+                        <Input {...field} placeholder="https://discord.gg/seu-servidor" />
                       </FormControl>
                       <FormDescription>
                         Link do seu servidor ou perfil do Discord
