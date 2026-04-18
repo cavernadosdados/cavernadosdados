@@ -63,7 +63,10 @@ interface CreateTableDialogProps {
 
 export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTableDialogProps) {
   const { user } = useAuth();
+  const { balance } = useTokens();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const hasTokens = balance > 0;
 
   const form = useForm<TableFormData>({
     resolver: zodResolver(tableSchema),
@@ -80,22 +83,56 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
 
   const onSubmit = async (data: TableFormData) => {
     if (!user) return;
+    if (!hasTokens) {
+      toast({
+        title: 'Sem tokens',
+        description: 'Você precisa de pelo menos 1 token para criar uma mesa.',
+        variant: 'destructive',
+      });
+      return;
+    }
     setLoading(true);
     try {
-      const { error } = await supabase.from('tables').insert({
-        master_id: user.id,
-        title: data.title,
-        description: data.description,
-        system: data.system,
-        theme: data.theme,
-        duration: data.duration,
-        max_players: data.max_players,
-        platform: data.platform,
+      // 1. Cria a mesa
+      const { data: created, error: insertError } = await supabase
+        .from('tables')
+        .insert({
+          master_id: user.id,
+          title: data.title,
+          description: data.description,
+          system: data.system,
+          theme: data.theme,
+          duration: data.duration,
+          max_players: data.max_players,
+          platform: data.platform,
+        })
+        .select('id')
+        .single();
+
+      if (insertError) throw insertError;
+
+      // 2. Cobra 1 token (atômico). Se falhar, desfaz a mesa.
+      const { error: spendError } = await supabase.rpc('spend_tokens', {
+        _amount: 1,
+        _reason: 'create_table',
+        _related_table_id: created.id,
       });
 
-      if (error) throw error;
+      if (spendError) {
+        await supabase.from('tables').delete().eq('id', created.id);
+        if (spendError.message.includes('insufficient_tokens')) {
+          toast({
+            title: 'Sem tokens',
+            description: 'Saldo insuficiente para criar a mesa.',
+            variant: 'destructive',
+          });
+        } else {
+          throw spendError;
+        }
+        return;
+      }
 
-      toast({ title: 'Mesa criada!', description: 'Sua mesa foi criada com sucesso.' });
+      toast({ title: 'Mesa criada!', description: 'Sua mesa foi criada com sucesso. (-1 token)' });
       form.reset();
       onOpenChange(false);
       onCreated();
@@ -111,8 +148,30 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Criar Nova Mesa</DialogTitle>
-          <DialogDescription>Preencha os detalhes da sua mesa de RPG</DialogDescription>
+          <DialogDescription>
+            Preencha os detalhes da sua mesa de RPG. Custa <strong>1 token</strong>.
+          </DialogDescription>
         </DialogHeader>
+
+        <div className={`flex items-center justify-between rounded-md border px-3 py-2 text-sm ${hasTokens ? 'border-border bg-muted/30' : 'border-destructive/50 bg-destructive/10'}`}>
+          <span className="flex items-center gap-2">
+            <Gem className={`h-4 w-4 ${hasTokens ? 'text-primary' : 'text-destructive'}`} />
+            Saldo atual: <strong className="tabular-nums">{balance}</strong> {balance === 1 ? 'token' : 'tokens'}
+          </span>
+          {!hasTokens && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                onOpenChange(false);
+                navigate('/dashboard/tokens');
+              }}
+            >
+              Comprar tokens
+            </Button>
+          )}
+        </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
