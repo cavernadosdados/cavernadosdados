@@ -211,12 +211,22 @@ const Mesas = () => {
                       <Badge variant="outline" className="gap-1">
                         <Clock className="h-3 w-3" /> {table.duration}
                       </Badge>
-                      <Badge variant="outline" className="gap-1">
-                        <Users className="h-3 w-3" /> {table.max_players} jogadores
+                      <Badge
+                        variant={isFull ? "secondary" : isAlmostFull ? "destructive" : "outline"}
+                        className="gap-1"
+                      >
+                        <Users className="h-3 w-3" />
+                        {acceptedCount}/{table.max_players} vagas
+                        {isFull && " · cheia"}
                       </Badge>
                       <Badge variant="outline" className="gap-1">
                         <Monitor className="h-3 w-3" /> {table.platform}
                       </Badge>
+                      {acceptedCount > 0 && !isFull && (
+                        <Badge variant="outline" className="gap-1 border-secondary/50 text-secondary">
+                          <Flame className="h-3 w-3" /> {acceptedCount} confirmado{acceptedCount > 1 ? "s" : ""}
+                        </Badge>
+                      )}
                     </div>
 
                     {/* Player: view details + apply / status */}
