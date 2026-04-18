@@ -714,30 +714,40 @@ const AdventurePanel = () => {
                     Frequência e Horário
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
                   <div>
+                    <Label className="text-sm font-medium">Frequência</Label>
                     {isMaster ? (
-                      <ChipSelector
-                        label="Frequência"
-                        chips={CHIPS.frequency}
-                        value={form.frequency}
-                        onChange={(v) => handleChange("frequency", v)}
-                        placeholder="Ex: Semanal, Quinzenal..."
-                        mode="single"
-                      />
+                      <Select value={form.frequency} onValueChange={(v) => handleChange("frequency", v)}>
+                        <SelectTrigger className="mt-1 bg-background/50">
+                          <SelectValue placeholder="Selecione a frequência" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-card border-border z-50">
+                          {CHIPS.frequency.map((f) => (
+                            <SelectItem key={f} value={f}>
+                              {f}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     ) : (
-                      <>
-                        <Label className="text-sm font-medium">Frequência</Label>
-                        <p className="text-sm text-muted-foreground mt-1">{form.frequency || "Não definida"}</p>
-                      </>
+                      <p className="text-sm text-muted-foreground mt-1">{form.frequency || "Não definida"}</p>
                     )}
                   </div>
                   <div>
                     <Label className="text-sm font-medium">Horário (GMT-3)</Label>
                     {isMaster ? (
-                      <Input value={form.schedule_time} onChange={(e) => handleChange("schedule_time", e.target.value)} placeholder="Ex: Sábados 19h-23h" className="mt-1 bg-background/50" />
+                      <div className="mt-1">
+                        <ClockTimePicker
+                          value={form.schedule_time}
+                          onChange={(v) => handleChange("schedule_time", v)}
+                          placeholder="Selecionar horário"
+                        />
+                      </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground mt-1">{form.schedule_time || "Não definido"}</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {form.schedule_time ? `${form.schedule_time} (GMT-3)` : "Não definido"}
+                      </p>
                     )}
                   </div>
                 </CardContent>
