@@ -103,7 +103,7 @@ const AdventurePanel = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tables")
-        .select("*, profiles(display_name)")
+        .select("*, profiles(id, display_name, avatar_url)")
         .eq("id", tableId!)
         .single();
       if (error) throw error;
@@ -554,6 +554,30 @@ const AdventurePanel = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Master info */}
+                {table.profiles && (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/dashboard/perfil/${(table.profiles as any).id ?? table.master_id}`)}
+                    className="group mb-4 flex w-full items-center gap-3 rounded-lg border border-primary/20 bg-background/40 p-3 text-left transition-mystical hover:border-primary/50 hover:bg-background/60"
+                  >
+                    <Avatar className="h-12 w-12 border-2 border-primary/40 group-hover:border-primary transition-mystical">
+                      <AvatarImage src={(table.profiles as any).avatar_url ?? undefined} alt={(table.profiles as any).display_name ?? "Mestre"} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                        {((table.profiles as any).display_name ?? "M").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs text-muted-foreground">Mestre</div>
+                      <div className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-mystical">
+                        {(table.profiles as any).display_name ?? "Mestre"}
+                      </div>
+                    </div>
+                    <span className="text-xs text-primary opacity-0 group-hover:opacity-100 transition-mystical">
+                      Ver perfil →
+                    </span>
+                  </button>
+                )}
                 {table.description && (
                   <p className="text-sm text-muted-foreground mb-4 whitespace-pre-wrap">{table.description}</p>
                 )}
