@@ -418,6 +418,30 @@ export type Database = {
           },
         ]
       }
+      slot_boosts: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          slots_added: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          slots_added?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          slots_added?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       table_applications: {
         Row: {
           created_at: string
@@ -548,6 +572,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      buy_slot_boost: { Args: never; Returns: string }
+      count_pending_applications: {
+        Args: { _user_id: string }
+        Returns: number
+      }
+      current_pending_slots: { Args: { _user_id: string }; Returns: number }
       grant_tokens: {
         Args: {
           _amount: number
