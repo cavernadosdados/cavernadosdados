@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const Perfil = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { userId: routeUserId } = useParams<{ userId?: string }>();
   const viewedUserId = routeUserId || user?.id;
   const isOwnProfile = !routeUserId || routeUserId === user?.id;
@@ -25,6 +26,47 @@ const Perfil = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [viewedEmail, setViewedEmail] = useState<string | null>(null);
   const [viewedCreatedAt, setViewedCreatedAt] = useState<string | null>(null);
+  const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
+
+  const isMasterProfile = (profile?.user_type ?? user?.user_metadata?.user_type) === 'master';
+
+  // Fetch master's tables (only when viewing a master's profile)
+  const { data: masterTables } = useQuery({
+    queryKey: ['master-tables', viewedUserId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tables')
+        .select('id, title, description, system, theme, duration, max_players, platform, status')
+        .eq('master_id', viewedUserId!)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!viewedUserId && isMasterProfile,
+  });
+
+  // For visiting players: which tables have they already applied to?
+  const { data: myApplications } = useQuery({
+    queryKey: ['my-applications-on-master', user?.id, viewedUserId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('table_applications')
+        .select('table_id, status')
+        .eq('player_id', user!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && !isOwnProfile && isMasterProfile,
+  });
+
+  const getAppStatus = (tableId: string) =>
+    myApplications?.find((a) => a.table_id === tableId);
+
+  const appStatusLabel: Record<string, string> = {
+    pending: 'Candidatura Enviada',
+    accepted: 'Aceito',
+    rejected: 'Recusado',
+  };
 
   // For other users, we don't have email from auth — just rely on profile data
   useEffect(() => {
