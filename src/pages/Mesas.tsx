@@ -145,14 +145,32 @@ const Mesas = () => {
           <div className="grid gap-4 md:grid-cols-2">
             {tables.map((table: any) => {
               const appStatus = userType !== "master" ? getApplicationStatus(table.id) : null;
+              const acceptedCount = acceptedCounts?.[table.id] ?? 0;
+              const seatsLeft = Math.max(0, (table.max_players ?? 0) - acceptedCount);
+              const isFull = seatsLeft === 0;
+              const isAlmostFull = !isFull && seatsLeft <= 1 && table.max_players > 1;
+              const ageMs = Date.now() - new Date(table.created_at).getTime();
+              const isFresh = ageMs < 1000 * 60 * 60 * 48; // < 48h
               return (
                 <Card key={table.id} className="bg-card border-border hover:border-primary transition-all">
                   <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start gap-2">
                       <CardTitle className="text-lg">{table.title}</CardTitle>
-                      <Badge variant={table.status === "open" ? "default" : "secondary"}>
-                        {table.status === "open" ? "Aberta" : "Fechada"}
-                      </Badge>
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge variant={table.status === "open" ? "default" : "secondary"}>
+                          {table.status === "open" ? "Aberta" : "Fechada"}
+                        </Badge>
+                        {table.status === "open" && isAlmostFull && (
+                          <Badge variant="destructive" className="gap-1 animate-pulse">
+                            <AlertTriangle className="h-3 w-3" /> Últimas vagas
+                          </Badge>
+                        )}
+                        {table.status === "open" && !isAlmostFull && isFresh && (
+                          <Badge className="gap-1 bg-secondary text-secondary-foreground">
+                            <Sparkles className="h-3 w-3" /> Nova
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     {userType !== "master" && table.profiles && (
                       <button
