@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, Clock, Monitor, Gamepad2, Send, Inbox, Pencil, Trash2, ScrollText } from "lucide-react";
+import { Plus, Users, Clock, Monitor, Gamepad2, Send, Inbox, Pencil, Trash2, ScrollText, Flame, Sparkles, AlertTriangle } from "lucide-react";
 import { CreateTableDialog } from "@/components/CreateTableDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 import { TableApplicationsDialog } from "@/components/TableApplicationsDialog";
@@ -53,6 +53,26 @@ const Mesas = () => {
       return data;
     },
     enabled: !!user,
+  });
+
+  // Aggregate counts of accepted applications per table (for FOMO badges)
+  const { data: acceptedCounts } = useQuery({
+    queryKey: ["accepted-counts", (tables ?? []).map((t: any) => t.id).join(",")],
+    enabled: !!tables && tables.length > 0,
+    queryFn: async () => {
+      const ids = (tables ?? []).map((t: any) => t.id);
+      const { data, error } = await supabase
+        .from("table_applications")
+        .select("table_id, status")
+        .in("table_id", ids)
+        .eq("status", "accepted");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      (data ?? []).forEach((a) => {
+        counts[a.table_id] = (counts[a.table_id] ?? 0) + 1;
+      });
+      return counts;
+    },
   });
 
   // Fetch player's existing applications to know which tables they already applied to
