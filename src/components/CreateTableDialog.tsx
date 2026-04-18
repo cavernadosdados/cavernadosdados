@@ -17,6 +17,9 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { useTokens } from '@/hooks/useTokens';
+import { useNavigate } from 'react-router-dom';
+import { Gem } from 'lucide-react';
 
 const RPG_SYSTEMS = [
   'D&D 5e', 'D&D 3.5', 'Pathfinder 1e', 'Pathfinder 2e', 'Tormenta20',
