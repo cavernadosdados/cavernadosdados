@@ -15,6 +15,8 @@ import { Separator } from "@/components/ui/separator";
 import { SessionFeedbackDialog } from "@/components/SessionFeedbackDialog";
 import { CampaignDiary } from "@/components/CampaignDiary";
 import { ChipSelector } from "@/components/ChipSelector";
+import { ClockTimePicker } from "@/components/ClockTimePicker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Chip presets for quick-fill multi-select
 const CHIPS = {
