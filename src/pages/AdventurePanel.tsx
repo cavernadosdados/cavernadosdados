@@ -67,6 +67,11 @@ import {
   Send,
   Loader2,
   BookOpen,
+  Users,
+  Lock,
+  Sparkles,
+  Hourglass,
+  Monitor,
 } from "lucide-react";
 import {
   Tooltip,
@@ -135,6 +140,23 @@ const AdventurePanel = () => {
       return data;
     },
     enabled: !!tableId,
+  });
+
+  // Fetch current player's application status (for access control)
+  const { data: myApplication, isLoading: loadingApp } = useQuery({
+    queryKey: ["my_application", tableId, user?.id],
+    queryFn: async () => {
+      if (!user || !tableId) return null;
+      const { data, error } = await supabase
+        .from("table_applications")
+        .select("status")
+        .eq("table_id", tableId)
+        .eq("player_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!tableId && !!user && !isMaster,
   });
 
   // Form state
@@ -345,10 +367,49 @@ const AdventurePanel = () => {
     toast({ title: "Obrigado!", description: "Sua avaliação foi enviada." });
   };
 
-  if (!table) {
+  if (!table || (!isMaster && loadingApp)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  // Access control: non-masters need an accepted application
+  const hasAccess = isMaster || myApplication?.status === "accepted";
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="border-b border-border bg-card/80 backdrop-blur-sm">
+          <div className="flex items-center gap-3 px-3 sm:px-6 h-16 max-w-screen-xl mx-auto w-full">
+            <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => navigate("/dashboard/mesas")}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-base sm:text-lg font-bold glow-gold truncate">{table.title}</h1>
+          </div>
+        </header>
+        <main className="flex-1 flex items-center justify-center p-6">
+          <Card className="max-w-md w-full border-primary/20 bg-card/80">
+            <CardContent className="pt-8 pb-6 text-center space-y-4">
+              <div className="flex justify-center">
+                <div className="p-4 rounded-full bg-primary/10 border border-primary/30 shadow-[0_0_30px_hsl(var(--cavern-gold)/0.2)]">
+                  <Lock className="h-8 w-8 text-primary" />
+                </div>
+              </div>
+              <h2 className="text-xl font-bold glow-gold">Acesso restrito</h2>
+              <p className="text-sm text-muted-foreground">
+                {myApplication?.status === "pending"
+                  ? "Sua candidatura ainda está em análise pelo Mestre. Aguarde a aprovação para ver os detalhes desta mesa."
+                  : myApplication?.status === "rejected"
+                  ? "Sua candidatura para esta mesa não foi aceita."
+                  : "Apenas jogadores aceitos podem ver os detalhes desta mesa. Candidate-se primeiro na lista de mesas."}
+              </p>
+              <Button className="w-full" onClick={() => navigate("/dashboard/mesas")}>
+                Voltar para Mesas
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
       </div>
     );
   }
@@ -484,6 +545,60 @@ const AdventurePanel = () => {
 
           {/* ===== VISÃO GERAL ===== */}
           <TabsContent value="overview" className="space-y-6">
+            {/* Informações da Mesa (criadas no cadastro) */}
+            <Card className="border-primary/20 bg-card/60">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Informações da Mesa
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {table.description && (
+                  <p className="text-sm text-muted-foreground mb-4 whitespace-pre-wrap">{table.description}</p>
+                )}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  <div className="rounded-md border border-border bg-background/40 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Swords className="h-3.5 w-3.5" />
+                      Sistema
+                    </div>
+                    <p className="text-sm font-semibold text-foreground truncate">{table.system}</p>
+                  </div>
+                  <div className="rounded-md border border-border bg-background/40 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Tema
+                    </div>
+                    <p className="text-sm font-semibold text-foreground truncate">{table.theme}</p>
+                  </div>
+                  <div className="rounded-md border border-border bg-background/40 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Hourglass className="h-3.5 w-3.5" />
+                      Duração
+                    </div>
+                    <p className="text-sm font-semibold text-foreground truncate">{table.duration}</p>
+                  </div>
+                  <div className="rounded-md border border-border bg-background/40 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Users className="h-3.5 w-3.5" />
+                      Jogadores
+                    </div>
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {acceptedPlayers?.length ?? 0} / {table.max_players}
+                    </p>
+                  </div>
+                  <div className="rounded-md border border-border bg-background/40 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Monitor className="h-3.5 w-3.5" />
+                      Plataforma
+                    </div>
+                    <p className="text-sm font-semibold text-foreground truncate">{table.platform}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="grid gap-6 md:grid-cols-2">
               <Card className="border-border bg-card/60">
                 <CardHeader className="pb-3">
