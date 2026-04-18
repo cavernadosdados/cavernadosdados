@@ -545,6 +545,60 @@ const AdventurePanel = () => {
 
           {/* ===== VISÃO GERAL ===== */}
           <TabsContent value="overview" className="space-y-6">
+            {/* Informações da Mesa (criadas no cadastro) */}
+            <Card className="border-primary/20 bg-card/60">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Informações da Mesa
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {table.description && (
+                  <p className="text-sm text-muted-foreground mb-4 whitespace-pre-wrap">{table.description}</p>
+                )}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  <div className="rounded-md border border-border bg-background/40 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Swords className="h-3.5 w-3.5" />
+                      Sistema
+                    </div>
+                    <p className="text-sm font-semibold text-foreground truncate">{table.system}</p>
+                  </div>
+                  <div className="rounded-md border border-border bg-background/40 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Tema
+                    </div>
+                    <p className="text-sm font-semibold text-foreground truncate">{table.theme}</p>
+                  </div>
+                  <div className="rounded-md border border-border bg-background/40 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Hourglass className="h-3.5 w-3.5" />
+                      Duração
+                    </div>
+                    <p className="text-sm font-semibold text-foreground truncate">{table.duration}</p>
+                  </div>
+                  <div className="rounded-md border border-border bg-background/40 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Users className="h-3.5 w-3.5" />
+                      Jogadores
+                    </div>
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {acceptedPlayers?.length ?? 0} / {table.max_players}
+                    </p>
+                  </div>
+                  <div className="rounded-md border border-border bg-background/40 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Monitor className="h-3.5 w-3.5" />
+                      Plataforma
+                    </div>
+                    <p className="text-sm font-semibold text-foreground truncate">{table.platform}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="grid gap-6 md:grid-cols-2">
               <Card className="border-border bg-card/60">
                 <CardHeader className="pb-3">
