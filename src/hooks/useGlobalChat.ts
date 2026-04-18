@@ -16,6 +16,7 @@ export interface ChatMessage {
 }
 
 const QUERY_KEY = ["global_chat"];
+const REPORTS_KEY = ["chat_reports"];
 
 export const useGlobalChat = () => {
   const { user } = useAuth();
@@ -53,6 +54,20 @@ export const useGlobalChat = () => {
     staleTime: 1000 * 30,
   });
 
+  // Denúncias do usuário (para soft-block local)
+  const reportsQuery = useQuery({
+    queryKey: REPORTS_KEY,
+    enabled: !!user,
+    queryFn: async (): Promise<Set<string>> => {
+      const { data, error } = await supabase
+        .from("chat_reports")
+        .select("message_id");
+      if (error) throw error;
+      return new Set((data ?? []).map((r) => r.message_id));
+    },
+    staleTime: 1000 * 60,
+  });
+
   // Realtime
   useEffect(() => {
     const channel = supabase
@@ -79,7 +94,6 @@ export const useGlobalChat = () => {
                   : null,
               },
             ];
-            // mantém no máximo 50 no cliente também
             return next.slice(-50);
           });
         }
@@ -120,10 +134,57 @@ export const useGlobalChat = () => {
     },
   });
 
+  const report = useMutation({
+    mutationFn: async (msg: { id: string; user_id: string; reason?: string }) => {
+      if (!user) throw new Error("Você precisa estar logado.");
+      if (msg.user_id === user.id) throw new Error("Você não pode denunciar sua própria mensagem.");
+      const { error } = await supabase.from("chat_reports").insert({
+        reporter_id: user.id,
+        message_id: msg.id,
+        reported_user_id: msg.user_id,
+        reason: msg.reason ?? null,
+      });
+      if (error && !error.message.includes("duplicate")) throw error;
+    },
+    onSuccess: (_d, vars) => {
+      qc.setQueryData<Set<string>>(REPORTS_KEY, (prev) => {
+        const next = new Set(prev ?? []);
+        next.add(vars.id);
+        return next;
+      });
+      toast.success("Mensagem denunciada e ocultada.");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Erro ao denunciar.");
+    },
+  });
+
+  const unreport = useMutation({
+    mutationFn: async (messageId: string) => {
+      if (!user) throw new Error("Você precisa estar logado.");
+      const { error } = await supabase
+        .from("chat_reports")
+        .delete()
+        .eq("reporter_id", user.id)
+        .eq("message_id", messageId);
+      if (error) throw error;
+    },
+    onSuccess: (_d, messageId) => {
+      qc.setQueryData<Set<string>>(REPORTS_KEY, (prev) => {
+        const next = new Set(prev ?? []);
+        next.delete(messageId);
+        return next;
+      });
+    },
+  });
+
   return {
     messages: query.data ?? [],
     isLoading: query.isLoading,
     send: send.mutate,
     isSending: send.isPending,
+    reportedIds: reportsQuery.data ?? new Set<string>(),
+    report: report.mutate,
+    unreport: unreport.mutate,
   };
 };

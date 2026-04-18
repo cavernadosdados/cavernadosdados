@@ -5,7 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageCircle, Send, ArrowDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { MessageCircle, Send, ArrowDown, MoreHorizontal, Flag, EyeOff, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useGlobalChat } from "@/hooks/useGlobalChat";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,15 +33,15 @@ const MAX_LEN = 280;
 
 const Mensagens = () => {
   const { user } = useAuth();
-  const { messages, isLoading, send, isSending } = useGlobalChat();
+  const { messages, isLoading, send, isSending, reportedIds, report, unreport } = useGlobalChat();
   const [text, setText] = useState("");
+  const [confirmReport, setConfirmReport] = useState<{ id: string; user_id: string } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [atBottom, setAtBottom] = useState(true);
   const [hasNew, setHasNew] = useState(false);
   const lastCountRef = useRef(0);
 
-  // Detecta posição do scroll
   useEffect(() => {
     const viewport = scrollRef.current?.querySelector<HTMLDivElement>(
       "[data-radix-scroll-area-viewport]"
@@ -41,7 +57,6 @@ const Mensagens = () => {
     return () => viewport.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Scroll automático ou indicador de novas
   useEffect(() => {
     if (messages.length === 0) return;
     const grew = messages.length > lastCountRef.current;
@@ -106,20 +121,37 @@ const Mensagens = () => {
                   ) : (
                     messages.map((m) => {
                       const isMe = m.user_id === user?.id;
+                      const isReported = reportedIds.has(m.id);
                       const name = m.author?.display_name || "Aventureiro";
                       const initials = name.substring(0, 2).toUpperCase();
+
+                      if (isReported) {
+                        return (
+                          <div
+                            key={m.id}
+                            className="flex items-center gap-2 text-xs text-muted-foreground italic justify-center py-1"
+                          >
+                            <EyeOff className="h-3 w-3" />
+                            Mensagem ocultada por você
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-xs"
+                              onClick={() => unreport(m.id)}
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              Mostrar
+                            </Button>
+                          </div>
+                        );
+                      }
+
                       return (
                         <div
                           key={m.id}
-                          className={cn(
-                            "flex gap-3 group",
-                            isMe && "flex-row-reverse"
-                          )}
+                          className={cn("flex gap-3 group", isMe && "flex-row-reverse")}
                         >
-                          <Link
-                            to={`/dashboard/perfil/${m.user_id}`}
-                            className="shrink-0"
-                          >
+                          <Link to={`/dashboard/perfil/${m.user_id}`} className="shrink-0">
                             <Avatar className="h-9 w-9">
                               {m.author?.avatar_url && (
                                 <AvatarImage src={m.author.avatar_url} alt={name} />
@@ -156,7 +188,7 @@ const Mensagens = () => {
                             </div>
                             <div
                               className={cn(
-                                "rounded-lg px-3 py-2 text-sm whitespace-pre-wrap break-words",
+                                "relative rounded-lg px-3 py-2 text-sm whitespace-pre-wrap break-words",
                                 isMe
                                   ? "bg-primary/15 text-foreground border border-primary/30"
                                   : "bg-muted/50 text-foreground border border-border"
@@ -165,6 +197,37 @@ const Mensagens = () => {
                               {m.content}
                             </div>
                           </div>
+
+                          {!isMe && user && (
+                            <div className="self-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    aria-label="Opções da mensagem"
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                  align={isMe ? "start" : "end"}
+                                  className="w-44"
+                                >
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      setConfirmReport({ id: m.id, user_id: m.user_id })
+                                    }
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Flag className="h-4 w-4 mr-2" />
+                                    Denunciar e ocultar
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          )}
                         </div>
                       );
                     })
@@ -220,6 +283,32 @@ const Mensagens = () => {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog
+        open={!!confirmReport}
+        onOpenChange={(open) => !open && setConfirmReport(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Denunciar mensagem?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A mensagem será ocultada para você imediatamente e registrada para revisão.
+              Você pode reverter clicando em "Mostrar" depois.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmReport) report(confirmReport);
+                setConfirmReport(null);
+              }}
+            >
+              Denunciar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };
