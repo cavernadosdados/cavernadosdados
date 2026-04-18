@@ -35,7 +35,6 @@ const RPG_SYSTEMS = [
   'Savage Worlds',
   '3D&T',
   'Old Dragon',
-  'Outro',
 ];
 
 const THEMES = [
@@ -49,7 +48,17 @@ const THEMES = [
   'Super-Heróis',
   'Mistério',
   'Aventura',
-  'Outro',
+];
+
+const APPS = [
+  'Discord',
+  'Roll20',
+  'Foundry VTT',
+  'Alchemy RPG',
+  'Owlbear Rodeo',
+  'Roll Dice',
+  'D&D Beyond',
+  'Tabletop Simulator',
 ];
 
 const profileSchema = z.object({
@@ -59,7 +68,7 @@ const profileSchema = z.object({
   master_systems: z.array(z.string()).optional(),
   preferred_themes: z.array(z.string()).optional(),
   plays_in_person: z.boolean().optional(),
-  apps_used: z.string().optional(),
+  apps_used: z.array(z.string()).optional(),
   discord_link: z.string().url('Link inválido').or(z.literal('')).optional(),
 });
 
