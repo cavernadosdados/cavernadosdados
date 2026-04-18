@@ -427,7 +427,10 @@ const AdventurePanel = () => {
             </Badge>
             <Badge variant="outline" className="gap-1 text-xs">
               <Clock className="h-3 w-3" />
-              {form.schedule_time || "Sem horário"}
+              {(() => {
+                const { days, time } = parseSchedule(form.schedule_time);
+                return composeSchedule(days, time) || "Sem horário";
+              })()}
             </Badge>
             <Badge variant="secondary" className="gap-1 text-xs">
               <Globe className="h-3 w-3" />
