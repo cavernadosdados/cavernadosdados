@@ -254,6 +254,8 @@ const Mesas = () => {
                             >
                               {appStatusLabel[appStatus.status] || appStatus.status}
                             </Badge>
+                          ) : isFull ? (
+                            <Badge variant="secondary" className="self-center">Mesa cheia</Badge>
                           ) : (
                             <Button
                               size="sm"
