@@ -396,6 +396,15 @@ const Perfil = () => {
             isMaster={isMaster}
           />
         )}
+
+        {applyTable && (
+          <ApplyTableDialog
+            open={!!applyTable}
+            onOpenChange={(o) => !o && setApplyTable(null)}
+            tableId={applyTable.id}
+            tableTitle={applyTable.title}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
