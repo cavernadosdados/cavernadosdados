@@ -233,6 +233,8 @@ export type Database = {
           master_systems: string[] | null
           plays_in_person: boolean | null
           preferred_themes: string[] | null
+          signup_bonus_claimed: boolean
+          tokens_balance: number
           updated_at: string
           user_type: Database["public"]["Enums"]["user_type"]
         }
@@ -249,6 +251,8 @@ export type Database = {
           master_systems?: string[] | null
           plays_in_person?: boolean | null
           preferred_themes?: string[] | null
+          signup_bonus_claimed?: boolean
+          tokens_balance?: number
           updated_at?: string
           user_type: Database["public"]["Enums"]["user_type"]
         }
@@ -265,6 +269,8 @@ export type Database = {
           master_systems?: string[] | null
           plays_in_person?: boolean | null
           preferred_themes?: string[] | null
+          signup_bonus_claimed?: boolean
+          tokens_balance?: number
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
         }
@@ -510,12 +516,51 @@ export type Database = {
           },
         ]
       }
+      token_transactions: {
+        Row: {
+          created_at: string
+          delta: number
+          id: string
+          reason: string
+          related_table_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: string
+          reason: string
+          related_table_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: string
+          reason?: string
+          related_table_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      grant_tokens: {
+        Args: {
+          _amount: number
+          _reason: string
+          _related_table_id?: string
+          _user_id: string
+        }
+        Returns: number
+      }
+      spend_tokens: {
+        Args: { _amount: number; _reason: string; _related_table_id?: string }
+        Returns: number
+      }
     }
     Enums: {
       user_type: "player" | "master"

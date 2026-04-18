@@ -16,6 +16,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { NotificationsBell } from "@/components/NotificationsBell";
+import { TokenBalance } from "@/components/TokenBalance";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -52,6 +53,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <Button variant="ghost" size="icon" className="relative sm:hidden h-10 w-10" aria-label="Buscar">
                   <Search className="h-5 w-5" />
                 </Button>
+                <TokenBalance />
                 <NotificationsBell />
 
                 <DropdownMenu>
