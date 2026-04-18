@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
+import { NotificationsBell } from "@/components/NotificationsBell";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -51,10 +52,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <Button variant="ghost" size="icon" className="relative sm:hidden h-10 w-10" aria-label="Buscar">
                   <Search className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="relative h-10 w-10">
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute top-1 right-1 h-2 w-2 bg-destructive rounded-full" />
-                </Button>
+                <NotificationsBell />
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
