@@ -148,17 +148,34 @@ const Mesas = () => {
                       </Badge>
                     </div>
 
-                    {/* Player: apply button or status */}
-                    {userType !== 'master' && table.status === 'open' && (
-                      <div className="pt-2">
-                        {appStatus ? (
-                          <Badge variant={appStatus.status === 'accepted' ? 'default' : appStatus.status === 'rejected' ? 'destructive' : 'secondary'}>
-                            {appStatusLabel[appStatus.status] || appStatus.status}
-                          </Badge>
-                        ) : (
-                          <Button size="sm" className="gap-1 w-full sm:w-auto min-h-10" onClick={() => setApplyTable({ id: table.id, title: table.title })}>
-                            <Send className="h-3 w-3" /> Candidatar-se
-                          </Button>
+                    {/* Player: view details + apply / status */}
+                    {userType !== 'master' && (
+                      <div className="pt-2 flex flex-col sm:flex-row gap-2 flex-wrap">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 w-full sm:w-auto min-h-10"
+                          onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
+                        >
+                          <ScrollText className="h-3 w-3" /> Ver Detalhes
+                        </Button>
+                        {table.status === 'open' && (
+                          appStatus ? (
+                            <Badge
+                              variant={appStatus.status === 'accepted' ? 'default' : appStatus.status === 'rejected' ? 'destructive' : 'secondary'}
+                              className="self-center"
+                            >
+                              {appStatusLabel[appStatus.status] || appStatus.status}
+                            </Badge>
+                          ) : (
+                            <Button
+                              size="sm"
+                              className="gap-1 w-full sm:w-auto min-h-10"
+                              onClick={() => setApplyTable({ id: table.id, title: table.title })}
+                            >
+                              <Send className="h-3 w-3" /> Candidatar-se
+                            </Button>
+                          )
                         )}
                       </div>
                     )}
