@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
@@ -12,12 +14,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const Perfil = () => {
   const { user } = useAuth();
-  const { profile, isLoading } = useProfile(user?.id);
+  const { userId: routeUserId } = useParams<{ userId?: string }>();
+  const viewedUserId = routeUserId || user?.id;
+  const isOwnProfile = !routeUserId || routeUserId === user?.id;
+
+  const { profile, isLoading } = useProfile(viewedUserId);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  
-  const userType = user?.user_metadata?.user_type;
+  const [viewedEmail, setViewedEmail] = useState<string | null>(null);
+  const [viewedCreatedAt, setViewedCreatedAt] = useState<string | null>(null);
+
+  // For other users, we don't have email from auth — just rely on profile data
+  useEffect(() => {
+    if (isOwnProfile) {
+      setViewedEmail(user?.email ?? null);
+      setViewedCreatedAt(user?.created_at ?? null);
+    } else {
+      setViewedEmail(null);
+      setViewedCreatedAt(null);
+    }
+  }, [isOwnProfile, user]);
+
+  const userType = profile?.user_type ?? user?.user_metadata?.user_type;
   const isMaster = userType === 'master';
-  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'Usuário';
+  const displayName = profile?.display_name || (isOwnProfile ? user?.email?.split('@')[0] : 'Usuário') || 'Usuário';
   const initials = displayName?.substring(0, 2).toUpperCase();
 
   if (isLoading) {
@@ -41,9 +60,11 @@ const Perfil = () => {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold glow-gold">Perfil</h1>
+          <h1 className="text-3xl font-bold glow-gold">
+            {isOwnProfile ? 'Perfil' : `Perfil de ${displayName}`}
+          </h1>
           <p className="text-muted-foreground mt-2">
-            Gerencie suas informações pessoais
+            {isOwnProfile ? 'Gerencie suas informações pessoais' : 'Visualizando perfil público'}
           </p>
         </div>
 
@@ -53,14 +74,15 @@ const Perfil = () => {
             <CardHeader>
               <div className="flex flex-col items-center space-y-4">
                 <Avatar className="h-24 w-24">
+                  <AvatarImage src={profile?.avatar_url ?? undefined} alt={displayName} />
                   <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-center">
                   <h3 className="text-xl font-bold">{displayName}</h3>
-                  <Badge variant={userType === 'master' ? 'default' : 'secondary'} className="mt-2">
-                    {userType === 'master' ? 'Mestre' : 'Jogador'}
+                  <Badge variant={isMaster ? 'default' : 'secondary'} className="mt-2">
+                    {isMaster ? 'Mestre' : 'Jogador'}
                   </Badge>
                 </div>
               </div>
@@ -70,11 +92,13 @@ const Perfil = () => {
                 <Star className="h-4 w-4 text-primary" />
                 <span className="text-sm">Avaliação: 4.8/5</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" />
-                <span className="text-sm">Membro desde {new Date(user?.created_at || Date.now()).getFullYear()}</span>
-              </div>
-              {isMaster && profile?.experience_years !== null && (
+              {viewedCreatedAt && (
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span className="text-sm">Membro desde {new Date(viewedCreatedAt).getFullYear()}</span>
+                </div>
+              )}
+              {isMaster && profile?.experience_years !== null && profile?.experience_years !== undefined && (
                 <div className="flex items-center gap-2">
                   <Dice1 className="h-4 w-4 text-primary" />
                   <span className="text-sm">{profile.experience_years} anos mestrando</span>
@@ -86,9 +110,11 @@ const Perfil = () => {
                   {isMaster ? `${profile?.active_tables_count || 0} mesas ativas` : '0 aventuras jogadas'}
                 </span>
               </div>
-              <Button className="w-full mt-4" onClick={() => setEditDialogOpen(true)}>
-                Editar Perfil
-              </Button>
+              {isOwnProfile && (
+                <Button className="w-full mt-4" onClick={() => setEditDialogOpen(true)}>
+                  Editar Perfil
+                </Button>
+              )}
             </CardContent>
           </Card>
 
@@ -100,10 +126,12 @@ const Perfil = () => {
                 <CardDescription>Informações pessoais</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Email</label>
-                  <p className="text-muted-foreground">{user?.email}</p>
-                </div>
+                {viewedEmail && (
+                  <div>
+                    <label className="text-sm font-medium">Email</label>
+                    <p className="text-muted-foreground">{viewedEmail}</p>
+                  </div>
+                )}
                 <div>
                   <label className="text-sm font-medium">Tipo de Usuário</label>
                   <p className="text-muted-foreground capitalize">
@@ -115,9 +143,11 @@ const Perfil = () => {
                   <p className="text-muted-foreground whitespace-pre-wrap">
                     {profile?.bio || (
                       <span className="italic text-muted-foreground/60">
-                        {isMaster 
-                          ? 'Adicione uma bio para contar sobre sua experiência como mestre...' 
-                          : 'Adicione uma bio para contar sobre você...'}
+                        {isOwnProfile
+                          ? (isMaster
+                            ? 'Adicione uma bio para contar sobre sua experiência como mestre...'
+                            : 'Adicione uma bio para contar sobre você...')
+                          : 'Sem bio cadastrada.'}
                       </span>
                     )}
                   </p>
@@ -131,8 +161,8 @@ const Perfil = () => {
                   {isMaster ? 'Sistemas e Temas' : 'Preferências'}
                 </CardTitle>
                 <CardDescription>
-                  {isMaster 
-                    ? 'Sistemas que domina e temas preferidos' 
+                  {isMaster
+                    ? 'Sistemas que domina e temas preferidos'
                     : 'Sistemas e temas de interesse'}
                 </CardDescription>
               </CardHeader>
@@ -173,7 +203,7 @@ const Perfil = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>Plataformas e Configurações</CardTitle>
-                    <CardDescription>Como você mestra suas sessões</CardDescription>
+                    <CardDescription>Como mestra suas sessões</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-2">
@@ -203,9 +233,9 @@ const Perfil = () => {
                     {profile?.discord_link && (
                       <div>
                         <label className="text-sm font-medium">Discord</label>
-                        <a 
-                          href={profile.discord_link} 
-                          target="_blank" 
+                        <a
+                          href={profile.discord_link}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-primary hover:underline block mt-1"
                         >
@@ -219,11 +249,11 @@ const Perfil = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>Avaliações</CardTitle>
-                    <CardDescription>O que os jogadores dizem sobre você</CardDescription>
+                    <CardDescription>O que os jogadores dizem</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground text-sm">
-                      Nenhuma avaliação ainda. Crie suas primeiras mesas para receber feedback!
+                      Nenhuma avaliação ainda.
                     </p>
                   </CardContent>
                 </Card>
@@ -232,13 +262,15 @@ const Perfil = () => {
           </div>
         </div>
 
-        <EditProfileDialog
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
-          profile={profile}
-          userId={user?.id || ''}
-          isMaster={isMaster}
-        />
+        {isOwnProfile && (
+          <EditProfileDialog
+            open={editDialogOpen}
+            onOpenChange={setEditDialogOpen}
+            profile={profile}
+            userId={user?.id || ''}
+            isMaster={isMaster}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

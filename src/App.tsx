@@ -40,6 +40,7 @@ const AppRoutes = () => (
     <Route path="/dashboard/mesas" element={<ProtectedRoute><Mesas /></ProtectedRoute>} />
     <Route path="/dashboard/mensagens" element={<ProtectedRoute><Mensagens /></ProtectedRoute>} />
     <Route path="/dashboard/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+    <Route path="/dashboard/perfil/:userId" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
     <Route path="/dashboard/tokens" element={<ProtectedRoute><Tokens /></ProtectedRoute>} />
     <Route path="/dashboard/pro" element={<ProtectedRoute><AreaPro /></ProtectedRoute>} />
     <Route path="/dashboard/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
