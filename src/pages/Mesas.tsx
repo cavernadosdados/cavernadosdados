@@ -10,7 +10,16 @@ import { CreateTableDialog } from "@/components/CreateTableDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 import { TableApplicationsDialog } from "@/components/TableApplicationsDialog";
 import { EditTableDialog } from "@/components/EditTableDialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,14 +37,18 @@ const Mesas = () => {
   const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const { data: tables, isLoading, refetch } = useQuery({
-    queryKey: ['tables', userType === 'master' ? user?.id : 'all'],
+  const {
+    data: tables,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["tables", userType === "master" ? user?.id : "all"],
     queryFn: async () => {
-      let query = supabase.from('tables').select('*, profiles(id, display_name, avatar_url)');
-      if (userType === 'master') {
-        query = query.eq('master_id', user!.id);
+      let query = supabase.from("tables").select("*, profiles(id, display_name, avatar_url)");
+      if (userType === "master") {
+        query = query.eq("master_id", user!.id);
       }
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await query.order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -44,38 +57,38 @@ const Mesas = () => {
 
   // Fetch player's existing applications to know which tables they already applied to
   const { data: myApplications } = useQuery({
-    queryKey: ['my-applications', user?.id],
+    queryKey: ["my-applications", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('table_applications')
-        .select('table_id, status')
-        .eq('player_id', user!.id);
+        .from("table_applications")
+        .select("table_id, status")
+        .eq("player_id", user!.id);
       if (error) throw error;
       return data;
     },
-    enabled: !!user && userType !== 'master',
+    enabled: !!user && userType !== "master",
   });
 
   const getApplicationStatus = (tableId: string) => {
-    return myApplications?.find(a => a.table_id === tableId);
+    return myApplications?.find((a) => a.table_id === tableId);
   };
 
   const appStatusLabel: Record<string, string> = {
-    pending: 'Candidatura Enviada',
-    accepted: 'Aceito',
-    rejected: 'Recusado',
+    pending: "Candidatura Enviada",
+    accepted: "Aceito",
+    rejected: "Recusado",
   };
 
   const handleDelete = async () => {
     if (!deleteTableId) return;
     setDeleting(true);
     try {
-      const { error } = await supabase.from('tables').delete().eq('id', deleteTableId);
+      const { error } = await supabase.from("tables").delete().eq("id", deleteTableId);
       if (error) throw error;
-      toast({ title: 'Mesa excluída', description: 'A mesa foi removida com sucesso.' });
+      toast({ title: "Mesa excluída", description: "A mesa foi removida com sucesso." });
       refetch();
     } catch (err: any) {
-      toast({ title: 'Erro ao excluir', description: err.message, variant: 'destructive' });
+      toast({ title: "Erro ao excluir", description: err.message, variant: "destructive" });
     } finally {
       setDeleting(false);
       setDeleteTableId(null);
@@ -88,15 +101,13 @@ const Mesas = () => {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold glow-gold">
-              {userType === 'master' ? 'Minhas Mesas' : 'Mesas Disponíveis'}
+              {userType === "master" ? "Minhas Mesas" : "Mesas Disponíveis"}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
-              {userType === 'master'
-                ? 'Gerencie suas campanhas e sessões'
-                : 'Encontre e participe de aventuras'}
+              {userType === "master" ? "Gerencie suas campanhas e sessões" : "Encontre e participe de aventuras"}
             </p>
           </div>
-          {userType === 'master' && (
+          {userType === "master" && (
             <Button className="gap-2 w-full sm:w-auto min-h-11" onClick={() => setCreateOpen(true)}>
               <Plus className="h-4 w-4" />
               Criar Nova Mesa
@@ -106,24 +117,24 @@ const Mesas = () => {
 
         {isLoading ? (
           <div className="grid gap-4 md:grid-cols-2">
-            {[1, 2, 3, 4].map(i => (
+            {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} className="h-48 rounded-lg" />
             ))}
           </div>
         ) : tables && tables.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2">
             {tables.map((table: any) => {
-              const appStatus = userType !== 'master' ? getApplicationStatus(table.id) : null;
+              const appStatus = userType !== "master" ? getApplicationStatus(table.id) : null;
               return (
                 <Card key={table.id} className="bg-card border-border hover:border-primary transition-all">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{table.title}</CardTitle>
-                      <Badge variant={table.status === 'open' ? 'default' : 'secondary'}>
-                        {table.status === 'open' ? 'Aberta' : 'Fechada'}
+                      <Badge variant={table.status === "open" ? "default" : "secondary"}>
+                        {table.status === "open" ? "Aberta" : "Fechada"}
                       </Badge>
                     </div>
-                    {userType !== 'master' && table.profiles && (
+                    {userType !== "master" && table.profiles && (
                       <button
                         type="button"
                         onClick={(e) => {
@@ -135,7 +146,7 @@ const Mesas = () => {
                         <Avatar className="h-8 w-8 border border-primary/40">
                           <AvatarImage src={table.profiles.avatar_url ?? undefined} alt={table.profiles.display_name} />
                           <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                            {(table.profiles.display_name || '?').slice(0, 2).toUpperCase()}
+                            {(table.profiles.display_name || "?").slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
@@ -171,7 +182,7 @@ const Mesas = () => {
                     </div>
 
                     {/* Player: view details + apply / status */}
-                    {userType !== 'master' && (
+                    {userType !== "master" && (
                       <div className="pt-2 flex flex-col sm:flex-row gap-2 flex-wrap">
                         <Button
                           size="sm"
@@ -181,10 +192,16 @@ const Mesas = () => {
                         >
                           <ScrollText className="h-3 w-3" /> Ver Detalhes
                         </Button>
-                        {table.status === 'open' && (
-                          appStatus ? (
+                        {table.status === "open" &&
+                          (appStatus ? (
                             <Badge
-                              variant={appStatus.status === 'accepted' ? 'default' : appStatus.status === 'rejected' ? 'destructive' : 'secondary'}
+                              variant={
+                                appStatus.status === "accepted"
+                                  ? "default"
+                                  : appStatus.status === "rejected"
+                                    ? "destructive"
+                                    : "secondary"
+                              }
                               className="self-center"
                             >
                               {appStatusLabel[appStatus.status] || appStatus.status}
@@ -195,26 +212,45 @@ const Mesas = () => {
                               className="gap-1 w-full sm:w-auto min-h-10"
                               onClick={() => setApplyTable({ id: table.id, title: table.title })}
                             >
-                              <Send className="h-3 w-3" /> Candidatar-se
+                              <Send className="h-3 w-3" /> Quero jogar essa mesa
                             </Button>
-                          )
-                        )}
+                          ))}
                       </div>
                     )}
 
                     {/* Master: actions */}
-                    {userType === 'master' && (
+                    {userType === "master" && (
                       <div className="pt-2 grid grid-cols-2 sm:flex gap-2 sm:flex-wrap">
-                        <Button size="sm" variant="outline" className="gap-1 min-h-10 w-full sm:w-auto" onClick={() => navigate(`/dashboard/mesa/${table.id}`)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 min-h-10 w-full sm:w-auto"
+                          onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
+                        >
                           <ScrollText className="h-3 w-3" /> Gerenciar
                         </Button>
-                        <Button size="sm" variant="outline" className="gap-1 min-h-10 w-full sm:w-auto" onClick={() => setViewAppsTable({ id: table.id, title: table.title })}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 min-h-10 w-full sm:w-auto"
+                          onClick={() => setViewAppsTable({ id: table.id, title: table.title })}
+                        >
                           <Inbox className="h-3 w-3" /> Candidaturas
                         </Button>
-                        <Button size="sm" variant="outline" className="gap-1 min-h-10 w-full sm:w-auto" onClick={() => setEditTable(table)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 min-h-10 w-full sm:w-auto"
+                          onClick={() => setEditTable(table)}
+                        >
                           <Pencil className="h-3 w-3" /> Editar
                         </Button>
-                        <Button size="sm" variant="destructive" className="gap-1 min-h-10 w-full sm:w-auto" onClick={() => setDeleteTableId(table.id)}>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="gap-1 min-h-10 w-full sm:w-auto"
+                          onClick={() => setDeleteTableId(table.id)}
+                        >
                           <Trash2 className="h-3 w-3" /> Excluir
                         </Button>
                       </div>
@@ -227,19 +263,15 @@ const Mesas = () => {
         ) : (
           <Card className="bg-gradient-to-br from-card to-card/50">
             <CardHeader>
-              <CardTitle>
-                {userType === 'master' ? 'Nenhuma mesa criada ainda' : 'Nenhuma mesa encontrada'}
-              </CardTitle>
+              <CardTitle>{userType === "master" ? "Nenhuma mesa criada ainda" : "Nenhuma mesa encontrada"}</CardTitle>
               <CardDescription>
-                {userType === 'master'
-                  ? 'Comece criando sua primeira mesa épica!'
-                  : 'Explore o catálogo e encontre sua aventura perfeita'}
+                {userType === "master"
+                  ? "Comece criando sua primeira mesa épica!"
+                  : "Explore o catálogo e encontre sua aventura perfeita"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {userType === 'master' && (
-                <Button onClick={() => setCreateOpen(true)}>Criar Primeira Mesa</Button>
-              )}
+              {userType === "master" && <Button onClick={() => setCreateOpen(true)}>Criar Primeira Mesa</Button>}
             </CardContent>
           </Card>
         )}
@@ -286,7 +318,7 @@ const Mesas = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={deleting}>
-              {deleting ? 'Excluindo...' : 'Excluir'}
+              {deleting ? "Excluindo..." : "Excluir"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
