@@ -16,6 +16,7 @@ import { SessionFeedbackDialog } from "@/components/SessionFeedbackDialog";
 import { CampaignDiary } from "@/components/CampaignDiary";
 import { ChipSelector } from "@/components/ChipSelector";
 import { ClockTimePicker } from "@/components/ClockTimePicker";
+import { WeekdaySelector, composeSchedule, parseSchedule } from "@/components/WeekdaySelector";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Chip presets for quick-fill multi-select
@@ -426,7 +427,10 @@ const AdventurePanel = () => {
             </Badge>
             <Badge variant="outline" className="gap-1 text-xs">
               <Clock className="h-3 w-3" />
-              {form.schedule_time || "Sem horário"}
+              {(() => {
+                const { days, time } = parseSchedule(form.schedule_time);
+                return composeSchedule(days, time) || "Sem horário";
+              })()}
             </Badge>
             <Badge variant="secondary" className="gap-1 text-xs">
               <Globe className="h-3 w-3" />
@@ -734,22 +738,45 @@ const AdventurePanel = () => {
                       <p className="text-sm text-muted-foreground mt-1">{form.frequency || "Não definida"}</p>
                     )}
                   </div>
-                  <div>
-                    <Label className="text-sm font-medium">Horário (GMT-3)</Label>
-                    {isMaster ? (
-                      <div className="mt-1">
-                        <ClockTimePicker
-                          value={form.schedule_time}
-                          onChange={(v) => handleChange("schedule_time", v)}
-                          placeholder="Selecionar horário"
-                        />
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {form.schedule_time ? `${form.schedule_time} (GMT-3)` : "Não definido"}
-                      </p>
-                    )}
-                  </div>
+                  {(() => {
+                    const { days, time } = parseSchedule(form.schedule_time);
+                    const fullLabel = composeSchedule(days, time);
+                    return (
+                      <>
+                        {isMaster ? (
+                          <>
+                            <WeekdaySelector
+                              value={days}
+                              onChange={(newDays) => handleChange("schedule_time", composeSchedule(newDays, time))}
+                            />
+                            <div>
+                              <Label className="text-sm font-medium">Horário (GMT-3)</Label>
+                              <div className="mt-1.5">
+                                <ClockTimePicker
+                                  value={time}
+                                  onChange={(newTime) => handleChange("schedule_time", composeSchedule(days, newTime))}
+                                  placeholder="Selecionar horário"
+                                />
+                              </div>
+                            </div>
+                            {fullLabel && (
+                              <div className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+                                <span className="text-muted-foreground">Resumo: </span>
+                                <span className="text-primary font-semibold">{fullLabel} (GMT-3)</span>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div>
+                            <Label className="text-sm font-medium">Horário (GMT-3)</Label>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {fullLabel ? `${fullLabel} (GMT-3)` : "Não definido"}
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </CardContent>
               </Card>
 
