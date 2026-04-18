@@ -31,7 +31,7 @@ const Mesas = () => {
   const { data: tables, isLoading, refetch } = useQuery({
     queryKey: ['tables', userType === 'master' ? user?.id : 'all'],
     queryFn: async () => {
-      let query = supabase.from('tables').select('*, profiles(display_name, avatar_url)');
+      let query = supabase.from('tables').select('*, profiles(id, display_name, avatar_url)');
       if (userType === 'master') {
         query = query.eq('master_id', user!.id);
       }
