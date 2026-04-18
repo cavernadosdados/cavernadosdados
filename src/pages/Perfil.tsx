@@ -1,19 +1,23 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
-import { Star, Clock, Dice1, MapPin, Gamepad2 } from "lucide-react";
+import { Star, Clock, Dice1, MapPin, Gamepad2, Users, Monitor, Send, ScrollText } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Perfil = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { userId: routeUserId } = useParams<{ userId?: string }>();
   const viewedUserId = routeUserId || user?.id;
   const isOwnProfile = !routeUserId || routeUserId === user?.id;
@@ -22,6 +26,47 @@ const Perfil = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [viewedEmail, setViewedEmail] = useState<string | null>(null);
   const [viewedCreatedAt, setViewedCreatedAt] = useState<string | null>(null);
+  const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
+
+  const isMasterProfile = (profile?.user_type ?? user?.user_metadata?.user_type) === 'master';
+
+  // Fetch master's tables (only when viewing a master's profile)
+  const { data: masterTables } = useQuery({
+    queryKey: ['master-tables', viewedUserId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tables')
+        .select('id, title, description, system, theme, duration, max_players, platform, status')
+        .eq('master_id', viewedUserId!)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!viewedUserId && isMasterProfile,
+  });
+
+  // For visiting players: which tables have they already applied to?
+  const { data: myApplications } = useQuery({
+    queryKey: ['my-applications-on-master', user?.id, viewedUserId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('table_applications')
+        .select('table_id, status')
+        .eq('player_id', user!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && !isOwnProfile && isMasterProfile,
+  });
+
+  const getAppStatus = (tableId: string) =>
+    myApplications?.find((a) => a.table_id === tableId);
+
+  const appStatusLabel: Record<string, string> = {
+    pending: 'Candidatura Enviada',
+    accepted: 'Aceito',
+    rejected: 'Recusado',
+  };
 
   // For other users, we don't have email from auth — just rely on profile data
   useEffect(() => {
@@ -248,6 +293,86 @@ const Perfil = () => {
 
                 <Card>
                   <CardHeader>
+                    <CardTitle>Mesas Ativas</CardTitle>
+                    <CardDescription>
+                      {isOwnProfile
+                        ? 'Suas mesas em andamento'
+                        : `Mesas conduzidas por ${displayName}`}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {!masterTables || masterTables.length === 0 ? (
+                      <p className="text-sm text-muted-foreground italic">
+                        Nenhuma mesa ativa no momento.
+                      </p>
+                    ) : (
+                      masterTables.map((t) => {
+                        const status = !isOwnProfile ? getAppStatus(t.id) : null;
+                        return (
+                          <div
+                            key={t.id}
+                            className="rounded-lg border border-border bg-background/40 p-3 hover:border-primary/50 transition-mystical"
+                          >
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <h4 className="font-semibold text-sm">{t.title}</h4>
+                              <Badge variant={t.status === 'open' ? 'default' : 'secondary'} className="shrink-0">
+                                {t.status === 'open' ? 'Aberta' : 'Fechada'}
+                              </Badge>
+                            </div>
+                            {t.description && (
+                              <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                                {t.description}
+                              </p>
+                            )}
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                              <Badge variant="outline" className="gap-1 text-[10px]">
+                                <Gamepad2 className="h-3 w-3" /> {t.system}
+                              </Badge>
+                              <Badge variant="outline" className="text-[10px]">{t.theme}</Badge>
+                              <Badge variant="outline" className="gap-1 text-[10px]">
+                                <Users className="h-3 w-3" /> {t.max_players}
+                              </Badge>
+                              <Badge variant="outline" className="gap-1 text-[10px]">
+                                <Monitor className="h-3 w-3" /> {t.platform}
+                              </Badge>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1 h-8"
+                                onClick={() => navigate(`/dashboard/mesa/${t.id}`)}
+                              >
+                                <ScrollText className="h-3 w-3" /> Ver Detalhes
+                              </Button>
+                              {!isOwnProfile && t.status === 'open' && (
+                                status ? (
+                                  <Badge
+                                    variant={status.status === 'accepted' ? 'default' : status.status === 'rejected' ? 'destructive' : 'secondary'}
+                                    className="self-center"
+                                  >
+                                    {appStatusLabel[status.status] || status.status}
+                                  </Badge>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    className="gap-1 h-8"
+                                    onClick={() => setApplyTable({ id: t.id, title: t.title })}
+                                  >
+                                    <Send className="h-3 w-3" /> Candidatar-se
+                                  </Button>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
                     <CardTitle>Avaliações</CardTitle>
                     <CardDescription>O que os jogadores dizem</CardDescription>
                   </CardHeader>
@@ -269,6 +394,15 @@ const Perfil = () => {
             profile={profile}
             userId={user?.id || ''}
             isMaster={isMaster}
+          />
+        )}
+
+        {applyTable && (
+          <ApplyTableDialog
+            open={!!applyTable}
+            onOpenChange={(o) => !o && setApplyTable(null)}
+            tableId={applyTable.id}
+            tableTitle={applyTable.title}
           />
         )}
       </div>

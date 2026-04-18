@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Mesas = () => {
   const { user } = useAuth();
@@ -30,7 +31,7 @@ const Mesas = () => {
   const { data: tables, isLoading, refetch } = useQuery({
     queryKey: ['tables', userType === 'master' ? user?.id : 'all'],
     queryFn: async () => {
-      let query = supabase.from('tables').select('*, profiles(display_name, avatar_url)');
+      let query = supabase.from('tables').select('*, profiles(id, display_name, avatar_url)');
       if (userType === 'master') {
         query = query.eq('master_id', user!.id);
       }
@@ -123,9 +124,30 @@ const Mesas = () => {
                       </Badge>
                     </div>
                     {userType !== 'master' && table.profiles && (
-                      <p className="text-xs text-muted-foreground">
-                        Mestre: {table.profiles.display_name}
-                      </p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/dashboard/perfil/${table.profiles.id}`);
+                        }}
+                        className="group mt-2 flex w-full items-center gap-2 rounded-md border border-primary/20 bg-background/40 p-2 text-left transition-mystical hover:border-primary/50"
+                      >
+                        <Avatar className="h-8 w-8 border border-primary/40">
+                          <AvatarImage src={table.profiles.avatar_url ?? undefined} alt={table.profiles.display_name} />
+                          <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                            {(table.profiles.display_name || '?').slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Mestre</div>
+                          <div className="text-xs font-semibold truncate group-hover:text-primary">
+                            {table.profiles.display_name}
+                          </div>
+                        </div>
+                        <span className="text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                          Ver perfil →
+                        </span>
+                      </button>
                     )}
                   </CardHeader>
                   <CardContent className="space-y-3">
