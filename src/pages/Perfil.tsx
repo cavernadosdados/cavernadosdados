@@ -293,6 +293,86 @@ const Perfil = () => {
 
                 <Card>
                   <CardHeader>
+                    <CardTitle>Mesas Ativas</CardTitle>
+                    <CardDescription>
+                      {isOwnProfile
+                        ? 'Suas mesas em andamento'
+                        : `Mesas conduzidas por ${displayName}`}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {!masterTables || masterTables.length === 0 ? (
+                      <p className="text-sm text-muted-foreground italic">
+                        Nenhuma mesa ativa no momento.
+                      </p>
+                    ) : (
+                      masterTables.map((t) => {
+                        const status = !isOwnProfile ? getAppStatus(t.id) : null;
+                        return (
+                          <div
+                            key={t.id}
+                            className="rounded-lg border border-border bg-background/40 p-3 hover:border-primary/50 transition-mystical"
+                          >
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <h4 className="font-semibold text-sm">{t.title}</h4>
+                              <Badge variant={t.status === 'open' ? 'default' : 'secondary'} className="shrink-0">
+                                {t.status === 'open' ? 'Aberta' : 'Fechada'}
+                              </Badge>
+                            </div>
+                            {t.description && (
+                              <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                                {t.description}
+                              </p>
+                            )}
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                              <Badge variant="outline" className="gap-1 text-[10px]">
+                                <Gamepad2 className="h-3 w-3" /> {t.system}
+                              </Badge>
+                              <Badge variant="outline" className="text-[10px]">{t.theme}</Badge>
+                              <Badge variant="outline" className="gap-1 text-[10px]">
+                                <Users className="h-3 w-3" /> {t.max_players}
+                              </Badge>
+                              <Badge variant="outline" className="gap-1 text-[10px]">
+                                <Monitor className="h-3 w-3" /> {t.platform}
+                              </Badge>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1 h-8"
+                                onClick={() => navigate(`/dashboard/mesa/${t.id}`)}
+                              >
+                                <ScrollText className="h-3 w-3" /> Ver Detalhes
+                              </Button>
+                              {!isOwnProfile && t.status === 'open' && (
+                                status ? (
+                                  <Badge
+                                    variant={status.status === 'accepted' ? 'default' : status.status === 'rejected' ? 'destructive' : 'secondary'}
+                                    className="self-center"
+                                  >
+                                    {appStatusLabel[status.status] || status.status}
+                                  </Badge>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    className="gap-1 h-8"
+                                    onClick={() => setApplyTable({ id: t.id, title: t.title })}
+                                  >
+                                    <Send className="h-3 w-3" /> Candidatar-se
+                                  </Button>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
                     <CardTitle>Avaliações</CardTitle>
                     <CardDescription>O que os jogadores dizem</CardDescription>
                   </CardHeader>
