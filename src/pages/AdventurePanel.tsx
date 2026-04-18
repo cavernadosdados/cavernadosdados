@@ -67,6 +67,11 @@ import {
   Send,
   Loader2,
   BookOpen,
+  Users,
+  Lock,
+  Sparkles,
+  Hourglass,
+  Monitor,
 } from "lucide-react";
 import {
   Tooltip,
