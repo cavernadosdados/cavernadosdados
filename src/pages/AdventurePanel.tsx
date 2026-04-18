@@ -137,6 +137,23 @@ const AdventurePanel = () => {
     enabled: !!tableId,
   });
 
+  // Fetch current player's application status (for access control)
+  const { data: myApplication, isLoading: loadingApp } = useQuery({
+    queryKey: ["my_application", tableId, user?.id],
+    queryFn: async () => {
+      if (!user || !tableId) return null;
+      const { data, error } = await supabase
+        .from("table_applications")
+        .select("status")
+        .eq("table_id", tableId)
+        .eq("player_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!tableId && !!user && !isMaster,
+  });
+
   // Form state
   const [form, setForm] = useState({
     campaign_objectives: "",
