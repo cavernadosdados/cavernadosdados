@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 const navigationItems = [
   { title: "Home", url: "/dashboard", icon: Home },
   { title: "Minhas Mesas", url: "/dashboard/mesas", icon: Dice1 },
-  { title: "Mensagens", url: "/dashboard/mensagens", icon: MessageCircle },
+  { title: "Taverna", url: "/dashboard/mensagens", icon: MessageCircle },
   { title: "Perfil", url: "/dashboard/perfil", icon: User },
   { title: "Loja de Tokens", url: "/dashboard/tokens", icon: Gem },
   { title: "Configurações", url: "/dashboard/configuracoes", icon: Settings },
