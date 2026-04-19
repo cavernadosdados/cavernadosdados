@@ -5,7 +5,22 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, Clock, Monitor, Gamepad2, Send, Inbox, Pencil, Trash2, ScrollText, Flame, Sparkles, AlertTriangle } from "lucide-react";
+import {
+  Plus,
+  Users,
+  Clock,
+  Monitor,
+  Gamepad2,
+  Send,
+  Inbox,
+  Pencil,
+  Trash2,
+  ScrollText,
+  Flame,
+  Sparkles,
+  AlertTriangle,
+  Rocket,
+} from "lucide-react";
 import { CreateTableDialog } from "@/components/CreateTableDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 import { TableApplicationsDialog } from "@/components/TableApplicationsDialog";
@@ -25,6 +40,10 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useActiveTableBoosts, useBoostTable } from "@/hooks/useTableBoosts";
+import { useTokens } from "@/hooks/useTokens";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const Mesas = () => {
   const { user } = useAuth();
@@ -36,6 +55,11 @@ const Mesas = () => {
   const [editTable, setEditTable] = useState<any | null>(null);
   const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [boostConfirm, setBoostConfirm] = useState<{ id: string; title: string } | null>(null);
+
+  const { boostsMap } = useActiveTableBoosts();
+  const { balance } = useTokens();
+  const boostMutation = useBoostTable();
 
   const {
     data: tables,
@@ -55,7 +79,18 @@ const Mesas = () => {
     enabled: !!user,
   });
 
-  // Aggregate counts of accepted applications per table (for FOMO badges)
+  // Sort: boosted tables first (by expires_at desc), then by created_at desc
+  const sortedTables = (tables ?? []).slice().sort((a: any, b: any) => {
+    const aBoost = boostsMap[a.id];
+    const bBoost = boostsMap[b.id];
+    if (aBoost && !bBoost) return -1;
+    if (!aBoost && bBoost) return 1;
+    if (aBoost && bBoost) {
+      return new Date(bBoost).getTime() - new Date(aBoost).getTime();
+    }
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
   const { data: acceptedCounts } = useQuery({
     queryKey: ["accepted-counts", (tables ?? []).map((t: any) => t.id).join(",")],
     enabled: !!tables && tables.length > 0,
@@ -75,7 +110,6 @@ const Mesas = () => {
     },
   });
 
-  // Fetch player's existing applications to know which tables they already applied to
   const { data: myApplications } = useQuery({
     queryKey: ["my-applications", user?.id],
     queryFn: async () => {
@@ -115,6 +149,13 @@ const Mesas = () => {
     }
   };
 
+  const handleConfirmBoost = () => {
+    if (!boostConfirm) return;
+    boostMutation.mutate(boostConfirm.id, {
+      onSettled: () => setBoostConfirm(null),
+    });
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -141,22 +182,36 @@ const Mesas = () => {
               <Skeleton key={i} className="h-48 rounded-lg" />
             ))}
           </div>
-        ) : tables && tables.length > 0 ? (
+        ) : sortedTables && sortedTables.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2">
-            {tables.map((table: any) => {
+            {sortedTables.map((table: any) => {
               const appStatus = userType !== "master" ? getApplicationStatus(table.id) : null;
               const acceptedCount = acceptedCounts?.[table.id] ?? 0;
               const seatsLeft = Math.max(0, (table.max_players ?? 0) - acceptedCount);
               const isFull = seatsLeft === 0;
               const isAlmostFull = !isFull && seatsLeft <= 1 && table.max_players > 1;
               const ageMs = Date.now() - new Date(table.created_at).getTime();
-              const isFresh = ageMs < 1000 * 60 * 60 * 48; // < 48h
+              const isFresh = ageMs < 1000 * 60 * 60 * 48;
+              const boostExpires = boostsMap[table.id];
+              const isBoosted = !!boostExpires;
+              const isOwner = userType === "master" && table.master_id === user?.id;
+
               return (
-                <Card key={table.id} className="bg-card border-border hover:border-primary transition-all">
+                <Card
+                  key={table.id}
+                  className={`bg-card border-border hover:border-primary transition-all ${
+                    isBoosted ? "border-primary/60 shadow-[0_0_20px_-8px_hsl(var(--primary))]" : ""
+                  }`}
+                >
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start gap-2">
                       <CardTitle className="text-lg">{table.title}</CardTitle>
                       <div className="flex flex-col items-end gap-1">
+                        {isBoosted && (
+                          <Badge className="gap-1 bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30">
+                            <Flame className="h-3 w-3" /> Em destaque
+                          </Badge>
+                        )}
                         <Badge variant={table.status === "open" ? "default" : "secondary"}>
                           {table.status === "open" ? "Aberta" : "Fechada"}
                         </Badge>
@@ -165,13 +220,18 @@ const Mesas = () => {
                             <AlertTriangle className="h-3 w-3" /> Últimas vagas
                           </Badge>
                         )}
-                        {table.status === "open" && !isAlmostFull && isFresh && (
+                        {table.status === "open" && !isAlmostFull && isFresh && !isBoosted && (
                           <Badge className="gap-1 bg-secondary text-secondary-foreground">
                             <Sparkles className="h-3 w-3" /> Nova
                           </Badge>
                         )}
                       </div>
                     </div>
+                    {isBoosted && (
+                      <p className="text-[11px] text-primary/80 mt-1">
+                        Destaque expira {formatDistanceToNow(new Date(boostExpires), { addSuffix: true, locale: ptBR })}
+                      </p>
+                    )}
                     {userType !== "master" && table.profiles && (
                       <button
                         type="button"
@@ -229,7 +289,7 @@ const Mesas = () => {
                       )}
                     </div>
 
-                    {/* Player: view details + apply / status */}
+                    {/* Player actions */}
                     {userType !== "master" && (
                       <div className="pt-2 flex flex-col sm:flex-row gap-2 flex-wrap">
                         <Button
@@ -268,8 +328,8 @@ const Mesas = () => {
                       </div>
                     )}
 
-                    {/* Master: actions */}
-                    {userType === "master" && (
+                    {/* Master actions */}
+                    {isOwner && (
                       <div className="pt-2 grid grid-cols-2 sm:flex gap-2 sm:flex-wrap">
                         <Button
                           size="sm"
@@ -289,6 +349,18 @@ const Mesas = () => {
                         </Button>
                         <Button
                           size="sm"
+                          variant={isBoosted ? "outline" : "default"}
+                          className={`gap-1 min-h-10 w-full sm:w-auto ${
+                            !isBoosted ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""
+                          }`}
+                          onClick={() => setBoostConfirm({ id: table.id, title: table.title })}
+                          title={isBoosted ? "Renovar destaque por +24h" : "Destacar no topo por 24h"}
+                        >
+                          <Rocket className="h-3 w-3" />
+                          {isBoosted ? "Renovar (+24h)" : "Destacar"}
+                        </Button>
+                        <Button
+                          size="sm"
                           variant="outline"
                           className="gap-1 min-h-10 w-full sm:w-auto"
                           onClick={() => setEditTable(table)}
@@ -298,7 +370,7 @@ const Mesas = () => {
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="gap-1 min-h-10 w-full sm:w-auto"
+                          className="gap-1 min-h-10 w-full sm:w-auto col-span-2 sm:col-auto"
                           onClick={() => setDeleteTableId(table.id)}
                         >
                           <Trash2 className="h-3 w-3" /> Excluir
@@ -316,7 +388,7 @@ const Mesas = () => {
               <CardTitle>{userType === "master" ? "Nenhuma mesa criada ainda" : "Nenhuma mesa encontrada"}</CardTitle>
               <CardDescription>
                 {userType === "master"
-                  ? "Comece criando sua primeira mesa épica!"
+                  ? "Crie sua primeira mesa — ela ganha destaque grátis por 24h!"
                   : "Explore o catálogo e encontre sua aventura perfeita"}
               </CardDescription>
             </CardHeader>
@@ -369,6 +441,41 @@ const Mesas = () => {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={deleting}>
               {deleting ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm boost dialog */}
+      <AlertDialog open={!!boostConfirm} onOpenChange={(o) => !o && setBoostConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Rocket className="h-5 w-5 text-primary" />
+              Destacar mesa por 24h?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <span className="block">
+                <strong>{boostConfirm?.title}</strong> aparecerá no topo da listagem por 24 horas
+                e receberá um badge "🔥 Em destaque".
+              </span>
+              <span className="block text-foreground">
+                Custo: <strong>1 token</strong> · Seu saldo: <strong className="tabular-nums">{balance}</strong>
+              </span>
+              {balance < 1 && (
+                <span className="block text-destructive text-xs">
+                  Você não tem tokens suficientes.
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmBoost}
+              disabled={boostMutation.isPending || balance < 1}
+            >
+              {boostMutation.isPending ? "Destacando..." : "Destacar (-1 token)"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
