@@ -446,8 +446,10 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_priority: boolean
           message: string | null
           player_id: string
+          priority_at: string | null
           status: string
           table_id: string
           updated_at: string
@@ -455,8 +457,10 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_priority?: boolean
           message?: string | null
           player_id: string
+          priority_at?: string | null
           status?: string
           table_id: string
           updated_at?: string
@@ -464,8 +468,10 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_priority?: boolean
           message?: string | null
           player_id?: string
+          priority_at?: string | null
           status?: string
           table_id?: string
           updated_at?: string
@@ -480,6 +486,38 @@ export type Database = {
           },
           {
             foreignKeyName: "table_applications_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      table_boosts: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          master_id: string
+          table_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          master_id: string
+          table_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          master_id?: string
+          table_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "table_boosts_table_id_fkey"
             columns: ["table_id"]
             isOneToOne: false
             referencedRelation: "tables"
@@ -572,6 +610,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_priority_to_application: {
+        Args: { _application_id: string }
+        Returns: boolean
+      }
+      boost_table: { Args: { _table_id: string }; Returns: string }
       buy_slot_boost: { Args: never; Returns: string }
       count_pending_applications: {
         Args: { _user_id: string }

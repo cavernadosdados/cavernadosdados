@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Check, X } from 'lucide-react';
+import { Check, X, Star } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface TableApplicationsDialogProps {
@@ -27,6 +27,9 @@ export function TableApplicationsDialog({ open, onOpenChange, tableId, tableTitl
         .from('table_applications')
         .select('*, profiles(display_name, avatar_url)')
         .eq('table_id', tableId)
+        // Priority first, then by priority_at desc, then by created_at asc (older first within same priority)
+        .order('is_priority', { ascending: false })
+        .order('priority_at', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
@@ -80,14 +83,26 @@ export function TableApplicationsDialog({ open, onOpenChange, tableId, tableTitl
         ) : applications && applications.length > 0 ? (
           <div className="space-y-3">
             {applications.map((app: any) => (
-              <div key={app.id} className="border border-border rounded-lg p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+              <div
+                key={app.id}
+                className={`border rounded-lg p-4 space-y-2 ${
+                  app.is_priority
+                    ? 'border-primary/60 bg-primary/5 shadow-[0_0_12px_-6px_hsl(var(--primary))]'
+                    : 'border-border'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 min-w-0">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={app.profiles?.avatar_url} />
                       <AvatarFallback>{app.profiles?.display_name?.[0] || '?'}</AvatarFallback>
                     </Avatar>
-                    <span className="font-medium text-sm">{app.profiles?.display_name || 'Jogador'}</span>
+                    <span className="font-medium text-sm truncate">{app.profiles?.display_name || 'Jogador'}</span>
+                    {app.is_priority && (
+                      <Badge className="gap-1 bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30 shrink-0">
+                        <Star className="h-3 w-3 fill-current" /> Prioritário
+                      </Badge>
+                    )}
                   </div>
                   <Badge variant={statusVariant(app.status)}>
                     {statusLabel[app.status] || app.status}

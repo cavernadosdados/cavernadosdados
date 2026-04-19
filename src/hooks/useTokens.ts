@@ -78,6 +78,10 @@ const REASON_LABELS: Record<string, string> = {
   signup_bonus: "Bônus de boas-vindas",
   signup_bonus_retroactive: "Bônus retroativo",
   create_table: "Criação de mesa",
+  refund_table_creation: "Reembolso (mesa grátis)",
+  boost_table: "🔥 Destaque de mesa (24h)",
+  priority_application: "⭐ Candidatura prioritária",
+  slot_boost: "Boost de slots (+3 por 7d)",
   purchase: "Compra de tokens",
 };
 
