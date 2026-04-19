@@ -139,6 +139,38 @@ export type Database = {
         }
         Relationships: []
       }
+      mesa_chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          table_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          table_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          table_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mesa_chat_messages_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -629,6 +661,10 @@ export type Database = {
           _user_id: string
         }
         Returns: number
+      }
+      is_table_participant: {
+        Args: { _table_id: string; _user_id: string }
+        Returns: boolean
       }
       spend_tokens: {
         Args: { _amount: number; _reason: string; _related_table_id?: string }

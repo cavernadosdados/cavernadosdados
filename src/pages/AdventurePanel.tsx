@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { SessionFeedbackDialog } from "@/components/SessionFeedbackDialog";
 import { CampaignDiary } from "@/components/CampaignDiary";
+import { MesaChat } from "@/components/MesaChat";
 import { ChipSelector } from "@/components/ChipSelector";
 import { ClockTimePicker } from "@/components/ClockTimePicker";
 import { WeekdaySelector, composeSchedule, parseSchedule } from "@/components/WeekdaySelector";
@@ -73,6 +74,7 @@ import {
   Sparkles,
   Hourglass,
   Monitor,
+  MessageSquare,
 } from "lucide-react";
 import {
   Tooltip,
@@ -535,6 +537,10 @@ const AdventurePanel = () => {
                 <BookOpen className="h-4 w-4" />
                 Diário
               </TabsTrigger>
+              <TabsTrigger value="chat" className="gap-1 min-h-10">
+                <MessageSquare className="h-4 w-4" />
+                Chat
+              </TabsTrigger>
               {isMaster && (
                 <TabsTrigger value="integrations" className="gap-1 min-h-10">
                   <Plug className="h-4 w-4" />
@@ -981,6 +987,10 @@ const AdventurePanel = () => {
             />
           </TabsContent>
 
+          {/* ===== CHAT DA MESA ===== */}
+          <TabsContent value="chat" className="space-y-6">
+            <MesaChat tableId={tableId!} tableTitle={table.title} />
+          </TabsContent>
 
           {isMaster && (
             <TabsContent value="integrations" className="space-y-6">
