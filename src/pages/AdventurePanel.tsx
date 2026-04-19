@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { SessionFeedbackDialog } from "@/components/SessionFeedbackDialog";
 import { CampaignDiary } from "@/components/CampaignDiary";
+import { MesaChat } from "@/components/MesaChat";
 import { ChipSelector } from "@/components/ChipSelector";
 import { ClockTimePicker } from "@/components/ClockTimePicker";
 import { WeekdaySelector, composeSchedule, parseSchedule } from "@/components/WeekdaySelector";
@@ -73,6 +74,7 @@ import {
   Sparkles,
   Hourglass,
   Monitor,
+  MessageSquare,
 } from "lucide-react";
 import {
   Tooltip,
