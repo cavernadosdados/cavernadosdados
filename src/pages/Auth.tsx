@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { z } from 'zod';
 import logoDragon from '@/assets/logo-dragon.png';
 import logoText from '@/assets/logo-text.png';
 import { Users, Scroll } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const authSchema = z.object({
   email: z.string().trim().email({ message: "Email inválido" }).max(255),
@@ -26,6 +27,19 @@ const Auth = () => {
   const [selectedUserType, setSelectedUserType] = useState<UserType>('player');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const handleAuth = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
