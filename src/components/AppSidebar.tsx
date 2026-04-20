@@ -1,4 +1,4 @@
-import { Home, Dice1, MessageCircle, User, Gem, Settings, Crown, Compass } from "lucide-react";
+import { Home, Dice1, MessageCircle, User, Gem, Settings, Crown, Compass, ScrollText } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 const navigationItems = [
   { title: "Home", url: "/dashboard", icon: Home },
   { title: "Explorar Mesas", url: "/dashboard/explorar", icon: Compass },
+  { title: "Minhas Aventuras", url: "/dashboard/aventuras", icon: ScrollText },
   { title: "Minhas Mesas", url: "/dashboard/mesas", icon: Dice1 },
   { title: "Taverna", url: "/dashboard/mensagens", icon: MessageCircle },
   { title: "Perfil", url: "/dashboard/perfil", icon: User },
