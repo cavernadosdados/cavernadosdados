@@ -14,22 +14,23 @@ import {
 import logoDragon from "@/assets/logo-dragon.png";
 import { useAuth } from "@/hooks/useAuth";
 
-const navigationItems = [
-  { title: "Home", url: "/dashboard", icon: Home },
-  { title: "Explorar Mesas", url: "/dashboard/explorar", icon: Compass },
-  { title: "Minhas Aventuras", url: "/dashboard/aventuras", icon: ScrollText },
-  { title: "Minhas Mesas", url: "/dashboard/mesas", icon: Dice1 },
-  { title: "Taverna", url: "/dashboard/mensagens", icon: MessageCircle },
-  { title: "Perfil", url: "/dashboard/perfil", icon: User },
-  { title: "Loja de Tokens", url: "/dashboard/tokens", icon: Gem },
-  { title: "Configurações", url: "/dashboard/configuracoes", icon: Settings },
-];
-
 export function AppSidebar() {
   const { state } = useSidebar();
   const { user } = useAuth();
   const userType = user?.user_metadata?.user_type;
   const collapsed = state === "collapsed";
+
+  const navigationItems = [
+    { title: "Home", url: "/dashboard", icon: Home },
+    { title: "Explorar Mesas", url: "/dashboard/explorar", icon: Compass },
+    ...(userType === 'master'
+      ? [{ title: "Minhas Mesas", url: "/dashboard/mesas", icon: Dice1 }]
+      : [{ title: "Minhas Aventuras", url: "/dashboard/aventuras", icon: ScrollText }]),
+    { title: "Taverna", url: "/dashboard/mensagens", icon: MessageCircle },
+    { title: "Perfil", url: "/dashboard/perfil", icon: User },
+    { title: "Loja de Tokens", url: "/dashboard/tokens", icon: Gem },
+    { title: "Configurações", url: "/dashboard/configuracoes", icon: Settings },
+  ];
 
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
