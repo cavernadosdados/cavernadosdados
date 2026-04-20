@@ -29,7 +29,9 @@ const Tokens = () => {
         <div>
           <h1 className="text-3xl font-bold glow-gold">Loja de Tokens</h1>
           <p className="text-muted-foreground mt-2">
-            Use tokens para criar mesas e aumentar seus slots de candidatura.
+            {isMaster
+              ? "Use tokens para destacar suas mesas no topo dos resultados."
+              : "Use tokens para aumentar seus slots de candidatura e ter prioridade."}
           </p>
         </div>
 
@@ -53,6 +55,7 @@ const Tokens = () => {
         </Card>
 
         {/* Slot Boost — uso prático imediato */}
+        {!isMaster && (
         <Card className="bg-gradient-to-br from-primary/10 to-card border-primary/40">
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
@@ -131,6 +134,7 @@ const Tokens = () => {
             )}
           </CardContent>
         </Card>
+        )}
 
         {/* Token Packages — placeholder até pagamentos reais */}
         <div>
@@ -214,20 +218,24 @@ const Tokens = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <h4 className="font-semibold mb-2">Para Mestres</h4>
-                <p className="text-sm text-muted-foreground">
-                  Criar uma mesa custa <strong>1 token</strong>. Isso evita mesas-fantasma e mantém o feed
-                  limpo. Você ganhou 3 tokens de boas-vindas para começar.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Para Jogadores</h4>
-                <p className="text-sm text-muted-foreground">
-                  Candidatar-se é grátis, mas você só pode ter <strong>3 candidaturas pendentes</strong> ao
-                  mesmo tempo. Compre boosts (+3 slots por 7 dias) para se candidatar a mais mesas.
-                </p>
-              </div>
+              {isMaster ? (
+                <div className="md:col-span-2">
+                  <h4 className="font-semibold mb-2">Para Mestres</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Use <strong>1 token</strong> para destacar uma mesa no topo dos resultados por
+                    24h. Você ganhou 3 tokens de boas-vindas para começar.
+                  </p>
+                </div>
+              ) : (
+                <div className="md:col-span-2">
+                  <h4 className="font-semibold mb-2">Para Jogadores</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Candidatar-se é grátis, mas você só pode ter <strong>3 candidaturas
+                    pendentes</strong> ao mesmo tempo. Compre boosts (+3 slots por 7 dias) ou use 1
+                    token para tornar uma candidatura prioritária.
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
