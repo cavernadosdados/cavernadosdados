@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Mesas from "./pages/Mesas";
 import Explorar from "./pages/Explorar";
+import MinhasAventuras from "./pages/MinhasAventuras";
 import Mensagens from "./pages/Mensagens";
 import Perfil from "./pages/Perfil";
 import Tokens from "./pages/Tokens";
@@ -41,6 +42,7 @@ const AppRoutes = () => (
     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
     <Route path="/dashboard/mesas" element={<ProtectedRoute><Mesas /></ProtectedRoute>} />
     <Route path="/dashboard/explorar" element={<ProtectedRoute><Explorar /></ProtectedRoute>} />
+    <Route path="/dashboard/aventuras" element={<ProtectedRoute><MinhasAventuras /></ProtectedRoute>} />
     <Route path="/dashboard/mensagens" element={<ProtectedRoute><Mensagens /></ProtectedRoute>} />
     <Route path="/dashboard/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
     <Route path="/dashboard/perfil/:userId" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
