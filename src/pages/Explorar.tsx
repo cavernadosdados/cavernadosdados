@@ -28,12 +28,15 @@ import {
   Compass,
 } from "lucide-react";
 import { useActiveTableBoosts } from "@/hooks/useTableBoosts";
+import { useAuth } from "@/hooks/useAuth";
 
 const ANY = "__any__";
 
 const Explorar = () => {
   const navigate = useNavigate();
   const { boostsMap } = useActiveTableBoosts();
+  const { user } = useAuth();
+  const isMaster = user?.user_metadata?.user_type === "master";
 
   const [system, setSystem] = useState<string>(ANY);
   const [theme, setTheme] = useState<string>(ANY);
@@ -347,15 +350,17 @@ const Explorar = () => {
 
                     {/* Actions */}
                     <div className="pt-2 flex flex-col sm:flex-row gap-2">
-                      <Button
-                        size="sm"
-                        className="gap-1 w-full sm:w-auto min-h-10"
-                        disabled={isFull}
-                        onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
-                      >
-                        <Send className="h-3 w-3" />
-                        {isFull ? "Mesa cheia" : "Entrar na aventura"}
-                      </Button>
+                      {!isMaster && (
+                        <Button
+                          size="sm"
+                          className="gap-1 w-full sm:w-auto min-h-10"
+                          disabled={isFull}
+                          onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
+                        >
+                          <Send className="h-3 w-3" />
+                          {isFull ? "Mesa cheia" : "Entrar na aventura"}
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="outline"

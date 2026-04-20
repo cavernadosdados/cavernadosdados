@@ -81,6 +81,7 @@ const Perfil = () => {
 
   const userType = profile?.user_type ?? user?.user_metadata?.user_type;
   const isMaster = userType === 'master';
+  const viewerIsMaster = user?.user_metadata?.user_type === 'master';
   const displayName = profile?.display_name || (isOwnProfile ? user?.email?.split('@')[0] : 'Usuário') || 'Usuário';
   const initials = displayName?.substring(0, 2).toUpperCase();
 
@@ -353,7 +354,7 @@ const Perfil = () => {
                                   >
                                     {appStatusLabel[status.status] || status.status}
                                   </Badge>
-                                ) : (
+                                ) : viewerIsMaster ? null : (
                                   <Button
                                     size="sm"
                                     className="gap-1 h-8"
