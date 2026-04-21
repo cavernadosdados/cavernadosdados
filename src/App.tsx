@@ -35,14 +35,32 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return user ? <>{children}</> : <Navigate to="/auth" />;
 };
 
+// Role-restricted route: redirects to /dashboard if user_type doesn't match
+const RoleRoute = ({ children, allow }: { children: React.ReactNode; allow: "master" | "player" }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+    </div>;
+  }
+
+  if (!user) return <Navigate to="/auth" />;
+
+  const userType = user.user_metadata?.user_type;
+  if (userType !== allow) return <Navigate to="/dashboard" replace />;
+
+  return <>{children}</>;
+};
+
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
     <Route path="/auth" element={<Auth />} />
     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-    <Route path="/dashboard/mesas" element={<ProtectedRoute><Mesas /></ProtectedRoute>} />
+    <Route path="/dashboard/mesas" element={<RoleRoute allow="master"><Mesas /></RoleRoute>} />
     <Route path="/dashboard/explorar" element={<ProtectedRoute><Explorar /></ProtectedRoute>} />
-    <Route path="/dashboard/aventuras" element={<ProtectedRoute><MinhasAventuras /></ProtectedRoute>} />
+    <Route path="/dashboard/aventuras" element={<RoleRoute allow="player"><MinhasAventuras /></RoleRoute>} />
     <Route path="/dashboard/mensagens" element={<ProtectedRoute><Mensagens /></ProtectedRoute>} />
     <Route path="/dashboard/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
     <Route path="/dashboard/perfil/:userId" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
