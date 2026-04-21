@@ -229,7 +229,7 @@ const Explorar = () => {
         ) : sorted.length === 0 ? (
           <Card className="bg-gradient-to-br from-card to-card/50">
             <CardHeader>
-              <CardTitle>Nenhuma mesa encontrada</CardTitle>
+              <h3 className="text-xl font-bold">Nenhuma mesa encontrada</h3>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
               Ajuste os filtros para descobrir novas aventuras.
