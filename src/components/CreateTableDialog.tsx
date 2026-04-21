@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { Sparkles } from 'lucide-react';
+import { CoverImageInput } from '@/components/CoverImageInput';
 
 const RPG_SYSTEMS = [
   'D&D 5e', 'D&D 3.5', 'Pathfinder 1e', 'Pathfinder 2e', 'Tormenta20',
@@ -49,6 +50,12 @@ const tableSchema = z.object({
   duration: z.string().min(1, 'Selecione a duração'),
   max_players: z.coerce.number().min(1).max(20),
   platform: z.string().min(1, 'Selecione a plataforma'),
+  cover_url: z
+    .string()
+    .trim()
+    .url('URL inválida')
+    .or(z.literal(''))
+    .optional(),
 });
 
 type TableFormData = z.infer<typeof tableSchema>;
@@ -73,6 +80,7 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
       duration: '',
       max_players: 4,
       platform: '',
+      cover_url: '',
     },
   });
 
@@ -91,6 +99,7 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
           duration: data.duration,
           max_players: data.max_players,
           platform: data.platform,
+          cover_url: data.cover_url?.trim() || null,
         });
 
       if (insertError) throw insertError;

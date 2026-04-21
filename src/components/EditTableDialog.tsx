@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { CoverImageInput } from '@/components/CoverImageInput';
 
 const RPG_SYSTEMS = [
   'D&D 5e', 'D&D 3.5', 'Pathfinder 1e', 'Pathfinder 2e', 'Tormenta20',
@@ -48,6 +49,12 @@ const tableSchema = z.object({
   max_players: z.coerce.number().min(1).max(20),
   platform: z.string().min(1, 'Selecione a plataforma'),
   status: z.string(),
+  cover_url: z
+    .string()
+    .trim()
+    .url('URL inválida')
+    .or(z.literal(''))
+    .optional(),
 });
 
 type TableFormData = z.infer<typeof tableSchema>;
@@ -66,6 +73,7 @@ interface EditTableDialogProps {
     max_players: number;
     platform: string;
     status: string;
+    cover_url?: string | null;
   };
 }
 
