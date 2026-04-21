@@ -1,0 +1,1 @@
+ALTER TABLE public.tables ADD COLUMN IF NOT EXISTS cover_url text;
