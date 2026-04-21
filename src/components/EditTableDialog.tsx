@@ -91,6 +91,7 @@ export function EditTableDialog({ open, onOpenChange, onUpdated, table }: EditTa
       max_players: table.max_players,
       platform: table.platform,
       status: table.status,
+      cover_url: table.cover_url || '',
     },
   });
 
@@ -104,6 +105,7 @@ export function EditTableDialog({ open, onOpenChange, onUpdated, table }: EditTa
       max_players: table.max_players,
       platform: table.platform,
       status: table.status,
+      cover_url: table.cover_url || '',
     });
   }, [table, form]);
 
@@ -119,6 +121,7 @@ export function EditTableDialog({ open, onOpenChange, onUpdated, table }: EditTa
         max_players: data.max_players,
         platform: data.platform,
         status: data.status,
+        cover_url: data.cover_url?.trim() || null,
       }).eq('id', table.id);
 
       if (error) throw error;
