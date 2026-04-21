@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,6 +26,7 @@ import {
   Sparkles,
   AlertTriangle,
   Compass,
+  ImageIcon,
 } from "lucide-react";
 import { useActiveTableBoosts } from "@/hooks/useTableBoosts";
 import { useAuth } from "@/hooks/useAuth";
@@ -228,12 +230,12 @@ const Explorar = () => {
           </div>
         ) : sorted.length === 0 ? (
           <Card className="bg-gradient-to-br from-card to-card/50">
-            <CardHeader>
+            <div className="p-6">
               <h3 className="text-xl font-bold">Nenhuma mesa encontrada</h3>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Ajuste os filtros para descobrir novas aventuras.
-            </CardContent>
+              <p className="text-sm text-muted-foreground mt-2">
+                Ajuste os filtros para descobrir novas aventuras.
+              </p>
+            </div>
           </Card>
         ) : (
           <div className="grid gap-5 md:grid-cols-2">
@@ -246,6 +248,7 @@ const Explorar = () => {
               const isFresh = ageMs < 1000 * 60 * 60 * 48;
               const isBoosted = !!boostsMap[table.id];
               const cd = campaignDetails?.[table.id];
+              const hasCover = !!table.cover_url;
 
               return (
                 <Card
@@ -254,51 +257,77 @@ const Explorar = () => {
                     isBoosted ? "border-primary/60 shadow-[0_0_25px_-10px_hsl(var(--primary))]" : ""
                   }`}
                 >
-                  {/* Header: Title + Badges */}
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start gap-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-xl sm:text-2xl font-bold leading-tight tracking-tight text-foreground glow-gold">
-                          {table.title}
-                        </h3>
-                        {table.profiles && (
-                          <p className="text-sm text-muted-foreground mt-1.5 flex items-center gap-1.5">
-                            <span className="text-xs uppercase tracking-wider text-primary/70">Mestre</span>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/dashboard/perfil/${table.profiles.id}`);
-                              }}
-                              className="hover:text-primary transition-colors font-medium"
-                            >
-                              {table.profiles.display_name}
-                            </button>
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex flex-col items-end gap-1.5 shrink-0">
-                        {isBoosted && (
-                          <Badge className="gap-1 bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30 text-xs">
-                            <Flame className="h-3 w-3" /> Destaque
-                          </Badge>
-                        )}
-                        <Badge variant="default" className="text-xs">Aberta</Badge>
-                        {isAlmostFull && (
-                          <Badge variant="destructive" className="gap-1 animate-pulse text-xs">
-                            <AlertTriangle className="h-3 w-3" /> Últimas vagas
-                          </Badge>
-                        )}
-                        {!isAlmostFull && isFresh && !isBoosted && (
-                          <Badge className="gap-1 bg-secondary text-secondary-foreground text-xs">
-                            <Sparkles className="h-3 w-3" /> Nova
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
+                  {/* Cover Banner 16:9 */}
+                  <div className="relative">
+                    <AspectRatio ratio={16 / 9}>
+                      {hasCover ? (
+                        <img
+                          src={table.cover_url}
+                          alt={`Capa de ${table.title}`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Fallback to placeholder on error
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            const parent = (e.target as HTMLImageElement).parentElement;
+                            if (parent) {
+                              parent.classList.add('bg-muted/50', 'flex', 'items-center', 'justify-center');
+                              const icon = document.createElement('div');
+                              icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground/50"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+                              parent.appendChild(icon.firstChild!);
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-muted/50 flex items-center justify-center">
+                          <ImageIcon className="h-12 w-12 text-muted-foreground/50" />
+                        </div>
+                      )}
+                    </AspectRatio>
 
-                  <CardContent className="space-y-5">
+                    {/* Badges overlay */}
+                    <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+                      {isBoosted && (
+                        <Badge className="gap-1 bg-primary/90 text-primary-foreground border-0 hover:bg-primary text-xs shadow-lg">
+                          <Flame className="h-3 w-3" /> Destaque
+                        </Badge>
+                      )}
+                      <Badge variant="default" className="text-xs shadow-lg">Aberta</Badge>
+                      {isAlmostFull && (
+                        <Badge variant="destructive" className="gap-1 animate-pulse text-xs shadow-lg">
+                          <AlertTriangle className="h-3 w-3" /> Últimas vagas
+                        </Badge>
+                      )}
+                      {!isAlmostFull && isFresh && !isBoosted && (
+                        <Badge className="gap-1 bg-secondary text-secondary-foreground text-xs shadow-lg">
+                          <Sparkles className="h-3 w-3" /> Nova
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  <CardContent className="space-y-5 pt-4">
+                    {/* Title + Master */}
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-bold leading-tight tracking-tight text-foreground glow-gold">
+                        {table.title}
+                      </h3>
+                      {table.profiles && (
+                        <p className="text-sm text-muted-foreground mt-1.5 flex items-center gap-1.5">
+                          <span className="text-xs uppercase tracking-wider text-primary/70">Mestre</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/dashboard/perfil/${table.profiles.id}`);
+                            }}
+                            className="hover:text-primary transition-colors font-medium"
+                          >
+                            {table.profiles.display_name}
+                          </button>
+                        </p>
+                      )}
+                    </div>
+
                     {/* Description */}
                     {table.description && (
                       <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
