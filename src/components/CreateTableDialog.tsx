@@ -154,6 +154,16 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
               </FormItem>
             )} />
 
+            <FormField control={form.control} name="cover_url" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Link da Imagem de Capa</FormLabel>
+                <FormControl>
+                  <CoverImageInput value={field.value || ''} onChange={field.onChange} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="system" render={({ field }) => (
                 <FormItem>
