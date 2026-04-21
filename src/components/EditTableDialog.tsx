@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { CoverImageInput } from '@/components/CoverImageInput';
 
 const RPG_SYSTEMS = [
   'D&D 5e', 'D&D 3.5', 'Pathfinder 1e', 'Pathfinder 2e', 'Tormenta20',
@@ -48,6 +49,12 @@ const tableSchema = z.object({
   max_players: z.coerce.number().min(1).max(20),
   platform: z.string().min(1, 'Selecione a plataforma'),
   status: z.string(),
+  cover_url: z
+    .string()
+    .trim()
+    .url('URL inválida')
+    .or(z.literal(''))
+    .optional(),
 });
 
 type TableFormData = z.infer<typeof tableSchema>;
@@ -66,6 +73,7 @@ interface EditTableDialogProps {
     max_players: number;
     platform: string;
     status: string;
+    cover_url?: string | null;
   };
 }
 
@@ -83,6 +91,7 @@ export function EditTableDialog({ open, onOpenChange, onUpdated, table }: EditTa
       max_players: table.max_players,
       platform: table.platform,
       status: table.status,
+      cover_url: table.cover_url || '',
     },
   });
 
@@ -96,6 +105,7 @@ export function EditTableDialog({ open, onOpenChange, onUpdated, table }: EditTa
       max_players: table.max_players,
       platform: table.platform,
       status: table.status,
+      cover_url: table.cover_url || '',
     });
   }, [table, form]);
 
@@ -111,6 +121,7 @@ export function EditTableDialog({ open, onOpenChange, onUpdated, table }: EditTa
         max_players: data.max_players,
         platform: data.platform,
         status: data.status,
+        cover_url: data.cover_url?.trim() || null,
       }).eq('id', table.id);
 
       if (error) throw error;
@@ -147,6 +158,16 @@ export function EditTableDialog({ open, onOpenChange, onUpdated, table }: EditTa
               <FormItem>
                 <FormLabel>Descrição</FormLabel>
                 <FormControl><Textarea rows={3} {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+
+            <FormField control={form.control} name="cover_url" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Link da Imagem de Capa</FormLabel>
+                <FormControl>
+                  <CoverImageInput value={field.value || ''} onChange={field.onChange} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
