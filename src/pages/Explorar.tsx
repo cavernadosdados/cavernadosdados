@@ -3,11 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -230,14 +229,14 @@ const Explorar = () => {
         ) : sorted.length === 0 ? (
           <Card className="bg-gradient-to-br from-card to-card/50">
             <CardHeader>
-              <CardTitle>Nenhuma mesa encontrada</CardTitle>
+              <h3 className="text-xl font-bold">Nenhuma mesa encontrada</h3>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
               Ajuste os filtros para descobrir novas aventuras.
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-2">
             {sorted.map((table: any) => {
               const acceptedCount = acceptedCounts?.[table.id] ?? 0;
               const seatsLeft = Math.max(0, (table.max_players ?? 0) - acceptedCount);
@@ -251,123 +250,138 @@ const Explorar = () => {
               return (
                 <Card
                   key={table.id}
-                  className={`bg-card border-border hover:border-primary transition-all ${
-                    isBoosted ? "border-primary/60 shadow-[0_0_20px_-8px_hsl(var(--primary))]" : ""
+                  className={`bg-card border-border hover:border-primary/50 transition-all overflow-hidden ${
+                    isBoosted ? "border-primary/60 shadow-[0_0_25px_-10px_hsl(var(--primary))]" : ""
                   }`}
                 >
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start gap-2">
-                      <CardTitle className="text-lg">{table.title}</CardTitle>
-                      <div className="flex flex-col items-end gap-1">
+                  {/* Header: Title + Badges */}
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-xl sm:text-2xl font-bold leading-tight tracking-tight text-foreground glow-gold">
+                          {table.title}
+                        </h3>
+                        {table.profiles && (
+                          <p className="text-sm text-muted-foreground mt-1.5 flex items-center gap-1.5">
+                            <span className="text-xs uppercase tracking-wider text-primary/70">Mestre</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/dashboard/perfil/${table.profiles.id}`);
+                              }}
+                              className="hover:text-primary transition-colors font-medium"
+                            >
+                              {table.profiles.display_name}
+                            </button>
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5 shrink-0">
                         {isBoosted && (
-                          <Badge className="gap-1 bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30">
-                            <Flame className="h-3 w-3" /> Em destaque
+                          <Badge className="gap-1 bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30 text-xs">
+                            <Flame className="h-3 w-3" /> Destaque
                           </Badge>
                         )}
-                        <Badge variant="default">Aberta</Badge>
+                        <Badge variant="default" className="text-xs">Aberta</Badge>
                         {isAlmostFull && (
-                          <Badge variant="destructive" className="gap-1 animate-pulse">
+                          <Badge variant="destructive" className="gap-1 animate-pulse text-xs">
                             <AlertTriangle className="h-3 w-3" /> Últimas vagas
                           </Badge>
                         )}
                         {!isAlmostFull && isFresh && !isBoosted && (
-                          <Badge className="gap-1 bg-secondary text-secondary-foreground">
+                          <Badge className="gap-1 bg-secondary text-secondary-foreground text-xs">
                             <Sparkles className="h-3 w-3" /> Nova
                           </Badge>
                         )}
                       </div>
                     </div>
-
-                    {table.profiles && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/dashboard/perfil/${table.profiles.id}`);
-                        }}
-                        className="group mt-2 flex w-full items-center gap-2 rounded-md border border-primary/20 bg-background/40 p-2 text-left transition-mystical hover:border-primary/50"
-                      >
-                        <Avatar className="h-8 w-8 border border-primary/40">
-                          <AvatarImage src={table.profiles.avatar_url ?? undefined} alt={table.profiles.display_name} />
-                          <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                            {(table.profiles.display_name || "?").slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Mestre</div>
-                          <div className="text-xs font-semibold truncate group-hover:text-primary">
-                            {table.profiles.display_name}
-                          </div>
-                        </div>
-                        <span className="text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                          Ver perfil →
-                        </span>
-                      </button>
-                    )}
                   </CardHeader>
 
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-5">
+                    {/* Description */}
                     {table.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">{table.description}</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                        {table.description}
+                      </p>
                     )}
 
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline" className="gap-1">
+                    {/* Tags - compact */}
+                    <div className="flex flex-wrap gap-1.5">
+                      <Badge variant="outline" className="gap-1 text-[10px] h-5 px-2 bg-background/50">
                         <Gamepad2 className="h-3 w-3" /> {table.system}
                       </Badge>
-                      <Badge variant="outline">{table.theme}</Badge>
-                      <Badge variant="outline" className="gap-1">
+                      <Badge variant="outline" className="text-[10px] h-5 px-2 bg-background/50">
+                        {table.theme}
+                      </Badge>
+                      <Badge variant="outline" className="gap-1 text-[10px] h-5 px-2 bg-background/50">
                         <Clock className="h-3 w-3" /> {table.duration}
                       </Badge>
-                      <Badge
-                        variant={isFull ? "secondary" : isAlmostFull ? "destructive" : "outline"}
-                        className="gap-1"
-                      >
-                        <Users className="h-3 w-3" />
-                        {acceptedCount}/{table.max_players} vagas
-                      </Badge>
-                      <Badge variant="outline" className="gap-1">
+                      <Badge variant="outline" className="gap-1 text-[10px] h-5 px-2 bg-background/50">
                         <Monitor className="h-3 w-3" /> {table.platform}
                       </Badge>
                     </div>
 
-                    {/* Urgência */}
-                    <div className="flex flex-wrap gap-2 text-xs">
-                      {!isFull && (
-                        <span className="inline-flex items-center gap-1 text-primary">
-                          <Flame className="h-3 w-3" />
+                    {/* Seats + Urgency Info Bar */}
+                    <div className="flex flex-wrap items-center gap-3 text-sm">
+                      {/* Seats */}
+                      <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md ${
+                        isFull 
+                          ? "bg-secondary/30 text-secondary-foreground" 
+                          : isAlmostFull 
+                            ? "bg-destructive/15 text-destructive border border-destructive/20" 
+                            : "bg-primary/10 text-primary border border-primary/20"
+                      }`}>
+                        <Users className="h-4 w-4" />
+                        <span className="font-semibold">
+                          {acceptedCount}/{table.max_players}
+                        </span>
+                        <span className="text-xs opacity-80">vagas</span>
+                        {seatsLeft > 0 && (
+                          <span className="text-xs opacity-70 ml-1">
+                            ({seatsLeft} disponíve{seatsLeft === 1 ? "l" : "is"})
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Urgency indicators */}
+                      {!isFull && seatsLeft <= 2 && (
+                        <div className="inline-flex items-center gap-1.5 text-destructive font-medium">
+                          <Flame className="h-4 w-4" />
                           Faltam {seatsLeft} jogador{seatsLeft > 1 ? "es" : ""}
-                        </span>
+                        </div>
                       )}
+
                       {cd?.schedule_time && (
-                        <span className="inline-flex items-center gap-1 text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {cd.frequency ? `${cd.frequency} · ` : ""}{cd.schedule_time}
-                        </span>
+                        <div className="inline-flex items-center gap-1.5 text-muted-foreground">
+                          <Clock className="h-4 w-4" />
+                          <span className="text-xs">
+                            {cd.frequency ? `${cd.frequency} · ` : ""}{cd.schedule_time}
+                          </span>
+                        </div>
                       )}
                     </div>
 
                     {/* Actions */}
-                    <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                    <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
                       {!isMaster && (
                         <Button
-                          size="sm"
-                          className="gap-1 w-full sm:w-auto min-h-10"
+                          size="default"
+                          className="gap-2 w-full sm:w-auto h-11 font-semibold"
                           disabled={isFull}
                           onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
                         >
-                          <Send className="h-3 w-3" />
+                          <Send className="h-4 w-4" />
                           {isFull ? "Mesa cheia" : "Entrar na aventura"}
                         </Button>
                       )}
                       <Button
-                        size="sm"
+                        size="default"
                         variant="outline"
-                        className="gap-1 w-full sm:w-auto min-h-10"
+                        className="gap-2 w-full sm:w-auto h-11"
                         onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
                       >
-                        <ScrollText className="h-3 w-3" /> Ver detalhes
+                        <ScrollText className="h-4 w-4" /> Ver detalhes
                       </Button>
                     </div>
                   </CardContent>
