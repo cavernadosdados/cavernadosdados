@@ -88,8 +88,10 @@ const AdventurePanel = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const userType = user?.user_metadata?.user_type;
-  const isMaster = userType === "master";
+  // NOTE: ownership is determined by table.master_id — never by the user_type role.
+  // Other masters viewing this page must see it as a read-only player would.
+  // `isMaster` below is rebound after `table` loads; until then, treat as non-owner.
+  let isMaster = false;
 
   // Marca o chat da mesa como lido para o usuário atual ao abrir o painel.
   const markChatRead = useMarkMesaChatRead();
