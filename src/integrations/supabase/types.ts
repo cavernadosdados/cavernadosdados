@@ -242,6 +242,84 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount_cents: number
+          application_id: string | null
+          commission_cents: number
+          created_at: string
+          currency: string
+          escrow_at: string | null
+          id: string
+          master_id: string
+          master_payout_cents: number
+          payer_id: string
+          provider: string | null
+          provider_metadata: Json
+          provider_payment_id: string | null
+          refunded_at: string | null
+          released_at: string | null
+          status: string
+          table_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          application_id?: string | null
+          commission_cents: number
+          created_at?: string
+          currency?: string
+          escrow_at?: string | null
+          id?: string
+          master_id: string
+          master_payout_cents: number
+          payer_id: string
+          provider?: string | null
+          provider_metadata?: Json
+          provider_payment_id?: string | null
+          refunded_at?: string | null
+          released_at?: string | null
+          status?: string
+          table_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          application_id?: string | null
+          commission_cents?: number
+          created_at?: string
+          currency?: string
+          escrow_at?: string | null
+          id?: string
+          master_id?: string
+          master_payout_cents?: number
+          payer_id?: string
+          provider?: string | null
+          provider_metadata?: Json
+          provider_payment_id?: string | null
+          refunded_at?: string | null
+          released_at?: string | null
+          status?: string
+          table_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "table_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       player_reports: {
         Row: {
           character_avatar_url: string | null
@@ -635,6 +713,7 @@ export type Database = {
       }
       tables: {
         Row: {
+          commission_pct: number
           cover_url: string | null
           created_at: string
           description: string | null
@@ -643,6 +722,7 @@ export type Database = {
           master_id: string
           max_players: number
           platform: string
+          price_cents: number
           status: string
           system: string
           theme: string
@@ -650,6 +730,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          commission_pct?: number
           cover_url?: string | null
           created_at?: string
           description?: string | null
@@ -658,6 +739,7 @@ export type Database = {
           master_id: string
           max_players?: number
           platform: string
+          price_cents?: number
           status?: string
           system: string
           theme: string
@@ -665,6 +747,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          commission_pct?: number
           cover_url?: string | null
           created_at?: string
           description?: string | null
@@ -673,6 +756,7 @@ export type Database = {
           master_id?: string
           max_players?: number
           platform?: string
+          price_cents?: number
           status?: string
           system?: string
           theme?: string
