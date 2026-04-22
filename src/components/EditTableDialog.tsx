@@ -52,8 +52,10 @@ const tableSchema = z.object({
   cover_url: z
     .string()
     .trim()
-    .url('URL inválida')
-    .or(z.literal(''))
+    .refine(
+      (v) => v === '' || /^https?:\/\//.test(v) || v.startsWith('/'),
+      'URL inválida'
+    )
     .optional(),
 });
 
