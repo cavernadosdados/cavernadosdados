@@ -222,9 +222,9 @@ const Explorar = () => {
 
         {/* Results */}
         {isLoading ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-56 rounded-lg" />
+          <div className="grid gap-4 sm:gap-5 lg:gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="h-[340px] rounded-2xl" />
             ))}
           </div>
         ) : sorted.length === 0 ? (
@@ -237,7 +237,7 @@ const Explorar = () => {
             </div>
           </Card>
         ) : (
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-4 sm:gap-5 lg:gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {sorted.map((table: any) => {
               const acceptedCount = acceptedCounts?.[table.id] ?? 0;
               const seatsLeft = Math.max(0, (table.max_players ?? 0) - acceptedCount);
