@@ -565,6 +565,17 @@ const MesaDetalhes = () => {
           </div>
         </div>
       </div>
+
+      {canSeePrivateRules && (
+        <FullRulesDialog
+          open={rulesOpen}
+          onOpenChange={setRulesOpen}
+          tableTitle={table.title}
+          campaign={campaign}
+          scheduleLabel={scheduleLabel}
+          showReaderMode={isAccepted || isOwner}
+        />
+      )}
     </DashboardLayout>
   );
 };
