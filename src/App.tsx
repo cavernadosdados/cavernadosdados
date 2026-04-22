@@ -18,6 +18,7 @@ import Configuracoes from "./pages/Configuracoes";
 import AdventurePanel from "./pages/AdventurePanel";
 import MesaDetalhes from "./pages/MesaDetalhes";
 import Notificacoes from "./pages/Notificacoes";
+import AdminModeracao from "./pages/AdminModeracao";
 import NotFound from "./pages/NotFound";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -71,6 +72,7 @@ const AppRoutes = () => (
     <Route path="/dashboard/mesa/:tableId" element={<ProtectedRoute><AdventurePanel /></ProtectedRoute>} />
     <Route path="/dashboard/mesa/:tableId/detalhes" element={<ProtectedRoute><MesaDetalhes /></ProtectedRoute>} />
     <Route path="/dashboard/notificacoes" element={<ProtectedRoute><Notificacoes /></ProtectedRoute>} />
+    <Route path="/dashboard/admin/moderacao" element={<ProtectedRoute><AdminModeracao /></ProtectedRoute>} />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />
   </Routes>

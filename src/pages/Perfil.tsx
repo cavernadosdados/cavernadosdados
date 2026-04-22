@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
 import { Star, Clock, Dice1, MapPin, Gamepad2, Users, Monitor, Send, ScrollText } from "lucide-react";
+import { ReportTableButton } from "@/components/ReportTableButton";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Perfil = () => {
@@ -346,6 +347,14 @@ const Perfil = () => {
                               >
                                 <ScrollText className="h-3 w-3" /> Ver Detalhes
                               </Button>
+                              {!isOwnProfile && (
+                                <ReportTableButton
+                                  tableId={t.id}
+                                  tableTitle={t.title}
+                                  variant="menu-item"
+                                  className="h-8 text-muted-foreground hover:text-destructive"
+                                />
+                              )}
                               {!isOwnProfile && t.status === 'open' && (
                                 status ? (
                                   <Badge

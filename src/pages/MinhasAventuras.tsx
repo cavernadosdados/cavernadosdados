@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Compass, Users, Monitor, Gamepad2, Calendar, Clock, ScrollText, X, MessageCircle } from "lucide-react";
+import { ReportTableButton } from "@/components/ReportTableButton";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -235,6 +236,14 @@ const MinhasAventuras = () => {
               >
                 Ver detalhes
               </Button>
+            )}
+            {t.master_id !== user?.id && (
+              <ReportTableButton
+                tableId={t.id}
+                tableTitle={t.title}
+                variant="menu-item"
+                className="w-full text-muted-foreground hover:text-destructive"
+              />
             )}
             {kind === "pending" && (
               <AlertDialog>

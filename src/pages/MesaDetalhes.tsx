@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { composeSchedule, parseSchedule } from "@/components/WeekdaySelector";
 import { FullRulesDialog } from "@/components/FullRulesDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
+import { ReportTableButton } from "@/components/ReportTableButton";
 import {
   ArrowLeft,
   BookOpen,
@@ -218,6 +219,16 @@ const MesaDetalhes = () => {
               <BookOpen className="h-4 w-4" />
               Entrar na mesa
             </Button>
+          )}
+
+          {/* Botão de denúncia disponível para qualquer usuário que não seja o dono */}
+          {!isOwner && (
+            <ReportTableButton
+              tableId={table.id}
+              tableTitle={table.title}
+              variant="menu-item"
+              className="text-muted-foreground hover:text-destructive"
+            />
           )}
         </div>
 

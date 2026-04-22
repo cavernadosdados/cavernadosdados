@@ -27,6 +27,7 @@ import {
   Compass,
 } from "lucide-react";
 import { CoverImage } from "@/components/CoverImage";
+import { ReportTableButton } from "@/components/ReportTableButton";
 import { useActiveTableBoosts } from "@/hooks/useTableBoosts";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -289,6 +290,13 @@ const Explorar = () => {
                         </Badge>
                       )}
                     </div>
+
+                  {/* Botão de denúncia (canto superior esquerdo) */}
+                  {user?.id !== table.profiles?.id && (
+                    <div className="absolute top-3 left-3 z-20">
+                      <ReportTableButton tableId={table.id} tableTitle={table.title} />
+                    </div>
+                  )}
 
                   {/* Conteúdo: layout natural (flex-col), empurra o conteúdo para baixo */}
                   <div className="relative z-10 flex flex-col justify-end w-full p-4 sm:p-6 gap-3 sm:gap-4 text-white">
