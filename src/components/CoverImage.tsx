@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getCachedImageUrl } from "@/lib/imageCache";
 
 /**
- * Cache em memória de URLs já carregadas com sucesso na sessão.
- * Evita re-fetch e re-flash de placeholder em re-renderizações
- * (filtros, ordenação, navegação client-side).
+ * Cache em memória (L1) de URLs já resolvidas na sessão.
+ * Mapeia URL original → URL servível (geralmente um `blob:` vindo
+ * da Cache Storage). Evita re-fetch e re-flash em re-renderizações.
  */
-const loadedCache = new Set<string>();
+const memoryCache = new Map<string, string>();
 
 interface CoverImageProps {
   src?: string | null;
@@ -23,15 +24,16 @@ interface CoverImageProps {
 }
 
 /**
- * Capa de mesa otimizada:
- * - Lazy-load via IntersectionObserver (rootMargin 200px) para evitar
- *   baixar imagens fora da viewport.
- * - Cache em memória + `loading="lazy"` nativo como fallback.
- * - `decoding="async"` para não bloquear o thread principal.
- * - Fade-in suave ao carregar (skip se já estava em cache).
+ * Capa de mesa com cache em duas camadas:
  *
- * Imagens da galeria curada vivem em /public/assets/adventure-covers/
- * (servidas pelo Vite com cache HTTP de longo prazo em produção).
+ * L1 — Memória (síncrono): evita re-trabalho dentro da mesma sessão.
+ * L2 — Cache Storage API (persistente): sobrevive entre visitas e abas,
+ *      com estratégia stale-while-revalidate (ver `lib/imageCache`).
+ *
+ * Plus:
+ * - Lazy-load via IntersectionObserver (rootMargin 200px).
+ * - `decoding="async"` + `fetchpriority` apropriado.
+ * - Fade-in suave ao carregar (skip se já estava em cache).
  */
 export function CoverImage({
   src,
@@ -41,12 +43,14 @@ export function CoverImage({
   fallback,
 }: CoverImageProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const wasCached = !!src && loadedCache.has(src);
-  const [shouldLoad, setShouldLoad] = useState(eager || wasCached);
-  const [loaded, setLoaded] = useState(wasCached);
+  const cachedUrl = src ? memoryCache.get(src) : undefined;
+
+  const [shouldLoad, setShouldLoad] = useState(eager || !!cachedUrl);
+  const [resolvedSrc, setResolvedSrc] = useState<string | undefined>(cachedUrl);
+  const [loaded, setLoaded] = useState(!!cachedUrl);
   const [errored, setErrored] = useState(false);
 
-  // IntersectionObserver: dispara o download quando o card se aproxima da viewport
+  // IntersectionObserver: dispara o trabalho quando o card se aproxima da viewport
   useEffect(() => {
     if (shouldLoad || !containerRef.current) return;
     const el = containerRef.current;
@@ -72,6 +76,29 @@ export function CoverImage({
     return () => io.disconnect();
   }, [shouldLoad]);
 
+  // Resolve via cache persistente assim que decidimos carregar
+  useEffect(() => {
+    if (!src || !shouldLoad || resolvedSrc) return;
+
+    let cancelled = false;
+    getCachedImageUrl(src)
+      .then((url) => {
+        if (cancelled) return;
+        memoryCache.set(src, url);
+        setResolvedSrc(url);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        // Fallback: usar a URL original direto
+        memoryCache.set(src, src);
+        setResolvedSrc(src);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [src, shouldLoad, resolvedSrc]);
+
   if (!src || errored) {
     return (
       <div
@@ -88,19 +115,24 @@ export function CoverImage({
 
   return (
     <div ref={containerRef} className={cn("overflow-hidden", className)}>
-      {shouldLoad && (
+      {shouldLoad && resolvedSrc && (
         <img
-          src={src}
+          src={resolvedSrc}
           alt={alt}
           loading={eager ? "eager" : "lazy"}
           decoding="async"
           // fetchpriority é prop não tipada nativamente em React 18
           {...({ fetchpriority: eager ? "high" : "low" } as any)}
-          onLoad={() => {
-            loadedCache.add(src);
-            setLoaded(true);
+          onLoad={() => setLoaded(true)}
+          onError={() => {
+            // Se o blob falhou, tenta direto a URL original como último recurso
+            if (src && resolvedSrc !== src) {
+              memoryCache.set(src, src);
+              setResolvedSrc(src);
+            } else {
+              setErrored(true);
+            }
           }}
-          onError={() => setErrored(true)}
           className={cn(
             "h-full w-full object-cover transition-opacity duration-500",
             loaded ? "opacity-100" : "opacity-0"
