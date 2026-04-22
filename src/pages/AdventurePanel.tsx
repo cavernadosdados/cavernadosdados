@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -88,8 +88,10 @@ const AdventurePanel = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const userType = user?.user_metadata?.user_type;
-  const isMaster = userType === "master";
+  // NOTE: this panel is the OWNER/PARTICIPANT view of a table.
+  // Edit/management controls below are gated by table OWNERSHIP, never by the
+  // user_type role — otherwise other masters could see edit affordances on
+  // tables they don't own. `isMaster` below is true ONLY for the table owner.
 
   // Marca o chat da mesa como lido para o usuário atual ao abrir o painel.
   const markChatRead = useMarkMesaChatRead();
@@ -124,6 +126,10 @@ const AdventurePanel = () => {
     },
     enabled: !!tableId,
   });
+
+  // Ownership-based flag: true ONLY for the master who owns this table.
+  // All edit/management UI is gated by this — never by user_metadata.user_type.
+  const isMaster = !!user && !!table && table.master_id === user.id;
 
   // Fetch campaign details
   const { data: campaign, refetch: refetchCampaign } = useQuery({
@@ -388,9 +394,16 @@ const AdventurePanel = () => {
     );
   }
 
-  // Access control: non-masters need an accepted application
+  // Access control: only the owner master and accepted players see the management
+  // panel. Everyone else (including OTHER masters who don't own this table) is
+  // redirected to the read-only public details page.
   const hasAccess = isMaster || myApplication?.status === "accepted";
   if (!hasAccess) {
+    // Pending users still see the contextual "in review" notice; everyone else
+    // is sent to the public details page.
+    if (!myApplication || myApplication.status === "rejected") {
+      return <Navigate to={`/dashboard/mesa/${tableId}/detalhes`} replace />;
+    }
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <header className="border-b border-border bg-card/80 backdrop-blur-sm">

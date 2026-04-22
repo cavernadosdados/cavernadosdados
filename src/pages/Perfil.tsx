@@ -342,7 +342,7 @@ const Perfil = () => {
                                 size="sm"
                                 variant="outline"
                                 className="gap-1 h-8"
-                                onClick={() => navigate(`/dashboard/mesa/${t.id}`)}
+                                onClick={() => navigate(`/dashboard/mesa/${t.id}/detalhes`)}
                               >
                                 <ScrollText className="h-3 w-3" /> Ver Detalhes
                               </Button>
