@@ -376,7 +376,7 @@ const Explorar = () => {
                           size="default"
                           variant="outline"
                           className="gap-2 w-full sm:w-auto h-10 bg-black/40 border-white/30 text-white hover:bg-black/60 hover:text-white backdrop-blur-sm"
-                          onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
+                          onClick={() => navigate(`/dashboard/mesa/${table.id}/detalhes`)}
                         >
                           <ScrollText className="h-4 w-4" /> Ver detalhes
                         </Button>

@@ -296,7 +296,7 @@ const Mesas = () => {
                           size="sm"
                           variant="outline"
                           className="gap-1 w-full sm:w-auto min-h-10"
-                          onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
+                          onClick={() => navigate(`/dashboard/mesa/${table.id}/detalhes`)}
                         >
                           <ScrollText className="h-3 w-3" /> Ver Detalhes
                         </Button>

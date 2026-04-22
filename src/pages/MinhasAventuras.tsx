@@ -231,7 +231,7 @@ const MinhasAventuras = () => {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => navigate(`/dashboard/mesa/${t.id}`)}
+                onClick={() => navigate(`/dashboard/mesa/${t.id}/detalhes`)}
               >
                 Ver detalhes
               </Button>
