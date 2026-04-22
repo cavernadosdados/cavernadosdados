@@ -518,7 +518,7 @@ const MesaDetalhes = () => {
                     {!myApp && !isFull && (
                       <Button
                         className="w-full gap-2"
-                        onClick={() => navigate("/dashboard/explorar")}
+                        onClick={() => setApplyOpen(true)}
                       >
                         <Send className="h-4 w-4" />
                         Quero participar
