@@ -1,4 +1,4 @@
-import { Home, Dice1, MessageCircle, User, Gem, Settings, Crown, Compass, ScrollText } from "lucide-react";
+import { Home, Dice1, MessageCircle, User, Gem, Settings, Crown, Compass, ScrollText, Shield } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -13,10 +13,12 @@ import {
 } from "@/components/ui/sidebar";
 import logoDragon from "@/assets/logo-dragon.png";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const { user } = useAuth();
+  const { data: isAdmin } = useIsAdmin();
   const userType = user?.user_metadata?.user_type;
   const collapsed = state === "collapsed";
 
@@ -74,6 +76,17 @@ export function AppSidebar() {
                     <NavLink to="/dashboard/pro" className={getNavCls}>
                       <Crown className="h-4 w-4" />
                       {!collapsed && <span>Área PRO</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink to="/dashboard/admin/moderacao" className={getNavCls}>
+                      <Shield className="h-4 w-4" />
+                      {!collapsed && <span>Moderação</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
