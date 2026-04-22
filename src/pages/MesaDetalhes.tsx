@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { composeSchedule, parseSchedule } from "@/components/WeekdaySelector";
 import { FullRulesDialog } from "@/components/FullRulesDialog";
+import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 import {
   ArrowLeft,
   BookOpen,
