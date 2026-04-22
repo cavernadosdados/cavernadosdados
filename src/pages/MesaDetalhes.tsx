@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { composeSchedule, parseSchedule } from "@/components/WeekdaySelector";
+import { FullRulesDialog } from "@/components/FullRulesDialog";
 import {
   ArrowLeft,
   BookOpen,
@@ -46,6 +47,7 @@ const MesaDetalhes = () => {
   const { tableId } = useParams<{ tableId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [rulesOpen, setRulesOpen] = useState(false);
 
   // Public table info (RLS allows any authenticated user to read tables).
   const { data: table, isLoading: loadingTable } = useQuery({
@@ -347,10 +349,21 @@ const MesaDetalhes = () => {
             {canSeePrivateRules && (
               <Card className="border-border bg-card/60">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Swords className="h-4 w-4 text-primary" />
-                    Regras e expectativas
-                  </CardTitle>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Swords className="h-4 w-4 text-primary" />
+                      Regras e expectativas
+                    </CardTitle>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-2 h-8"
+                      onClick={() => setRulesOpen(true)}
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                      Ver regras completas
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4 text-sm">
                   <RuleBlock
@@ -552,6 +565,17 @@ const MesaDetalhes = () => {
           </div>
         </div>
       </div>
+
+      {canSeePrivateRules && (
+        <FullRulesDialog
+          open={rulesOpen}
+          onOpenChange={setRulesOpen}
+          tableTitle={table.title}
+          campaign={campaign}
+          scheduleLabel={scheduleLabel}
+          showReaderMode={isAccepted || isOwner}
+        />
+      )}
     </DashboardLayout>
   );
 };
