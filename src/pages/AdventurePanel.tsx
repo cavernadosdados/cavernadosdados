@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -394,9 +394,16 @@ const AdventurePanel = () => {
     );
   }
 
-  // Access control: non-masters need an accepted application
+  // Access control: only the owner master and accepted players see the management
+  // panel. Everyone else (including OTHER masters who don't own this table) is
+  // redirected to the read-only public details page.
   const hasAccess = isMaster || myApplication?.status === "accepted";
   if (!hasAccess) {
+    // Pending users still see the contextual "in review" notice; everyone else
+    // is sent to the public details page.
+    if (!myApplication || myApplication.status === "rejected") {
+      return <Navigate to={`/dashboard/mesa/${tableId}/detalhes`} replace />;
+    }
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <header className="border-b border-border bg-card/80 backdrop-blur-sm">
