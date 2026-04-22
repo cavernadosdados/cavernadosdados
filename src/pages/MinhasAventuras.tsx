@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Compass, Users, Monitor, Gamepad2, Calendar, Clock, ScrollText, X } from "lucide-react";
+import { Compass, Users, Monitor, Gamepad2, Calendar, Clock, ScrollText, X, MessageCircle } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useUnreadMesaCounts } from "@/hooks/useUnreadMesaChat";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -118,6 +119,10 @@ const MinhasAventuras = () => {
       a.tables?.status === "finished"
   );
 
+  // Contador de mensagens não lidas no chat — apenas para mesas em andamento.
+  const inProgressTableIds = inProgress.map((a) => a.table_id);
+  const { data: unreadCounts } = useUnreadMesaCounts(inProgressTableIds);
+
   const isEmpty = !isLoading && apps.length === 0;
 
   const renderCard = (app: AppRow, kind: "in_progress" | "pending" | "history") => {
@@ -126,6 +131,7 @@ const MinhasAventuras = () => {
     const masterName = t.profiles?.display_name || "Mestre";
     const initials = masterName.slice(0, 2).toUpperCase();
     const nextSession = nextSessions?.[t.id];
+    const unread = kind === "in_progress" ? unreadCounts?.[t.id] ?? 0 : 0;
 
     return (
       <Card key={app.id} className="bg-card border-border hover:border-primary/50 transition-mystical">
@@ -162,9 +168,21 @@ const MinhasAventuras = () => {
               </Badge>
             )}
             {kind === "in_progress" && (
-              <Badge className="shrink-0 bg-primary/20 text-primary border-primary/30">
-                Em andamento
-              </Badge>
+              <div className="flex flex-col items-end gap-1 shrink-0">
+                <Badge className="bg-primary/20 text-primary border-primary/30">
+                  Em andamento
+                </Badge>
+                {unread > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="gap-1 animate-pulse"
+                    aria-label={`${unread} mensagens não lidas no chat`}
+                  >
+                    <MessageCircle className="h-3 w-3" />
+                    {unread > 99 ? "99+" : unread}
+                  </Badge>
+                )}
+              </div>
             )}
           </div>
         </CardHeader>
