@@ -227,15 +227,15 @@ const MinhasAventuras = () => {
                     disabled={cancelMutation.isPending}
                   >
                     <X className="h-4 w-4 mr-1" />
-                    Cancelar candidatura
+                    Retirar candidatura
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Cancelar candidatura?</AlertDialogTitle>
+                    <AlertDialogTitle>Retirar candidatura?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Sua candidatura para "{t.title}" será removida. Você poderá se candidatar
-                      novamente mais tarde, se ainda houver vagas.
+                      Sua candidatura para "{t.title}" será removida e o mestre não a verá mais.
+                      Você poderá se candidatar novamente quando quiser, se ainda houver vagas.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -244,7 +244,7 @@ const MinhasAventuras = () => {
                       onClick={() => cancelMutation.mutate(app.id)}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
-                      Sim, cancelar
+                      Sim, retirar
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
