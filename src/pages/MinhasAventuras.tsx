@@ -6,9 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Compass, Users, Monitor, Gamepad2, Calendar, Clock, ScrollText } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Compass, Users, Monitor, Gamepad2, Calendar, Clock, ScrollText, X } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type AppRow = {
   id: string;
@@ -32,6 +44,7 @@ type AppRow = {
 const MinhasAventuras = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: applications, isLoading } = useQuery({
     queryKey: ["my-adventures", user?.id],
@@ -46,6 +59,28 @@ const MinhasAventuras = () => {
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as unknown as AppRow[];
+    },
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: async (applicationId: string) => {
+      const { error } = await supabase
+        .from("table_applications")
+        .update({ status: "cancelled" })
+        .eq("id", applicationId)
+        .eq("player_id", user!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-adventures", user?.id] });
+      toast({ title: "Candidatura cancelada", description: "Sua candidatura foi removida." });
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Erro ao cancelar",
+        description: err?.message ?? "Tente novamente.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -74,7 +109,11 @@ const MinhasAventuras = () => {
   const inProgress = apps.filter((a) => a.status === "accepted" && a.tables?.status !== "closed");
   const pending = apps.filter((a) => a.status === "pending");
   const history = apps.filter(
-    (a) => a.status === "rejected" || a.tables?.status === "closed" || a.tables?.status === "finished"
+    (a) =>
+      a.status === "rejected" ||
+      a.status === "cancelled" ||
+      a.tables?.status === "closed" ||
+      a.tables?.status === "finished"
   );
 
   const isEmpty = !isLoading && apps.length === 0;
@@ -115,7 +154,12 @@ const MinhasAventuras = () => {
                 Recusado
               </Badge>
             )}
-            {kind === "history" && app.status !== "rejected" && (
+            {kind === "history" && app.status === "cancelled" && (
+              <Badge variant="outline" className="shrink-0">
+                Cancelada
+              </Badge>
+            )}
+            {kind === "history" && app.status !== "rejected" && app.status !== "cancelled" && (
               <Badge variant="outline" className="shrink-0">
                 Finalizado
               </Badge>
@@ -163,7 +207,7 @@ const MinhasAventuras = () => {
             </p>
           )}
 
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
             {kind === "in_progress" ? (
               <Button className="w-full" onClick={() => navigate(`/dashboard/mesa/${t.id}`)}>
                 Ver mesa
@@ -176,6 +220,38 @@ const MinhasAventuras = () => {
               >
                 Ver detalhes
               </Button>
+            )}
+            {kind === "pending" && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                    disabled={cancelMutation.isPending}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancelar candidatura
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Cancelar candidatura?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Sua candidatura para "{t.title}" será removida. Você poderá se candidatar
+                      novamente mais tarde, se ainda houver vagas.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Voltar</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => cancelMutation.mutate(app.id)}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Sim, cancelar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </div>
         </CardContent>
