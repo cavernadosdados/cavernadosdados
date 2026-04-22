@@ -6,9 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Compass, Users, Monitor, Gamepad2, Calendar, Clock, ScrollText } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Compass, Users, Monitor, Gamepad2, Calendar, Clock, ScrollText, X } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type AppRow = {
   id: string;
@@ -32,6 +44,7 @@ type AppRow = {
 const MinhasAventuras = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: applications, isLoading } = useQuery({
     queryKey: ["my-adventures", user?.id],
@@ -46,6 +59,28 @@ const MinhasAventuras = () => {
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as unknown as AppRow[];
+    },
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: async (applicationId: string) => {
+      const { error } = await supabase
+        .from("table_applications")
+        .update({ status: "cancelled" })
+        .eq("id", applicationId)
+        .eq("player_id", user!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-adventures", user?.id] });
+      toast({ title: "Candidatura cancelada", description: "Sua candidatura foi removida." });
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Erro ao cancelar",
+        description: err?.message ?? "Tente novamente.",
+        variant: "destructive",
+      });
     },
   });
 
