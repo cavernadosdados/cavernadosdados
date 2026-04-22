@@ -109,7 +109,11 @@ const MinhasAventuras = () => {
   const inProgress = apps.filter((a) => a.status === "accepted" && a.tables?.status !== "closed");
   const pending = apps.filter((a) => a.status === "pending");
   const history = apps.filter(
-    (a) => a.status === "rejected" || a.tables?.status === "closed" || a.tables?.status === "finished"
+    (a) =>
+      a.status === "rejected" ||
+      a.status === "cancelled" ||
+      a.tables?.status === "closed" ||
+      a.tables?.status === "finished"
   );
 
   const isEmpty = !isLoading && apps.length === 0;
