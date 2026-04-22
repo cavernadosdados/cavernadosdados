@@ -247,7 +247,9 @@ const Explorar = () => {
               const isFresh = ageMs < 1000 * 60 * 60 * 48;
               const isBoosted = !!boostsMap[table.id];
               const cd = campaignDetails?.[table.id];
-              const hasCover = !!table.cover_url;
+              // Os 2 primeiros cards carregam de imediato (above-the-fold);
+              // os demais usam IntersectionObserver para economizar banda.
+              const isEager = index < 2;
 
               return (
                 <Card
@@ -258,22 +260,13 @@ const Explorar = () => {
                       : ""
                   }`}
                 >
-                  {/* Background image (ideal: 800x450px / 16:9). Fallback: gradient + ícone. */}
-                  {hasCover ? (
-                    <img
-                      src={table.cover_url}
-                      alt={`Capa de ${table.title}`}
-                      loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover brightness-[0.45] transition-all duration-500 group-hover:brightness-[0.6] group-hover:scale-105"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-card">
-                      <ImageIcon className="h-16 w-16 text-muted-foreground/30" />
-                    </div>
-                  )}
+                  {/* Background image (ideal: 800x450px / 16:9). Lazy + cache via CoverImage. */}
+                  <CoverImage
+                    src={table.cover_url}
+                    alt={`Capa de ${table.title}`}
+                    eager={isEager}
+                    className="absolute inset-0 h-full w-full brightness-[0.45] transition-all duration-500 group-hover:brightness-[0.6] group-hover:scale-105"
+                  />
 
                   {/* Overlay gradiente: preto na base → transparente no topo (legibilidade) */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/75 to-black/20" />
