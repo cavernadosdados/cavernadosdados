@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { CreateTableDialog } from "@/components/CreateTableDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
+import { ReportTableButton } from "@/components/ReportTableButton";
 import { TableApplicationsDialog } from "@/components/TableApplicationsDialog";
 import { EditTableDialog } from "@/components/EditTableDialog";
 import {
@@ -325,6 +326,14 @@ const Mesas = () => {
                               <Send className="h-3 w-3" /> Quero jogar essa mesa!
                             </Button>
                           ))}
+                        {table.master_id !== user?.id && (
+                          <ReportTableButton
+                            tableId={table.id}
+                            tableTitle={table.title}
+                            variant="menu-item"
+                            className="text-muted-foreground hover:text-destructive"
+                          />
+                        )}
                       </div>
                     )}
 
