@@ -202,7 +202,7 @@ const MinhasAventuras = () => {
             </p>
           )}
 
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
             {kind === "in_progress" ? (
               <Button className="w-full" onClick={() => navigate(`/dashboard/mesa/${t.id}`)}>
                 Ver mesa
@@ -215,6 +215,38 @@ const MinhasAventuras = () => {
               >
                 Ver detalhes
               </Button>
+            )}
+            {kind === "pending" && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                    disabled={cancelMutation.isPending}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancelar candidatura
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Cancelar candidatura?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Sua candidatura para "{t.title}" será removida. Você poderá se candidatar
+                      novamente mais tarde, se ainda houver vagas.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Voltar</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => cancelMutation.mutate(app.id)}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Sim, cancelar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </div>
         </CardContent>
