@@ -127,6 +127,10 @@ const AdventurePanel = () => {
     enabled: !!tableId,
   });
 
+  // Ownership-based flag: true ONLY for the master who owns this table.
+  // All edit/management UI is gated by this — never by user_metadata.user_type.
+  const isMaster = !!user && !!table && table.master_id === user.id;
+
   // Fetch campaign details
   const { data: campaign, refetch: refetchCampaign } = useQuery({
     queryKey: ["campaign_details", tableId],
