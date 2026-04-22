@@ -18,7 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { Sparkles } from 'lucide-react';
-import { CoverImageInput } from '@/components/CoverImageInput';
+import { CoverGalleryPicker } from '@/components/CoverGalleryPicker';
 
 const RPG_SYSTEMS = [
   'D&D 5e', 'D&D 3.5', 'Pathfinder 1e', 'Pathfinder 2e', 'Tormenta20',
@@ -156,9 +156,9 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
 
             <FormField control={form.control} name="cover_url" render={({ field }) => (
               <FormItem>
-                <FormLabel>Link da Imagem de Capa</FormLabel>
+                <FormLabel>Capa da Mesa</FormLabel>
                 <FormControl>
-                  <CoverImageInput value={field.value || ''} onChange={field.onChange} />
+                  <CoverGalleryPicker value={field.value || ''} onChange={field.onChange} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
