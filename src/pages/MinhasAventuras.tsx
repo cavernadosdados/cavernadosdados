@@ -114,7 +114,6 @@ const MinhasAventuras = () => {
   const history = apps.filter(
     (a) =>
       a.status === "rejected" ||
-      a.status === "cancelled" ||
       a.tables?.status === "closed" ||
       a.tables?.status === "finished"
   );
@@ -157,12 +156,7 @@ const MinhasAventuras = () => {
                 Recusado
               </Badge>
             )}
-            {kind === "history" && app.status === "cancelled" && (
-              <Badge variant="outline" className="shrink-0">
-                Cancelada
-              </Badge>
-            )}
-            {kind === "history" && app.status !== "rejected" && app.status !== "cancelled" && (
+            {kind === "history" && app.status !== "rejected" && (
               <Badge variant="outline" className="shrink-0">
                 Finalizado
               </Badge>
