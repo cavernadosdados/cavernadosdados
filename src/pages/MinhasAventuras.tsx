@@ -66,14 +66,17 @@ const MinhasAventuras = () => {
     mutationFn: async (applicationId: string) => {
       const { error } = await supabase
         .from("table_applications")
-        .update({ status: "cancelled" })
+        .delete()
         .eq("id", applicationId)
         .eq("player_id", user!.id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-adventures", user?.id] });
-      toast({ title: "Candidatura cancelada", description: "Sua candidatura foi removida." });
+      toast({
+        title: "Candidatura retirada",
+        description: "Você pode se candidatar novamente quando quiser.",
+      });
     },
     onError: (err: any) => {
       toast({
@@ -111,7 +114,6 @@ const MinhasAventuras = () => {
   const history = apps.filter(
     (a) =>
       a.status === "rejected" ||
-      a.status === "cancelled" ||
       a.tables?.status === "closed" ||
       a.tables?.status === "finished"
   );
@@ -154,12 +156,7 @@ const MinhasAventuras = () => {
                 Recusado
               </Badge>
             )}
-            {kind === "history" && app.status === "cancelled" && (
-              <Badge variant="outline" className="shrink-0">
-                Cancelada
-              </Badge>
-            )}
-            {kind === "history" && app.status !== "rejected" && app.status !== "cancelled" && (
+            {kind === "history" && app.status !== "rejected" && (
               <Badge variant="outline" className="shrink-0">
                 Finalizado
               </Badge>
@@ -230,15 +227,15 @@ const MinhasAventuras = () => {
                     disabled={cancelMutation.isPending}
                   >
                     <X className="h-4 w-4 mr-1" />
-                    Cancelar candidatura
+                    Retirar candidatura
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Cancelar candidatura?</AlertDialogTitle>
+                    <AlertDialogTitle>Retirar candidatura?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Sua candidatura para "{t.title}" será removida. Você poderá se candidatar
-                      novamente mais tarde, se ainda houver vagas.
+                      Sua candidatura para "{t.title}" será removida e o mestre não a verá mais.
+                      Você poderá se candidatar novamente quando quiser, se ainda houver vagas.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -247,7 +244,7 @@ const MinhasAventuras = () => {
                       onClick={() => cancelMutation.mutate(app.id)}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
-                      Sim, cancelar
+                      Sim, retirar
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
