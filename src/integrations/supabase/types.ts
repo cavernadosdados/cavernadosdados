@@ -171,6 +171,38 @@ export type Database = {
           },
         ]
       }
+      mesa_chat_reads: {
+        Row: {
+          id: string
+          last_read_at: string
+          table_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          last_read_at?: string
+          table_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          last_read_at?: string
+          table_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mesa_chat_reads_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string

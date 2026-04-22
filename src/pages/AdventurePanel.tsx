@@ -20,6 +20,7 @@ import { ChipSelector } from "@/components/ChipSelector";
 import { ClockTimePicker } from "@/components/ClockTimePicker";
 import { WeekdaySelector, composeSchedule, parseSchedule } from "@/components/WeekdaySelector";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMarkMesaChatRead } from "@/hooks/useUnreadMesaChat";
 
 // Chip presets for quick-fill multi-select
 const CHIPS = {
@@ -89,6 +90,15 @@ const AdventurePanel = () => {
   const queryClient = useQueryClient();
   const userType = user?.user_metadata?.user_type;
   const isMaster = userType === "master";
+
+  // Marca o chat da mesa como lido para o usuário atual ao abrir o painel.
+  const markChatRead = useMarkMesaChatRead();
+  useEffect(() => {
+    if (tableId && user) {
+      markChatRead.mutate(tableId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tableId, user?.id]);
 
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [saving, setSaving] = useState(false);
