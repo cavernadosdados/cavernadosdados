@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { composeSchedule, parseSchedule } from "@/components/WeekdaySelector";
 import { FullRulesDialog } from "@/components/FullRulesDialog";
+import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 import {
   ArrowLeft,
   BookOpen,
@@ -48,6 +49,7 @@ const MesaDetalhes = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [rulesOpen, setRulesOpen] = useState(false);
+  const [applyOpen, setApplyOpen] = useState(false);
 
   // Public table info (RLS allows any authenticated user to read tables).
   const { data: table, isLoading: loadingTable } = useQuery({
@@ -516,7 +518,7 @@ const MesaDetalhes = () => {
                     {!myApp && !isFull && (
                       <Button
                         className="w-full gap-2"
-                        onClick={() => navigate("/dashboard/explorar")}
+                        onClick={() => setApplyOpen(true)}
                       >
                         <Send className="h-4 w-4" />
                         Quero participar
@@ -576,6 +578,16 @@ const MesaDetalhes = () => {
           showReaderMode={isAccepted || isOwner}
         />
       )}
+
+      <ApplyTableDialog
+        open={applyOpen}
+        onOpenChange={setApplyOpen}
+        tableId={table.id}
+        tableTitle={table.title}
+        onApplied={() => {
+          setApplyOpen(false);
+        }}
+      />
     </DashboardLayout>
   );
 };
