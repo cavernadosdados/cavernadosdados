@@ -154,7 +154,12 @@ const MinhasAventuras = () => {
                 Recusado
               </Badge>
             )}
-            {kind === "history" && app.status !== "rejected" && (
+            {kind === "history" && app.status === "cancelled" && (
+              <Badge variant="outline" className="shrink-0">
+                Cancelada
+              </Badge>
+            )}
+            {kind === "history" && app.status !== "rejected" && app.status !== "cancelled" && (
               <Badge variant="outline" className="shrink-0">
                 Finalizado
               </Badge>
