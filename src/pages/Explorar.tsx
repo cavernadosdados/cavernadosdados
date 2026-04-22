@@ -25,8 +25,8 @@ import {
   Sparkles,
   AlertTriangle,
   Compass,
-  ImageIcon,
 } from "lucide-react";
+import { CoverImage } from "@/components/CoverImage";
 import { useActiveTableBoosts } from "@/hooks/useTableBoosts";
 import { useAuth } from "@/hooks/useAuth";
 
