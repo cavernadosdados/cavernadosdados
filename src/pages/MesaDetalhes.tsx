@@ -578,6 +578,16 @@ const MesaDetalhes = () => {
           showReaderMode={isAccepted || isOwner}
         />
       )}
+
+      <ApplyTableDialog
+        open={applyOpen}
+        onOpenChange={setApplyOpen}
+        tableId={table.id}
+        tableTitle={table.title}
+        onApplied={() => {
+          setApplyOpen(false);
+        }}
+      />
     </DashboardLayout>
   );
 };
