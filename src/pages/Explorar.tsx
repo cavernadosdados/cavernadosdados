@@ -253,167 +253,145 @@ const Explorar = () => {
               return (
                 <Card
                   key={table.id}
-                  className={`bg-card border-border hover:border-primary/50 transition-all overflow-hidden ${
-                    isBoosted ? "border-primary/60 shadow-[0_0_25px_-10px_hsl(var(--primary))]" : ""
+                  className={`group relative rounded-2xl border-border overflow-hidden transition-all duration-300 hover:border-primary/60 hover:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.5)] hover:-translate-y-0.5 ${
+                    isBoosted
+                      ? "border-primary/60 shadow-[0_0_25px_-8px_hsl(var(--primary)/0.6)]"
+                      : ""
                   }`}
                 >
-                  {/* Cover Banner 16:9 */}
-                  <div className="relative">
-                    <AspectRatio ratio={16 / 9}>
-                      {hasCover ? (
-                        <img
-                          src={table.cover_url}
-                          alt={`Capa de ${table.title}`}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            // Fallback to placeholder on error
-                            (e.target as HTMLImageElement).style.display = 'none';
-                            const parent = (e.target as HTMLImageElement).parentElement;
-                            if (parent) {
-                              parent.classList.add('bg-muted/50', 'flex', 'items-center', 'justify-center');
-                              const icon = document.createElement('div');
-                              icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground/50"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
-                              parent.appendChild(icon.firstChild!);
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-muted/50 flex items-center justify-center">
-                          <ImageIcon className="h-12 w-12 text-muted-foreground/50" />
-                        </div>
-                      )}
-                    </AspectRatio>
+                  {/* Full background image (ideal: 800x450px / 16:9). Fallback: gradient + ícone. */}
+                  <AspectRatio ratio={16 / 10} className="bg-muted">
+                    {hasCover ? (
+                      <img
+                        src={table.cover_url}
+                        alt={`Capa de ${table.title}`}
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover brightness-[0.55] transition-all duration-500 group-hover:brightness-75 group-hover:scale-105"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-card">
+                        <ImageIcon className="h-16 w-16 text-muted-foreground/30" />
+                      </div>
+                    )}
 
-                    {/* Badges overlay */}
-                    <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+                    {/* Overlay gradiente: preto na base → transparente no topo (legibilidade) */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/10" />
+
+                    {/* Badges no topo (sobre o overlay) */}
+                    <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5 z-10">
                       {isBoosted && (
-                        <Badge className="gap-1 bg-primary/90 text-primary-foreground border-0 hover:bg-primary text-xs shadow-lg">
+                        <Badge className="gap-1 bg-primary/90 text-primary-foreground border-0 text-xs shadow-lg backdrop-blur-sm">
                           <Flame className="h-3 w-3" /> Destaque
                         </Badge>
                       )}
-                      <Badge variant="default" className="text-xs shadow-lg">Aberta</Badge>
                       {isAlmostFull && (
-                        <Badge variant="destructive" className="gap-1 animate-pulse text-xs shadow-lg">
+                        <Badge variant="destructive" className="gap-1 animate-pulse text-xs shadow-lg backdrop-blur-sm">
                           <AlertTriangle className="h-3 w-3" /> Últimas vagas
                         </Badge>
                       )}
                       {!isAlmostFull && isFresh && !isBoosted && (
-                        <Badge className="gap-1 bg-secondary text-secondary-foreground text-xs shadow-lg">
+                        <Badge className="gap-1 bg-secondary/90 text-secondary-foreground text-xs shadow-lg backdrop-blur-sm">
                           <Sparkles className="h-3 w-3" /> Nova
                         </Badge>
                       )}
                     </div>
-                  </div>
 
-                  <CardContent className="space-y-5 pt-4">
-                    {/* Title + Master */}
-                    <div>
-                      <h3 className="text-xl sm:text-2xl font-bold leading-tight tracking-tight text-foreground glow-gold">
-                        {table.title}
-                      </h3>
-                      {table.profiles && (
-                        <p className="text-sm text-muted-foreground mt-1.5 flex items-center gap-1.5">
-                          <span className="text-xs uppercase tracking-wider text-primary/70">Mestre</span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/dashboard/perfil/${table.profiles.id}`);
-                            }}
-                            className="hover:text-primary transition-colors font-medium"
-                          >
-                            {table.profiles.display_name}
-                          </button>
-                        </p>
-                      )}
-                    </div>
+                    {/* Conteúdo sobre a imagem */}
+                    <div className="absolute inset-0 z-10 flex flex-col justify-end p-5 sm:p-6 space-y-4 text-white">
+                      {/* Título + mestre */}
+                      <div>
+                        <h3 className="text-xl sm:text-2xl font-bold leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                          {table.title}
+                        </h3>
+                        {table.profiles && (
+                          <p className="text-sm text-white/80 mt-1 flex items-center gap-1.5">
+                            <span className="text-[10px] uppercase tracking-wider text-primary">Mestre</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/dashboard/perfil/${table.profiles.id}`);
+                              }}
+                              className="hover:text-primary transition-colors font-medium"
+                            >
+                              {table.profiles.display_name}
+                            </button>
+                          </p>
+                        )}
+                      </div>
 
-                    {/* Description */}
-                    {table.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                        {table.description}
-                      </p>
-                    )}
+                      {/* Tags compactas */}
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge variant="outline" className="gap-1 text-[10px] h-5 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm">
+                          <Gamepad2 className="h-3 w-3" /> {table.system}
+                        </Badge>
+                        <Badge variant="outline" className="text-[10px] h-5 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm">
+                          {table.theme}
+                        </Badge>
+                        <Badge variant="outline" className="gap-1 text-[10px] h-5 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm">
+                          <Clock className="h-3 w-3" /> {table.duration}
+                        </Badge>
+                        <Badge variant="outline" className="gap-1 text-[10px] h-5 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm">
+                          <Monitor className="h-3 w-3" /> {table.platform}
+                        </Badge>
+                      </div>
 
-                    {/* Tags - compact */}
-                    <div className="flex flex-wrap gap-1.5">
-                      <Badge variant="outline" className="gap-1 text-[10px] h-5 px-2 bg-background/50">
-                        <Gamepad2 className="h-3 w-3" /> {table.system}
-                      </Badge>
-                      <Badge variant="outline" className="text-[10px] h-5 px-2 bg-background/50">
-                        {table.theme}
-                      </Badge>
-                      <Badge variant="outline" className="gap-1 text-[10px] h-5 px-2 bg-background/50">
-                        <Clock className="h-3 w-3" /> {table.duration}
-                      </Badge>
-                      <Badge variant="outline" className="gap-1 text-[10px] h-5 px-2 bg-background/50">
-                        <Monitor className="h-3 w-3" /> {table.platform}
-                      </Badge>
-                    </div>
+                      {/* Vagas + urgência */}
+                      <div className="flex flex-wrap items-center gap-2 text-sm">
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md backdrop-blur-sm ${
+                          isFull
+                            ? "bg-white/10 text-white/80"
+                            : isAlmostFull
+                              ? "bg-destructive/30 text-white border border-destructive/50"
+                              : "bg-primary/20 text-white border border-primary/40"
+                        }`}>
+                          <Users className="h-4 w-4" />
+                          <span className="font-semibold">{acceptedCount}/{table.max_players}</span>
+                          <span className="text-xs opacity-80">vagas</span>
+                        </div>
 
-                    {/* Seats + Urgency Info Bar */}
-                    <div className="flex flex-wrap items-center gap-3 text-sm">
-                      {/* Seats */}
-                      <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md ${
-                        isFull 
-                          ? "bg-secondary/30 text-secondary-foreground" 
-                          : isAlmostFull 
-                            ? "bg-destructive/15 text-destructive border border-destructive/20" 
-                            : "bg-primary/10 text-primary border border-primary/20"
-                      }`}>
-                        <Users className="h-4 w-4" />
-                        <span className="font-semibold">
-                          {acceptedCount}/{table.max_players}
-                        </span>
-                        <span className="text-xs opacity-80">vagas</span>
-                        {seatsLeft > 0 && (
-                          <span className="text-xs opacity-70 ml-1">
-                            ({seatsLeft} disponíve{seatsLeft === 1 ? "l" : "is"})
+                        {!isFull && seatsLeft <= 2 && (
+                          <span className="inline-flex items-center gap-1 text-xs text-destructive-foreground bg-destructive/40 px-2 py-1 rounded-md backdrop-blur-sm">
+                            <Flame className="h-3 w-3" />
+                            Faltam {seatsLeft}
+                          </span>
+                        )}
+
+                        {cd?.schedule_time && (
+                          <span className="inline-flex items-center gap-1 text-xs text-white/80">
+                            <Clock className="h-3 w-3" />
+                            {cd.frequency ? `${cd.frequency} · ` : ""}{cd.schedule_time}
                           </span>
                         )}
                       </div>
 
-                      {/* Urgency indicators */}
-                      {!isFull && seatsLeft <= 2 && (
-                        <div className="inline-flex items-center gap-1.5 text-destructive font-medium">
-                          <Flame className="h-4 w-4" />
-                          Faltam {seatsLeft} jogador{seatsLeft > 1 ? "es" : ""}
-                        </div>
-                      )}
-
-                      {cd?.schedule_time && (
-                        <div className="inline-flex items-center gap-1.5 text-muted-foreground">
-                          <Clock className="h-4 w-4" />
-                          <span className="text-xs">
-                            {cd.frequency ? `${cd.frequency} · ` : ""}{cd.schedule_time}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
-                      {!isMaster && (
+                      {/* Ações */}
+                      <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                        {!isMaster && (
+                          <Button
+                            size="default"
+                            className="gap-2 w-full sm:w-auto h-10 font-semibold"
+                            disabled={isFull}
+                            onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
+                          >
+                            <Send className="h-4 w-4" />
+                            {isFull ? "Mesa cheia" : "Entrar na aventura"}
+                          </Button>
+                        )}
                         <Button
                           size="default"
-                          className="gap-2 w-full sm:w-auto h-11 font-semibold"
-                          disabled={isFull}
+                          variant="outline"
+                          className="gap-2 w-full sm:w-auto h-10 bg-black/40 border-white/30 text-white hover:bg-black/60 hover:text-white backdrop-blur-sm"
                           onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
                         >
-                          <Send className="h-4 w-4" />
-                          {isFull ? "Mesa cheia" : "Entrar na aventura"}
+                          <ScrollText className="h-4 w-4" /> Ver detalhes
                         </Button>
-                      )}
-                      <Button
-                        size="default"
-                        variant="outline"
-                        className="gap-2 w-full sm:w-auto h-11"
-                        onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
-                      >
-                        <ScrollText className="h-4 w-4" /> Ver detalhes
-                      </Button>
+                      </div>
                     </div>
-                  </CardContent>
+                  </AspectRatio>
                 </Card>
               );
             })}
