@@ -66,14 +66,17 @@ const MinhasAventuras = () => {
     mutationFn: async (applicationId: string) => {
       const { error } = await supabase
         .from("table_applications")
-        .update({ status: "cancelled" })
+        .delete()
         .eq("id", applicationId)
         .eq("player_id", user!.id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-adventures", user?.id] });
-      toast({ title: "Candidatura cancelada", description: "Sua candidatura foi removida." });
+      toast({
+        title: "Candidatura retirada",
+        description: "Você pode se candidatar novamente quando quiser.",
+      });
     },
     onError: (err: any) => {
       toast({
