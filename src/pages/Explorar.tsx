@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -253,35 +252,34 @@ const Explorar = () => {
               return (
                 <Card
                   key={table.id}
-                  className={`group relative rounded-2xl border-border overflow-hidden transition-all duration-300 hover:border-primary/60 hover:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.5)] hover:-translate-y-0.5 ${
+                  className={`group relative rounded-2xl border-border overflow-hidden transition-all duration-300 hover:border-primary/60 hover:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.5)] hover:-translate-y-0.5 min-h-[340px] sm:min-h-[360px] flex ${
                     isBoosted
                       ? "border-primary/60 shadow-[0_0_25px_-8px_hsl(var(--primary)/0.6)]"
                       : ""
                   }`}
                 >
-                  {/* Full background image (ideal: 800x450px / 16:9). Fallback: gradient + ícone. */}
-                  <AspectRatio ratio={16 / 10} className="bg-muted">
-                    {hasCover ? (
-                      <img
-                        src={table.cover_url}
-                        alt={`Capa de ${table.title}`}
-                        loading="lazy"
-                        className="absolute inset-0 h-full w-full object-cover brightness-[0.55] transition-all duration-500 group-hover:brightness-75 group-hover:scale-105"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-card">
-                        <ImageIcon className="h-16 w-16 text-muted-foreground/30" />
-                      </div>
-                    )}
+                  {/* Background image (ideal: 800x450px / 16:9). Fallback: gradient + ícone. */}
+                  {hasCover ? (
+                    <img
+                      src={table.cover_url}
+                      alt={`Capa de ${table.title}`}
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover brightness-[0.45] transition-all duration-500 group-hover:brightness-[0.6] group-hover:scale-105"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-card">
+                      <ImageIcon className="h-16 w-16 text-muted-foreground/30" />
+                    </div>
+                  )}
 
-                    {/* Overlay gradiente: preto na base → transparente no topo (legibilidade) */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/10" />
+                  {/* Overlay gradiente: preto na base → transparente no topo (legibilidade) */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/75 to-black/20" />
 
-                    {/* Badges no topo (sobre o overlay) */}
-                    <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5 z-10">
+                  {/* Badges no topo */}
+                  <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5 z-20 max-w-[60%]">
                       {isBoosted && (
                         <Badge className="gap-1 bg-primary/90 text-primary-foreground border-0 text-xs shadow-lg backdrop-blur-sm">
                           <Flame className="h-3 w-3" /> Destaque
@@ -299,15 +297,15 @@ const Explorar = () => {
                       )}
                     </div>
 
-                    {/* Conteúdo sobre a imagem */}
-                    <div className="absolute inset-0 z-10 flex flex-col justify-end p-5 sm:p-6 space-y-4 text-white">
+                  {/* Conteúdo: layout natural (flex-col), empurra o conteúdo para baixo */}
+                  <div className="relative z-10 flex flex-col justify-end w-full p-4 sm:p-6 gap-3 sm:gap-4 text-white">
                       {/* Título + mestre */}
                       <div>
-                        <h3 className="text-xl sm:text-2xl font-bold leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                        <h3 className="text-xl sm:text-2xl font-bold leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] line-clamp-2">
                           {table.title}
                         </h3>
                         {table.profiles && (
-                          <p className="text-sm text-white/80 mt-1 flex items-center gap-1.5">
+                          <p className="text-sm text-white/80 mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                             <span className="text-[10px] uppercase tracking-wider text-primary">Mestre</span>
                             <button
                               type="button"
@@ -315,7 +313,7 @@ const Explorar = () => {
                                 e.stopPropagation();
                                 navigate(`/dashboard/perfil/${table.profiles.id}`);
                               }}
-                              className="hover:text-primary transition-colors font-medium"
+                              className="hover:text-primary transition-colors font-medium truncate max-w-full"
                             >
                               {table.profiles.display_name}
                             </button>
@@ -324,17 +322,17 @@ const Explorar = () => {
                       </div>
 
                       {/* Tags compactas */}
-                      <div className="flex flex-wrap gap-1.5">
-                        <Badge variant="outline" className="gap-1 text-[10px] h-5 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm">
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant="outline" className="gap-1 text-xs h-6 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm font-normal">
                           <Gamepad2 className="h-3 w-3" /> {table.system}
                         </Badge>
-                        <Badge variant="outline" className="text-[10px] h-5 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm">
+                        <Badge variant="outline" className="text-xs h-6 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm font-normal">
                           {table.theme}
                         </Badge>
-                        <Badge variant="outline" className="gap-1 text-[10px] h-5 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm">
+                        <Badge variant="outline" className="gap-1 text-xs h-6 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm font-normal">
                           <Clock className="h-3 w-3" /> {table.duration}
                         </Badge>
-                        <Badge variant="outline" className="gap-1 text-[10px] h-5 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm">
+                        <Badge variant="outline" className="gap-1 text-xs h-6 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm font-normal">
                           <Monitor className="h-3 w-3" /> {table.platform}
                         </Badge>
                       </div>
@@ -361,7 +359,7 @@ const Explorar = () => {
                         )}
 
                         {cd?.schedule_time && (
-                          <span className="inline-flex items-center gap-1 text-xs text-white/80">
+                          <span className="inline-flex items-center gap-1 text-xs text-white/80 break-words">
                             <Clock className="h-3 w-3" />
                             {cd.frequency ? `${cd.frequency} · ` : ""}{cd.schedule_time}
                           </span>
@@ -373,7 +371,7 @@ const Explorar = () => {
                         {!isMaster && (
                           <Button
                             size="default"
-                            className="gap-2 w-full sm:w-auto h-10 font-semibold"
+                            className="gap-2 w-full sm:flex-1 h-10 font-semibold"
                             disabled={isFull}
                             onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
                           >
@@ -391,7 +389,6 @@ const Explorar = () => {
                         </Button>
                       </div>
                     </div>
-                  </AspectRatio>
                 </Card>
               );
             })}
