@@ -238,7 +238,7 @@ const Explorar = () => {
           </Card>
         ) : (
           <div className="grid gap-5 md:grid-cols-2">
-            {sorted.map((table: any) => {
+            {sorted.map((table: any, index: number) => {
               const acceptedCount = acceptedCounts?.[table.id] ?? 0;
               const seatsLeft = Math.max(0, (table.max_players ?? 0) - acceptedCount);
               const isFull = seatsLeft === 0;
