@@ -341,11 +341,16 @@ const AdventurePanel = () => {
     if (!tableId || !user) return;
     setSaving(true);
     try {
-      // Normaliza next_session_date: "" -> null, datetime-local -> ISO
+      // Normaliza next_session_date: "" -> null; combina YYYY-MM-DD com schedule_time -> ISO
       const payload: Record<string, any> = { ...form };
-      payload.next_session_date = form.next_session_date
-        ? new Date(form.next_session_date).toISOString()
-        : null;
+      if (form.next_session_date && isPastDate(form.next_session_date)) {
+        // Não permite agendar no passado: força limpeza
+        payload.next_session_date = null;
+      } else {
+        payload.next_session_date = form.next_session_date
+          ? combineDateTime(form.next_session_date, form.schedule_time)
+          : null;
+      }
 
       if (campaign) {
         const { error } = await supabase
