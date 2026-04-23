@@ -65,6 +65,8 @@ const MesaDetalhes = () => {
   const { user } = useAuth();
   const [rulesOpen, setRulesOpen] = useState(false);
   const [applyOpen, setApplyOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Public table info (RLS allows any authenticated user to read tables).
   const { data: table, isLoading: loadingTable } = useQuery({
