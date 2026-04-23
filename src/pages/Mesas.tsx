@@ -12,7 +12,6 @@ import {
   Monitor,
   Gamepad2,
   Send,
-  Inbox,
   Trash2,
   ScrollText,
   Flame,
