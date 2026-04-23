@@ -373,6 +373,7 @@ export type Database = {
           experience_years: number | null
           id: string
           master_systems: string[] | null
+          onboarding_completed: boolean
           plays_in_person: boolean | null
           preferred_themes: string[] | null
           signup_bonus_claimed: boolean
@@ -391,6 +392,7 @@ export type Database = {
           experience_years?: number | null
           id: string
           master_systems?: string[] | null
+          onboarding_completed?: boolean
           plays_in_person?: boolean | null
           preferred_themes?: string[] | null
           signup_bonus_claimed?: boolean
@@ -409,6 +411,7 @@ export type Database = {
           experience_years?: number | null
           id?: string
           master_systems?: string[] | null
+          onboarding_completed?: boolean
           plays_in_person?: boolean | null
           preferred_themes?: string[] | null
           signup_bonus_claimed?: boolean
