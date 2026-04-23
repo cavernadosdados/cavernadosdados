@@ -368,7 +368,6 @@ const Mesas = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="gap-1 min-h-10 w-full sm:w-auto"
                           className="gap-1 min-h-10 w-full sm:w-auto col-span-2 sm:col-auto"
                           onClick={() => setDeleteTableId(table.id)}
                         >
@@ -416,15 +415,6 @@ const Mesas = () => {
           onOpenChange={(o) => !o && setViewAppsTable(null)}
           tableId={viewAppsTable.id}
           tableTitle={viewAppsTable.title}
-        />
-      )}
-
-      {editTable && (
-        <EditTableDialog
-          open={!!editTable}
-          onOpenChange={(o) => !o && setEditTable(null)}
-          table={editTable}
-          onUpdated={refetch}
         />
       )}
 
