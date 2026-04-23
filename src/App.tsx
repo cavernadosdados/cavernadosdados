@@ -20,6 +20,7 @@ import MesaDetalhes from "./pages/MesaDetalhes";
 import Notificacoes from "./pages/Notificacoes";
 import AdminModeracao from "./pages/AdminModeracao";
 import Conquistas from "./pages/Conquistas";
+import Calendario from "./pages/Calendario";
 import NotFound from "./pages/NotFound";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -75,6 +76,7 @@ const AppRoutes = () => (
     <Route path="/dashboard/notificacoes" element={<ProtectedRoute><Notificacoes /></ProtectedRoute>} />
     <Route path="/dashboard/admin/moderacao" element={<ProtectedRoute><AdminModeracao /></ProtectedRoute>} />
     <Route path="/dashboard/conquistas" element={<ProtectedRoute><Conquistas /></ProtectedRoute>} />
+    <Route path="/dashboard/calendario" element={<ProtectedRoute><Calendario /></ProtectedRoute>} />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />
   </Routes>
