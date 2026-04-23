@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSessionsCalendar, type CalendarSession } from "@/hooks/useSessionsCalendar";
+import { SessionDetailsDialog } from "@/components/SessionDetailsDialog";
 
 type ViewMode = "month" | "week";
 
@@ -31,6 +32,13 @@ const Calendario = () => {
   const navigate = useNavigate();
   const [view, setView] = useState<ViewMode>("month");
   const [cursor, setCursor] = useState<Date>(new Date());
+  const [selectedSession, setSelectedSession] = useState<CalendarSession | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
+  const openSession = (s: CalendarSession) => {
+    setSelectedSession(s);
+    setDetailsOpen(true);
+  };
 
   // Intervalo a buscar (sempre cobre o que está visível na grade)
   const { rangeStart, rangeEnd, days, headerLabel } = useMemo(() => {
