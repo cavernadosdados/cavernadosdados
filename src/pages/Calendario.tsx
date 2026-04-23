@@ -182,7 +182,11 @@ const Calendario = () => {
                           <button
                             key={s.id}
                             onClick={() => openSession(s)}
-                            className="w-full text-left text-[11px] leading-tight px-1.5 py-1 rounded bg-primary/15 text-primary hover:bg-primary/25 transition-mystical truncate"
+                            className={`w-full text-left text-[11px] leading-tight px-1.5 py-1 rounded transition-mystical truncate ${
+                              s.is_upcoming
+                                ? "bg-accent/20 text-accent-foreground border border-accent/40 hover:bg-accent/30"
+                                : "bg-primary/15 text-primary hover:bg-primary/25"
+                            }`}
                             title={`${s.title} – ${s.table_title}`}
                           >
                             <span className="font-medium truncate block">{s.title}</span>
