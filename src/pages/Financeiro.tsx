@@ -477,6 +477,16 @@ const Financeiro = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <PaymentDetailsDialog
+        payment={selectedPayment}
+        tableTitle={selectedPayment ? tableTitleById[selectedPayment.table_id] : undefined}
+        onClose={() => setSelectedPayment(null)}
+        onOpenTable={(id) => {
+          setSelectedPayment(null);
+          navigate(`/dashboard/mesa/${id}`);
+        }}
+      />
     </DashboardLayout>
   );
 };
@@ -513,6 +523,149 @@ function StatCard({
         <p className="text-xs text-muted-foreground mt-1">{hint}</p>
       </CardContent>
     </Card>
+  );
+}
+
+function PaymentDetailsDialog({
+  payment,
+  tableTitle,
+  onClose,
+  onOpenTable,
+}: {
+  payment: PaymentRow | null;
+  tableTitle?: string;
+  onClose: () => void;
+  onOpenTable: (tableId: string) => void;
+}) {
+  const open = !!payment;
+  const meta = payment ? STATUS_META[payment.status] ?? STATUS_META.pending : null;
+  const StatusIcon = meta?.icon ?? Clock;
+
+  const fmtDate = (iso: string | null) =>
+    iso ? format(new Date(iso), "dd 'de' MMM 'de' yyyy 'às' HH:mm", { locale: ptBR }) : null;
+
+  const timeline = payment
+    ? [
+        { key: "created", label: "Pagamento criado", date: payment.created_at, icon: Receipt },
+        { key: "escrow", label: "Retido em garantia", date: payment.escrow_at, icon: Clock },
+        { key: "released", label: "Liberado para você", date: payment.released_at, icon: CheckCircle2 },
+        { key: "refunded", label: "Estornado ao jogador", date: payment.refunded_at, icon: AlertCircle },
+      ]
+    : [];
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Receipt className="h-5 w-5 text-primary" />
+            Detalhes do pagamento
+          </DialogTitle>
+          <DialogDescription>
+            {tableTitle ? `Mesa: ${tableTitle}` : "Detalhamento financeiro deste pagamento."}
+          </DialogDescription>
+        </DialogHeader>
+
+        {payment && meta && (
+          <div className="space-y-5">
+            {/* Status + ID */}
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
+                  meta.tone,
+                )}
+              >
+                <StatusIcon className="h-3.5 w-3.5" />
+                {meta.label}
+              </span>
+              <code className="text-[10px] text-muted-foreground font-mono">
+                #{payment.id.slice(0, 8)}
+              </code>
+            </div>
+
+            {/* Breakdown */}
+            <div className="rounded-lg border border-border/60 bg-card/40 p-4 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Valor pago pelo jogador</span>
+                <span className="font-medium">{formatPriceBRL(payment.amount_cents)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Comissão da plataforma</span>
+                <span className="text-muted-foreground">−{formatPriceBRL(payment.commission_cents)}</span>
+              </div>
+              <Separator className="my-2" />
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Você recebe</span>
+                <span className="text-lg font-bold text-primary">
+                  {formatPriceBRL(payment.master_payout_cents)}
+                </span>
+              </div>
+              {payment.amount_cents > 0 && (
+                <p className="text-[11px] text-muted-foreground pt-1">
+                  Comissão equivalente a{" "}
+                  {((payment.commission_cents / payment.amount_cents) * 100).toFixed(1)}% ·
+                  Moeda: {payment.currency}
+                </p>
+              )}
+            </div>
+
+            {/* Timeline */}
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+                Linha do tempo
+              </h4>
+              <ul className="space-y-3">
+                {timeline.map((step) => {
+                  const StepIcon = step.icon;
+                  const reached = !!step.date;
+                  return (
+                    <li key={step.key} className="flex items-start gap-3">
+                      <div
+                        className={cn(
+                          "mt-0.5 h-7 w-7 rounded-full flex items-center justify-center shrink-0",
+                          reached
+                            ? "bg-primary/15 text-primary"
+                            : "bg-muted text-muted-foreground/60",
+                        )}
+                      >
+                        <StepIcon className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={cn(
+                            "text-sm font-medium",
+                            !reached && "text-muted-foreground/70",
+                          )}
+                        >
+                          {step.label}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {reached ? fmtDate(step.date) : "—"}
+                        </p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        <DialogFooter className="gap-2 sm:gap-2">
+          {payment && (
+            <Button
+              variant="outline"
+              onClick={() => onOpenTable(payment.table_id)}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Abrir mesa
+            </Button>
+          )}
+          <Button onClick={onClose}>Fechar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
