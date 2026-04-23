@@ -141,6 +141,66 @@ export function SessionDetailsDialog({ open, onOpenChange, session }: SessionDet
           </>
         )}
 
+        {canManageAttendance && (
+          <>
+            <Separator />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-medium">Sua presença</p>
+                {myStatus && (
+                  <Badge
+                    variant={
+                      myStatus === "confirmed"
+                        ? "default"
+                        : myStatus === "declined"
+                        ? "destructive"
+                        : "secondary"
+                    }
+                  >
+                    {myStatus === "confirmed"
+                      ? "Confirmado"
+                      : myStatus === "declined"
+                      ? "Não vou"
+                      : "Pendente"}
+                  </Badge>
+                )}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  size="sm"
+                  variant={myStatus === "confirmed" ? "default" : "outline"}
+                  onClick={() => setAttendance.mutate("confirmed")}
+                  disabled={setAttendance.isPending}
+                  className="gap-1"
+                >
+                  <Check className="h-4 w-4" />
+                  Confirmar
+                </Button>
+                <Button
+                  size="sm"
+                  variant={myStatus === "pending" ? "secondary" : "outline"}
+                  onClick={() => setAttendance.mutate("pending")}
+                  disabled={setAttendance.isPending}
+                  className="gap-1"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  Pendente
+                </Button>
+                <Button
+                  size="sm"
+                  variant={myStatus === "declined" ? "destructive" : "outline"}
+                  onClick={() => setAttendance.mutate("declined")}
+                  disabled={setAttendance.isPending}
+                  className="gap-1"
+                >
+                  <X className="h-4 w-4" />
+                  Não vou
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+
         <DialogFooter className="gap-2 sm:gap-2">
           <Button variant="outline" onClick={goToDetails} className="gap-2">
             <Users className="h-4 w-4" />
