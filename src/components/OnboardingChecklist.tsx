@@ -19,6 +19,7 @@ interface ChecklistItem {
 
 const DISMISS_KEY = "onboarding_checklist_dismissed";
 const TOKENS_VISITED_KEY = "onboarding_tokens_visited";
+const EXPLORE_VISITED_KEY = "onboarding_explore_visited";
 
 /**
  * Card de checklist mostrado no Dashboard até o usuário completar todas as etapas
@@ -48,10 +49,19 @@ export const OnboardingChecklist = () => {
     }
   });
 
+  const [exploreVisited, setExploreVisited] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(EXPLORE_VISITED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
   useEffect(() => {
     const onStorage = () => {
       try {
         setTokensVisited(localStorage.getItem(TOKENS_VISITED_KEY) === "1");
+        setExploreVisited(localStorage.getItem(EXPLORE_VISITED_KEY) === "1");
         setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
       } catch {
         // ignore
@@ -69,6 +79,16 @@ export const OnboardingChecklist = () => {
     }
     setTokensVisited(true);
     navigate("/dashboard/tokens");
+  };
+
+  const visitExplore = () => {
+    try {
+      localStorage.setItem(EXPLORE_VISITED_KEY, "1");
+    } catch {
+      // ignore
+    }
+    setExploreVisited(true);
+    navigate("/dashboard/explorar");
   };
 
   // Master: tem alguma mesa criada?
@@ -146,8 +166,8 @@ export const OnboardingChecklist = () => {
       {
         id: "explore",
         label: "Explore mesas disponíveis",
-        done: tokensVisited, // reusa flag de "já navegou" — fallback
-        action: () => navigate("/dashboard/explorar"),
+        done: exploreVisited,
+        action: visitExplore,
         actionLabel: "Explorar",
       },
       {
@@ -158,7 +178,7 @@ export const OnboardingChecklist = () => {
         actionLabel: "Encontrar mesa",
       },
     ];
-  }, [profile, isMaster, tablesCount, appsCount, navigate, tokensVisited]);
+  }, [profile, isMaster, tablesCount, appsCount, navigate, tokensVisited, exploreVisited]);
 
   const completedCount = items.filter((i) => i.done).length;
   const allDone = items.length > 0 && completedCount === items.length;
