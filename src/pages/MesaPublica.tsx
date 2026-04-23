@@ -91,8 +91,8 @@ const MesaPublica = () => {
   const seatsLeft = table ? Math.max(0, (table.max_players ?? 0) - (acceptedCount ?? 0)) : 0;
   const isFull = !!table && seatsLeft === 0;
 
-  const nextSessionLabel = campaign?.next_session_date
-    ? new Date(campaign.next_session_date).toLocaleString("pt-BR", {
+  const nextSessionLabel = table?.next_session_date
+    ? new Date(table.next_session_date).toLocaleString("pt-BR", {
         dateStyle: "long",
         timeStyle: "short",
       })
@@ -156,9 +156,9 @@ const MesaPublica = () => {
                 <h1 className="text-3xl sm:text-5xl font-bold leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                   {table.title}
                 </h1>
-                {table.profiles?.display_name && (
+                {table.master_display_name && (
                   <p className="text-sm sm:text-base text-white/85">
-                    Mestre: <span className="font-semibold">{table.profiles.display_name}</span>
+                    Mestre: <span className="font-semibold">{table.master_display_name}</span>
                   </p>
                 )}
 
@@ -218,12 +218,12 @@ const MesaPublica = () => {
                       <InfoRow
                         icon={<Calendar className="h-4 w-4" />}
                         label="Frequência"
-                        value={campaign?.frequency || "A combinar"}
+                        value={table.frequency || "A combinar"}
                       />
                       <InfoRow
                         icon={<Clock className="h-4 w-4" />}
                         label="Horário"
-                        value={campaign?.schedule_time || "A combinar"}
+                        value={table.schedule_time || "A combinar"}
                       />
                       <InfoRow
                         icon={<Calendar className="h-4 w-4" />}
