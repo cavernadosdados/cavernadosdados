@@ -236,6 +236,32 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
               </FormItem>
             )} />
 
+            <FormField control={form.control} name="price_brl" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Preço sugerido por jogador (R$)</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
+                      R$
+                    </span>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      placeholder="0,00"
+                      className="pl-9"
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+                <p className="text-xs text-muted-foreground">
+                  Deixe <strong>0</strong> para mesa gratuita. O checkout ainda não está
+                  ativo — esse valor fica registrado como sua intenção de cobrança.
+                </p>
+                <FormMessage />
+              </FormItem>
+            )} />
+
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
               <Button type="submit" disabled={loading}>
