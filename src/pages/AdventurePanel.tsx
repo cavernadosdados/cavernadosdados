@@ -79,6 +79,7 @@ import {
   Monitor,
   MessageSquare,
   Pencil,
+  Inbox,
 } from "lucide-react";
 import {
   Tooltip,
