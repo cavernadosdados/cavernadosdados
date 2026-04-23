@@ -32,7 +32,7 @@ const MesaPublica = () => {
         .from("tables")
         .select("*, profiles:master_id(id, display_name, avatar_url)")
         .eq("id", tableId!)
-        .eq("status", "open")
+        .neq("status", "under_review")
         .maybeSingle();
       if (error) throw error;
       return data;
