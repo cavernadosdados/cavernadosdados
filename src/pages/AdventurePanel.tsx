@@ -312,16 +312,22 @@ const AdventurePanel = () => {
     if (!tableId || !user) return;
     setSaving(true);
     try {
+      // Normaliza next_session_date: "" -> null, datetime-local -> ISO
+      const payload: Record<string, any> = { ...form };
+      payload.next_session_date = form.next_session_date
+        ? new Date(form.next_session_date).toISOString()
+        : null;
+
       if (campaign) {
         const { error } = await supabase
           .from("campaign_details")
-          .update({ ...form })
+          .update(payload)
           .eq("table_id", tableId);
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from("campaign_details")
-          .insert({ table_id: tableId, ...form });
+          .insert({ table_id: tableId, ...payload });
         if (error) throw error;
       }
       toast({ title: "Salvo!", description: "Detalhes da campanha atualizados." });
