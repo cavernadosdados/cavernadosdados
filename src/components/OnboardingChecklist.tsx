@@ -34,6 +34,7 @@ export const OnboardingChecklist = () => {
   const userType = user?.user_metadata?.user_type;
   const isMaster = userType === "master";
   const { profile } = useProfile(user?.id);
+  const { claimedSet, claim } = useOnboardingRewards();
 
   const [dismissed, setDismissed] = useState<boolean>(() => {
     try {
@@ -140,6 +141,8 @@ export const OnboardingChecklist = () => {
           done: profileDone,
           action: () => navigate("/dashboard/perfil"),
           actionLabel: "Editar perfil",
+          tokens: 1,
+          xp: 50,
         },
         {
           id: "table",
@@ -147,6 +150,8 @@ export const OnboardingChecklist = () => {
           done: (tablesCount ?? 0) > 0,
           action: () => navigate("/dashboard/mesas"),
           actionLabel: "Criar mesa",
+          tokens: 1,
+          xp: 75,
         },
         {
           id: "tokens",
@@ -154,6 +159,8 @@ export const OnboardingChecklist = () => {
           done: tokensVisited,
           action: visitTokens,
           actionLabel: "Ver Tokens",
+          tokens: 2,
+          xp: 50,
         },
       ];
     }
@@ -165,6 +172,8 @@ export const OnboardingChecklist = () => {
         done: profileDone,
         action: () => navigate("/dashboard/perfil"),
         actionLabel: "Editar perfil",
+        tokens: 1,
+        xp: 50,
       },
       {
         id: "explore",
@@ -172,6 +181,8 @@ export const OnboardingChecklist = () => {
         done: exploreVisited,
         action: visitExplore,
         actionLabel: "Explorar",
+        tokens: 1,
+        xp: 50,
       },
       {
         id: "apply",
@@ -179,6 +190,8 @@ export const OnboardingChecklist = () => {
         done: (appsCount ?? 0) > 0,
         action: () => navigate("/dashboard/explorar"),
         actionLabel: "Encontrar mesa",
+        tokens: 2,
+        xp: 75,
       },
     ];
   }, [profile, isMaster, tablesCount, appsCount, navigate, tokensVisited, exploreVisited]);
@@ -186,6 +199,16 @@ export const OnboardingChecklist = () => {
   const completedCount = items.filter((i) => i.done).length;
   const allDone = items.length > 0 && completedCount === items.length;
   const progress = items.length > 0 ? (completedCount / items.length) * 100 : 0;
+
+  // Reivindica recompensa quando uma etapa fica concluída e ainda não foi paga.
+  useEffect(() => {
+    items.forEach((item) => {
+      if (item.done && !claimedSet.has(item.id)) {
+        claim(item.id);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, claimedSet]);
 
   if (dismissed || allDone || items.length === 0) return null;
 
@@ -230,15 +253,25 @@ export const OnboardingChecklist = () => {
               ) : (
                 <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
               )}
-              <span
-                className={
-                  item.done
-                    ? "text-sm text-muted-foreground line-through"
-                    : "text-sm font-medium"
-                }
-              >
-                {item.label}
-              </span>
+              <div className="min-w-0 flex flex-col">
+                <span
+                  className={
+                    item.done
+                      ? "text-sm text-muted-foreground line-through"
+                      : "text-sm font-medium"
+                  }
+                >
+                  {item.label}
+                </span>
+                <span className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                  <span className="inline-flex items-center gap-1">
+                    <Gem className="h-3 w-3 text-primary" />+{item.tokens}
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Zap className="h-3 w-3 text-secondary" />+{item.xp} XP
+                  </span>
+                </span>
+              </div>
             </div>
             {!item.done && (
               <Button size="sm" variant="ghost" onClick={item.action}>
