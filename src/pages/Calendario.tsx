@@ -223,7 +223,7 @@ const Calendario = () => {
                   <li
                     key={s.id}
                     className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border hover:border-primary/50 transition-mystical cursor-pointer"
-                    onClick={() => navigate(`/dashboard/mesa/${s.table_id}`)}
+                    onClick={() => openSession(s)}
                   >
                     <div className="min-w-0">
                       <p className="font-medium truncate">{s.title}</p>
@@ -238,6 +238,12 @@ const Calendario = () => {
             )}
           </CardContent>
         </Card>
+
+        <SessionDetailsDialog
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+          session={selectedSession}
+        />
       </div>
     </DashboardLayout>
   );
