@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useMarkMesaChatRead } from "@/hooks/useUnreadMesaChat";
 import { EditTableForm } from "@/components/EditTableForm";
 import { TableApplicationsList } from "@/components/TableApplicationsList";
+import { NextSessionCard } from "@/components/NextSessionCard";
 
 // Chip presets for quick-fill multi-select
 const CHIPS = {
@@ -86,6 +87,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+/** Converte ISO timestamp -> string compatível com <input type="datetime-local"> (sem timezone) */
+function toDatetimeLocal(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 const AdventurePanel = () => {
   const { tableId } = useParams<{ tableId: string }>();
@@ -199,6 +207,7 @@ const AdventurePanel = () => {
     frequency: "",
     schedule_time: "",
     discord_webhook_url: "",
+    next_session_date: "", // datetime-local string ("" = não definida)
   });
 
   const [testingWebhook, setTestingWebhook] = useState(false);
@@ -221,6 +230,9 @@ const AdventurePanel = () => {
         frequency: campaign.frequency || "",
         schedule_time: campaign.schedule_time || "",
         discord_webhook_url: (campaign as any).discord_webhook_url || "",
+        next_session_date: (campaign as any).next_session_date
+          ? toDatetimeLocal((campaign as any).next_session_date)
+          : "",
       });
     }
   }, [campaign]);
@@ -300,16 +312,22 @@ const AdventurePanel = () => {
     if (!tableId || !user) return;
     setSaving(true);
     try {
+      // Normaliza next_session_date: "" -> null, datetime-local -> ISO
+      const payload: Record<string, any> = { ...form };
+      payload.next_session_date = form.next_session_date
+        ? new Date(form.next_session_date).toISOString()
+        : null;
+
       if (campaign) {
         const { error } = await supabase
           .from("campaign_details")
-          .update({ ...form })
+          .update(payload)
           .eq("table_id", tableId);
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from("campaign_details")
-          .insert({ table_id: tableId, ...form });
+          .insert({ table_id: tableId, ...payload });
         if (error) throw error;
       }
       toast({ title: "Salvo!", description: "Detalhes da campanha atualizados." });
@@ -962,6 +980,20 @@ const AdventurePanel = () => {
                       </>
                     );
                   })()}
+                  {tableId && (
+                    <NextSessionCard
+                      tableId={tableId}
+                      isMaster={isMaster}
+                      nextSessionDate={
+                        form.next_session_date
+                          ? new Date(form.next_session_date).toISOString()
+                          : null
+                      }
+                      editorValue={form.next_session_date}
+                      onEditorChange={(v) => handleChange("next_session_date", v)}
+                      acceptedPlayers={acceptedPlayers as any}
+                    />
+                  )}
                 </CardContent>
               </Card>
 
