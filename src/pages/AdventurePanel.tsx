@@ -229,6 +229,10 @@ const AdventurePanel = () => {
 
   useEffect(() => {
     if (campaign) {
+      const rawDate = (campaign as any).next_session_date;
+      const dateStr = rawDate ? toDateLocal(rawDate) : "";
+      // Limpa automaticamente datas que já passaram
+      const cleanedDate = dateStr && isPastDate(dateStr) ? "" : dateStr;
       setForm({
         campaign_objectives: campaign.campaign_objectives || "",
         progression_expectation: campaign.progression_expectation || "",
@@ -245,12 +249,22 @@ const AdventurePanel = () => {
         frequency: campaign.frequency || "",
         schedule_time: campaign.schedule_time || "",
         discord_webhook_url: (campaign as any).discord_webhook_url || "",
-        next_session_date: (campaign as any).next_session_date
-          ? toDatetimeLocal((campaign as any).next_session_date)
-          : "",
+        next_session_date: cleanedDate,
       });
+
+      // Se a data armazenada já passou, persiste a limpeza no banco (somente o mestre)
+      if (rawDate && cleanedDate === "" && isMaster) {
+        supabase
+          .from("campaign_details")
+          .update({ next_session_date: null })
+          .eq("table_id", tableId!)
+          .then(({ error }) => {
+            if (!error) refetchCampaign();
+          });
+      }
     }
-  }, [campaign]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaign, isMaster]);
 
   // Realtime: listen for table status changes (players detect "evaluation")
   useEffect(() => {
