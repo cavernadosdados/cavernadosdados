@@ -2,19 +2,22 @@ import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Circle, Sparkles, X } from "lucide-react";
+import { CheckCircle2, Circle, Gem, Sparkles, X, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useOnboardingRewards, type OnboardingStepKey } from "@/hooks/useOnboardingRewards";
 
 interface ChecklistItem {
-  id: string;
+  id: OnboardingStepKey;
   label: string;
   done: boolean;
   action: () => void;
   actionLabel: string;
+  tokens: number;
+  xp: number;
 }
 
 const DISMISS_KEY = "onboarding_checklist_dismissed";
