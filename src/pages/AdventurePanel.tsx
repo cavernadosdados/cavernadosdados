@@ -980,6 +980,20 @@ const AdventurePanel = () => {
                       </>
                     );
                   })()}
+                  {tableId && (
+                    <NextSessionCard
+                      tableId={tableId}
+                      isMaster={isMaster}
+                      nextSessionDate={
+                        form.next_session_date
+                          ? new Date(form.next_session_date).toISOString()
+                          : null
+                      }
+                      editorValue={form.next_session_date}
+                      onEditorChange={(v) => handleChange("next_session_date", v)}
+                      acceptedPlayers={acceptedPlayers as any}
+                    />
+                  )}
                 </CardContent>
               </Card>
 
