@@ -96,6 +96,7 @@ export type Database = {
           house_rules: string | null
           id: string
           lateness_policy: string | null
+          next_session_date: string | null
           progression_expectation: string | null
           pvp_rules: string | null
           restricted_classes: string | null
@@ -118,6 +119,7 @@ export type Database = {
           house_rules?: string | null
           id?: string
           lateness_policy?: string | null
+          next_session_date?: string | null
           progression_expectation?: string | null
           pvp_rules?: string | null
           restricted_classes?: string | null
@@ -140,6 +142,7 @@ export type Database = {
           house_rules?: string | null
           id?: string
           lateness_policy?: string | null
+          next_session_date?: string | null
           progression_expectation?: string | null
           pvp_rules?: string | null
           restricted_classes?: string | null
@@ -597,6 +600,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      session_attendance: {
+        Row: {
+          created_at: string
+          id: string
+          next_session_date: string
+          note: string | null
+          player_id: string
+          status: string
+          table_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          next_session_date: string
+          note?: string | null
+          player_id: string
+          status?: string
+          table_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          next_session_date?: string
+          note?: string | null
+          player_id?: string
+          status?: string
+          table_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       session_feedback: {
         Row: {
