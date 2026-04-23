@@ -147,6 +147,13 @@ const Financeiro = () => {
     .reduce((s, p) => s + (p.master_payout_cents || 0), 0);
   const refundedCount = (payments ?? []).filter((p) => p.status === "refunded").length;
 
+  // Lookup de título da mesa para o histórico
+  const tableTitleById = useMemo(() => {
+    const map: Record<string, string> = {};
+    (tables ?? []).forEach((t) => { map[t.id] = t.title; });
+    return map;
+  }, [tables]);
+
   // Receita potencial: para cada mesa paga, payout estimado * vagas aceitas (ou max_players se 0)
   const potentialCents = paidTables.reduce((sum, t) => {
     const accepted = acceptedByTable?.[t.id] ?? 0;
@@ -214,14 +221,14 @@ const Financeiro = () => {
             label="Recebido"
             value={formatPriceBRL(releasedCents)}
             hint="Já liberado para você"
-            icon={<CheckCircle2 className="h-5 w-5 text-emerald-500" />}
+            icon={<CheckCircle2 className="h-5 w-5 text-[hsl(var(--primary))]" />}
             tone="emerald"
           />
           <StatCard
             label="Em garantia"
             value={formatPriceBRL(escrowCents)}
             hint="Liberado após a sessão"
-            icon={<Clock className="h-5 w-5 text-amber-500" />}
+            icon={<Clock className="h-5 w-5 text-muted-foreground" />}
             tone="amber"
           />
           <StatCard
@@ -433,7 +440,7 @@ const Financeiro = () => {
                               {format(new Date(p.created_at), "dd/MM/yyyy", { locale: ptBR })}
                             </TableCell>
                             <TableCell className="text-sm font-medium">
-                              {p.tables?.title ?? "—"}
+                              {tableTitleById[p.table_id] ?? "—"}
                             </TableCell>
                             <TableCell>
                               <span
