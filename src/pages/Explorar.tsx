@@ -338,6 +338,20 @@ const Explorar = () => {
                         <Badge variant="outline" className="gap-1 text-xs h-6 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm font-normal">
                           <Monitor className="h-3 w-3" /> {table.platform}
                         </Badge>
+                        <Badge
+                          variant="outline"
+                          className={`gap-1 text-xs h-6 px-2 backdrop-blur-sm font-semibold ${
+                            isFreeTable(table.price_cents)
+                              ? "bg-emerald-500/20 border-emerald-400/40 text-emerald-100"
+                              : "bg-primary/25 border-primary/50 text-white"
+                          }`}
+                        >
+                          <Coins className="h-3 w-3" />
+                          {formatPriceBRL(table.price_cents)}
+                          {!isFreeTable(table.price_cents) && (
+                            <span className="opacity-80 font-normal">/ jogador</span>
+                          )}
+                        </Badge>
                       </div>
 
                       {/* Vagas + urgência */}
