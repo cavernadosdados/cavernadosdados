@@ -160,6 +160,13 @@ export type Database = {
             foreignKeyName: "campaign_details_table_id_fkey"
             columns: ["table_id"]
             isOneToOne: true
+            referencedRelation: "public_tables_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_details_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: true
             referencedRelation: "tables"
             referencedColumns: ["id"]
           },
@@ -240,6 +247,13 @@ export type Database = {
             foreignKeyName: "mesa_chat_messages_table_id_fkey"
             columns: ["table_id"]
             isOneToOne: false
+            referencedRelation: "public_tables_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mesa_chat_messages_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
             referencedRelation: "tables"
             referencedColumns: ["id"]
           },
@@ -268,6 +282,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "mesa_chat_reads_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "public_tables_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "mesa_chat_reads_table_id_fkey"
             columns: ["table_id"]
@@ -410,6 +431,13 @@ export type Database = {
             columns: ["application_id"]
             isOneToOne: false
             referencedRelation: "table_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "public_tables_view"
             referencedColumns: ["id"]
           },
           {
@@ -596,6 +624,13 @@ export type Database = {
             foreignKeyName: "reports_table_id_fkey"
             columns: ["table_id"]
             isOneToOne: false
+            referencedRelation: "public_tables_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
             referencedRelation: "tables"
             referencedColumns: ["id"]
           },
@@ -682,6 +717,13 @@ export type Database = {
             foreignKeyName: "session_feedback_table_id_fkey"
             columns: ["table_id"]
             isOneToOne: false
+            referencedRelation: "public_tables_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_feedback_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
             referencedRelation: "tables"
             referencedColumns: ["id"]
           },
@@ -733,6 +775,13 @@ export type Database = {
             columns: ["pinned_report_id"]
             isOneToOne: false
             referencedRelation: "player_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_logs_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "public_tables_view"
             referencedColumns: ["id"]
           },
           {
@@ -814,6 +863,13 @@ export type Database = {
             foreignKeyName: "table_applications_table_id_fkey"
             columns: ["table_id"]
             isOneToOne: false
+            referencedRelation: "public_tables_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "table_applications_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
             referencedRelation: "tables"
             referencedColumns: ["id"]
           },
@@ -846,6 +902,13 @@ export type Database = {
             foreignKeyName: "table_boosts_table_id_fkey"
             columns: ["table_id"]
             isOneToOne: false
+            referencedRelation: "public_tables_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "table_boosts_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
             referencedRelation: "tables"
             referencedColumns: ["id"]
           },
@@ -871,6 +934,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "table_favorites_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "public_tables_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "table_favorites_table_id_fkey"
             columns: ["table_id"]
@@ -992,7 +1062,38 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_tables_view: {
+        Row: {
+          cover_url: string | null
+          created_at: string | null
+          description: string | null
+          duration: string | null
+          frequency: string | null
+          id: string | null
+          master_avatar_url: string | null
+          master_display_name: string | null
+          master_id: string | null
+          max_players: number | null
+          next_session_date: string | null
+          platform: string | null
+          price_cents: number | null
+          schedule_time: string | null
+          status: string | null
+          system: string | null
+          theme: string | null
+          timezone: string | null
+          title: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tables_master_id_fkey"
+            columns: ["master_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       apply_priority_to_application: {
@@ -1049,6 +1150,7 @@ export type Database = {
         Args: { _table_id: string; _user_id: string }
         Returns: boolean
       }
+      public_accepted_count: { Args: { _table_id: string }; Returns: number }
       spend_tokens: {
         Args: { _amount: number; _reason: string; _related_table_id?: string }
         Returns: number
