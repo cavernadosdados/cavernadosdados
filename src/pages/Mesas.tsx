@@ -49,7 +49,6 @@ const Mesas = () => {
   const userType = user?.user_metadata?.user_type;
   const [createOpen, setCreateOpen] = useState(false);
   const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
-  const [viewAppsTable, setViewAppsTable] = useState<{ id: string; title: string } | null>(null);
   const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [boostConfirm, setBoostConfirm] = useState<{ id: string; title: string } | null>(null);
@@ -346,14 +345,6 @@ const Mesas = () => {
                         </Button>
                         <Button
                           size="sm"
-                          variant="outline"
-                          className="gap-1 min-h-10 w-full sm:w-auto"
-                          onClick={() => setViewAppsTable({ id: table.id, title: table.title })}
-                        >
-                          <Inbox className="h-3 w-3" /> Candidaturas
-                        </Button>
-                        <Button
-                          size="sm"
                           variant={isBoosted ? "outline" : "default"}
                           className={`gap-1 min-h-10 w-full sm:w-auto ${
                             !isBoosted ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""
@@ -405,15 +396,6 @@ const Mesas = () => {
           tableId={applyTable.id}
           tableTitle={applyTable.title}
           onApplied={refetch}
-        />
-      )}
-
-      {viewAppsTable && (
-        <TableApplicationsDialog
-          open={!!viewAppsTable}
-          onOpenChange={(o) => !o && setViewAppsTable(null)}
-          tableId={viewAppsTable.id}
-          tableTitle={viewAppsTable.title}
         />
       )}
 
