@@ -24,6 +24,7 @@ import { ptBR } from "date-fns/locale";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { LevelProgress } from "@/components/LevelProgress";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -149,6 +150,8 @@ const Dashboard = () => {
             Refazer tour
           </Button>
         </div>
+
+        <LevelProgress />
 
         {isMaster ? <MasterView
           tables={masterTables ?? []}
