@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Wallet, TrendingUp, Clock, CheckCircle2, AlertCircle, Coins, ArrowUpRight, Calendar, Users, Receipt, ExternalLink } from "lucide-react";
+import { Wallet, TrendingUp, Clock, CheckCircle2, AlertCircle, Coins, ArrowUpRight, Calendar, Users, Receipt, ExternalLink, Info } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -601,14 +601,10 @@ function PaymentDetailsDialog({
                   {formatPriceBRL(payment.master_payout_cents)}
                 </span>
               </div>
-              {payment.amount_cents > 0 && (
-                <p className="text-[11px] text-muted-foreground pt-1">
-                  Comissão equivalente a{" "}
-                  {((payment.commission_cents / payment.amount_cents) * 100).toFixed(1)}% ·
-                  Moeda: {payment.currency}
-                </p>
-              )}
             </div>
+
+            {/* Cálculo da comissão */}
+            <CommissionBreakdown payment={payment} />
 
             {/* Timeline */}
             <div>
