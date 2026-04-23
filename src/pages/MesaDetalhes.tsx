@@ -218,20 +218,9 @@ const MesaDetalhes = () => {
             size="sm"
             variant="outline"
             className="gap-2"
-            onClick={async () => {
-              const url = `${window.location.origin}/m/${table.id}`;
-              try {
-                if (navigator.share) {
-                  await navigator.share({ title: table.title, url });
-                } else {
-                  await navigator.clipboard.writeText(url);
-                  toast.success("Link público copiado!", {
-                    description: "Compartilhe fora da plataforma.",
-                  });
-                }
-              } catch {
-                // usuário cancelou — silencioso
-              }
+            onClick={() => {
+              setCopied(false);
+              setShareOpen(true);
             }}
           >
             <Share2 className="h-4 w-4" />
