@@ -47,6 +47,10 @@ const tableSchema = z.object({
   max_players: z.coerce.number().min(1).max(20),
   platform: z.string().min(1, 'Selecione a plataforma'),
   status: z.string(),
+  price_brl: z.coerce
+    .number({ invalid_type_error: 'Informe um valor válido' })
+    .min(0, 'O preço não pode ser negativo')
+    .max(9999, 'Valor muito alto'),
   cover_url: z
     .string()
     .trim()
@@ -69,6 +73,7 @@ export interface EditTableFormTable {
   max_players: number;
   platform: string;
   status: string;
+  price_cents?: number | null;
   cover_url?: string | null;
 }
 
@@ -91,6 +96,7 @@ export function EditTableForm({ table, onSaved }: EditTableFormProps) {
       max_players: table.max_players,
       platform: table.platform,
       status: table.status,
+      price_brl: (table.price_cents ?? 0) / 100,
       cover_url: table.cover_url || '',
     },
   });
@@ -105,6 +111,7 @@ export function EditTableForm({ table, onSaved }: EditTableFormProps) {
       max_players: table.max_players,
       platform: table.platform,
       status: table.status,
+      price_brl: (table.price_cents ?? 0) / 100,
       cover_url: table.cover_url || '',
     });
   }, [table, form]);
@@ -121,6 +128,7 @@ export function EditTableForm({ table, onSaved }: EditTableFormProps) {
         max_players: data.max_players,
         platform: data.platform,
         status: data.status,
+        price_cents: Math.round((data.price_brl || 0) * 100),
         cover_url: data.cover_url?.trim() || null,
       }).eq('id', table.id);
 

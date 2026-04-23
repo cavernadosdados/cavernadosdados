@@ -50,6 +50,10 @@ const tableSchema = z.object({
   duration: z.string().min(1, 'Selecione a duração'),
   max_players: z.coerce.number().min(1).max(20),
   platform: z.string().min(1, 'Selecione a plataforma'),
+  price_brl: z.coerce
+    .number({ invalid_type_error: 'Informe um valor válido' })
+    .min(0, 'O preço não pode ser negativo')
+    .max(9999, 'Valor muito alto'),
   cover_url: z
     .string()
     .trim()
@@ -82,6 +86,7 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
       duration: '',
       max_players: 4,
       platform: '',
+      price_brl: 0,
       cover_url: '',
     },
   });
@@ -101,6 +106,7 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
           duration: data.duration,
           max_players: data.max_players,
           platform: data.platform,
+          price_cents: Math.round((data.price_brl || 0) * 100),
           cover_url: data.cover_url?.trim() || null,
         });
 
