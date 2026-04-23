@@ -1129,6 +1129,23 @@ const AdventurePanel = () => {
               </Card>
             </TabsContent>
           )}
+
+          {/* ===== CANDIDATURAS ===== */}
+          {isMaster && (
+            <TabsContent value="applications" className="space-y-6">
+              <Card className="border-border bg-card/60">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Inbox className="h-4 w-4 text-primary" />
+                    Candidaturas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TableApplicationsList tableId={tableId!} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </main>
 
