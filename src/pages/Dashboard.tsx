@@ -25,6 +25,8 @@ import { OnboardingModal } from "@/components/OnboardingModal";
 import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { LevelProgress } from "@/components/LevelProgress";
+import { useCheckAchievements } from "@/hooks/useAchievements";
+import { useEffect } from "react";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -33,6 +35,13 @@ const Dashboard = () => {
   const isMaster = userType === "master";
   const displayName = user?.user_metadata?.display_name || user?.email?.split("@")[0];
   const { showOnboarding, completeOnboarding, restartOnboarding } = useOnboarding();
+  const checkAchievements = useCheckAchievements();
+
+  // Verifica conquistas pendentes ao abrir o Dashboard
+  useEffect(() => {
+    if (user) checkAchievements.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   /* ============== MASTER DATA ============== */
   const { data: masterTables } = useQuery({

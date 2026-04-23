@@ -14,6 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievement_definitions: {
+        Row: {
+          code: string
+          description: string
+          icon: string
+          metric: string
+          sort_order: number
+          target: number
+          title: string
+          tokens_reward: number
+          xp_reward: number
+        }
+        Insert: {
+          code: string
+          description: string
+          icon?: string
+          metric: string
+          sort_order?: number
+          target: number
+          title: string
+          tokens_reward?: number
+          xp_reward?: number
+        }
+        Update: {
+          code?: string
+          description?: string
+          icon?: string
+          metric?: string
+          sort_order?: number
+          target?: number
+          title?: string
+          tokens_reward?: number
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      achievements: {
+        Row: {
+          code: string
+          id: string
+          tokens_awarded: number
+          unlocked_at: string
+          user_id: string
+          xp_awarded: number
+        }
+        Insert: {
+          code: string
+          id?: string
+          tokens_awarded?: number
+          unlocked_at?: string
+          user_id: string
+          xp_awarded?: number
+        }
+        Update: {
+          code?: string
+          id?: string
+          tokens_awarded?: number
+          unlocked_at?: string
+          user_id?: string
+          xp_awarded?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievements_code_fkey"
+            columns: ["code"]
+            isOneToOne: false
+            referencedRelation: "achievement_definitions"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       campaign_details: {
         Row: {
           absence_policy: string | null
@@ -865,12 +936,34 @@ export type Database = {
       }
       boost_table: { Args: { _table_id: string }; Returns: string }
       buy_slot_boost: { Args: never; Returns: string }
+      check_and_unlock_achievements: { Args: never; Returns: Json }
       claim_onboarding_reward: { Args: { _step_key: string }; Returns: Json }
+      compute_achievement_metric: {
+        Args: { _metric: string; _user: string }
+        Returns: number
+      }
       count_pending_applications: {
         Args: { _user_id: string }
         Returns: number
       }
       current_pending_slots: { Args: { _user_id: string }; Returns: number }
+      get_achievements_progress: {
+        Args: never
+        Returns: {
+          code: string
+          current_value: number
+          description: string
+          icon: string
+          metric: string
+          sort_order: number
+          target: number
+          title: string
+          tokens_reward: number
+          unlocked: boolean
+          unlocked_at: string
+          xp_reward: number
+        }[]
+      }
       grant_tokens: {
         Args: {
           _amount: number
