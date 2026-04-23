@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Wallet, TrendingUp, Clock, CheckCircle2, AlertCircle, Coins, ArrowUpRight, Calendar, Users, Receipt, ExternalLink } from "lucide-react";
+import { Wallet, TrendingUp, Clock, CheckCircle2, AlertCircle, Coins, ArrowUpRight, Calendar, Users, Receipt, ExternalLink, Info } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -601,14 +601,10 @@ function PaymentDetailsDialog({
                   {formatPriceBRL(payment.master_payout_cents)}
                 </span>
               </div>
-              {payment.amount_cents > 0 && (
-                <p className="text-[11px] text-muted-foreground pt-1">
-                  Comissão equivalente a{" "}
-                  {((payment.commission_cents / payment.amount_cents) * 100).toFixed(1)}% ·
-                  Moeda: {payment.currency}
-                </p>
-              )}
             </div>
+
+            {/* Cálculo da comissão */}
+            <CommissionBreakdown payment={payment} />
 
             {/* Timeline */}
             <div>
@@ -666,6 +662,94 @@ function PaymentDetailsDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function CommissionBreakdown({ payment }: { payment: PaymentRow }) {
+  const amount = payment.amount_cents;
+  const commission = payment.commission_cents;
+  const payout = payment.master_payout_cents;
+
+  // % efetivo armazenado (pode diferir da regra atual da mesa se ela mudou depois)
+  const effectivePct = amount > 0 ? (commission / amount) * 100 : 0;
+
+  // Reproduz a regra: commission = round(amount * pct / 100)
+  const rawProduct = (amount * effectivePct) / 100;
+  const rounded = Math.round(rawProduct);
+  const wasRounded = Math.abs(rawProduct - rounded) > 0.0001;
+
+  // Verifica se payout = amount - commission (auditoria)
+  const sumCheck = amount - commission === payout;
+
+  return (
+    <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+      <div className="flex items-start gap-2">
+        <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+        <div>
+          <h4 className="text-sm font-semibold">Como a comissão foi calculada</h4>
+          <p className="text-xs text-muted-foreground">
+            Aplicamos uma porcentagem fixa sobre o valor pago e arredondamos para o
+            centavo mais próximo.
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-1.5 text-xs font-mono bg-card/60 rounded-md p-3 border border-border/40">
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground">Base (valor pago)</span>
+          <span>{formatPriceBRL(amount)}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground">Taxa aplicada</span>
+          <span>{effectivePct.toFixed(2).replace(".", ",")}%</span>
+        </div>
+        <Separator className="my-1.5" />
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground">
+            {formatPriceBRL(amount)} × {effectivePct.toFixed(2).replace(".", ",")}%
+          </span>
+          <span>= {formatPriceBRL(Math.trunc(rawProduct)) /* aproximado */}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground">
+            Arredondado para o centavo
+          </span>
+          <span className={cn(wasRounded && "text-primary")}>
+            = {formatPriceBRL(commission)}
+          </span>
+        </div>
+        <Separator className="my-1.5" />
+        <div className="flex items-center justify-between font-semibold">
+          <span>{formatPriceBRL(amount)} − {formatPriceBRL(commission)}</span>
+          <span className="text-primary">= {formatPriceBRL(payout)}</span>
+        </div>
+      </div>
+
+      <ul className="text-[11px] text-muted-foreground space-y-1 pl-1">
+        <li>
+          • <strong>Base:</strong> valor total pago pelo jogador (sem descontos prévios).
+        </li>
+        <li>
+          • <strong>Taxa:</strong> percentual definido na mesa no momento do pagamento — fica
+          congelado no registro mesmo se você alterar a mesa depois.
+        </li>
+        <li>
+          • <strong>Arredondamento:</strong> bancário, ao centavo mais próximo (
+          <code>round(base × taxa ÷ 100)</code>) para evitar frações de centavo.
+        </li>
+        <li>
+          • <strong>Seu repasse:</strong> base − comissão. Moeda: {payment.currency}.
+        </li>
+      </ul>
+
+      {!sumCheck && (
+        <p className="text-[11px] text-destructive flex items-start gap-1">
+          <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+          Diferença de arredondamento detectada entre comissão e repasse — o valor exato
+          gravado prevalece.
+        </p>
+      )}
+    </div>
   );
 }
 
