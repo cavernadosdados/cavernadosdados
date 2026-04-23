@@ -29,6 +29,7 @@ import {
   Lock,
   Monitor,
   Send,
+  Share2,
   ShieldAlert,
   Sparkles,
   Swords,
@@ -38,6 +39,7 @@ import {
   Users,
 } from "lucide-react";
 import { formatPriceBRL, isFreeTable } from "@/lib/price";
+import { toast } from "sonner";
 
 /**
  * Public, read-only "Table Details" page.
