@@ -242,6 +242,33 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_rewards: {
+        Row: {
+          created_at: string
+          id: string
+          step_key: string
+          tokens_awarded: number
+          user_id: string
+          xp_awarded: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          step_key: string
+          tokens_awarded?: number
+          user_id: string
+          xp_awarded?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          step_key?: string
+          tokens_awarded?: number
+          user_id?: string
+          xp_awarded?: number
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount_cents: number
@@ -380,6 +407,7 @@ export type Database = {
           tokens_balance: number
           updated_at: string
           user_type: Database["public"]["Enums"]["user_type"]
+          xp: number
         }
         Insert: {
           active_tables_count?: number | null
@@ -399,6 +427,7 @@ export type Database = {
           tokens_balance?: number
           updated_at?: string
           user_type: Database["public"]["Enums"]["user_type"]
+          xp?: number
         }
         Update: {
           active_tables_count?: number | null
@@ -418,6 +447,7 @@ export type Database = {
           tokens_balance?: number
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
+          xp?: number
         }
         Relationships: []
       }
@@ -835,6 +865,7 @@ export type Database = {
       }
       boost_table: { Args: { _table_id: string }; Returns: string }
       buy_slot_boost: { Args: never; Returns: string }
+      claim_onboarding_reward: { Args: { _step_key: string }; Returns: Json }
       count_pending_applications: {
         Args: { _user_id: string }
         Returns: number
