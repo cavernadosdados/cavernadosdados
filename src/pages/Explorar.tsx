@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -26,9 +27,12 @@ import {
   AlertTriangle,
   Compass,
   Coins,
+  Search,
+  X,
 } from "lucide-react";
 import { CoverImage } from "@/components/CoverImage";
 import { ReportTableButton } from "@/components/ReportTableButton";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { useActiveTableBoosts } from "@/hooks/useTableBoosts";
 import { useAuth } from "@/hooks/useAuth";
 import { formatPriceBRL, isFreeTable } from "@/lib/price";
@@ -46,6 +50,7 @@ const Explorar = () => {
   const [duration, setDuration] = useState<string>(ANY);
   const [schedule, setSchedule] = useState<string>(ANY);
   const [price, setPrice] = useState<string>(ANY);
+  const [search, setSearch] = useState<string>("");
 
   const { data: tables, isLoading } = useQuery({
     queryKey: ["explorar-tables"],
@@ -119,6 +124,19 @@ const Explorar = () => {
     }
     if (price === "free" && !isFreeTable(t.price_cents)) return false;
     if (price === "paid" && isFreeTable(t.price_cents)) return false;
+    const q = search.trim().toLowerCase();
+    if (q) {
+      const haystack = [
+        t.title ?? "",
+        t.description ?? "",
+        t.system ?? "",
+        t.theme ?? "",
+        t.profiles?.display_name ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
     return true;
   });
 
@@ -137,10 +155,11 @@ const Explorar = () => {
     setDuration(ANY);
     setSchedule(ANY);
     setPrice(ANY);
+    setSearch("");
   };
 
   const hasFilters =
-    system !== ANY || theme !== ANY || duration !== ANY || schedule !== ANY || price !== ANY;
+    system !== ANY || theme !== ANY || duration !== ANY || schedule !== ANY || price !== ANY || search.trim() !== "";
 
   return (
     <DashboardLayout>
@@ -159,6 +178,25 @@ const Explorar = () => {
         {/* Filters bar */}
         <Card className="bg-card/60 border-border">
           <CardContent className="p-4">
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar por título, descrição, sistema ou mestre…"
+                className="pl-9 pr-9"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  aria-label="Limpar busca"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               <Select value={system} onValueChange={setSystem}>
                 <SelectTrigger><SelectValue placeholder="Sistema" /></SelectTrigger>
@@ -297,6 +335,13 @@ const Explorar = () => {
                   {user?.id !== table.profiles?.id && (
                     <div className="absolute top-3 left-3 z-20">
                       <ReportTableButton tableId={table.id} tableTitle={table.title} />
+                    </div>
+                  )}
+
+                  {/* Botão favoritar (canto inferior esquerdo, sobre overlay) */}
+                  {user && (
+                    <div className="absolute top-3 left-12 z-20">
+                      <FavoriteButton tableId={table.id} />
                     </div>
                   )}
 

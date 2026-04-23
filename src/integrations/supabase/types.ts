@@ -851,6 +851,35 @@ export type Database = {
           },
         ]
       }
+      table_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          table_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          table_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          table_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "table_favorites_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tables: {
         Row: {
           commission_pct: number

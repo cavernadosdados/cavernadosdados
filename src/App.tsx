@@ -23,6 +23,7 @@ import Conquistas from "./pages/Conquistas";
 import Calendario from "./pages/Calendario";
 import NotFound from "./pages/NotFound";
 import Financeiro from "./pages/Financeiro";
+import Favoritos from "./pages/Favoritos";
 import { useAuth } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,7 @@ const AppRoutes = () => (
     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
     <Route path="/dashboard/mesas" element={<RoleRoute allow="master"><Mesas /></RoleRoute>} />
     <Route path="/dashboard/explorar" element={<ProtectedRoute><Explorar /></ProtectedRoute>} />
+    <Route path="/dashboard/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
     <Route path="/dashboard/aventuras" element={<RoleRoute allow="player"><MinhasAventuras /></RoleRoute>} />
     <Route path="/dashboard/mensagens" element={<ProtectedRoute><Mensagens /></ProtectedRoute>} />
     <Route path="/dashboard/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />

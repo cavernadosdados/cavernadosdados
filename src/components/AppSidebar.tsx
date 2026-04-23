@@ -1,4 +1,4 @@
-import { Home, Dice1, MessageCircle, User, Gem, Settings, Crown, Compass, ScrollText, Shield, Trophy, Calendar, Wallet } from "lucide-react";
+import { Home, Dice1, MessageCircle, User, Gem, Settings, Crown, Compass, ScrollText, Shield, Trophy, Calendar, Wallet, Heart } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -25,6 +25,7 @@ export function AppSidebar() {
   const navigationItems = [
     { title: "Home", url: "/dashboard", icon: Home },
     { title: "Explorar Mesas", url: "/dashboard/explorar", icon: Compass },
+    { title: "Favoritas", url: "/dashboard/favoritos", icon: Heart },
     ...(userType === 'master'
       ? [{ title: "Minhas Mesas", url: "/dashboard/mesas", icon: Dice1 }]
       : [{ title: "Minhas Aventuras", url: "/dashboard/aventuras", icon: ScrollText }]),
