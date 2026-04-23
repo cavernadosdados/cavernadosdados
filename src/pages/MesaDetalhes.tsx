@@ -643,6 +643,95 @@ const MesaDetalhes = () => {
           setApplyOpen(false);
         }}
       />
+
+      <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="h-5 w-5 text-primary" />
+              Compartilhar mesa
+            </DialogTitle>
+            <DialogDescription>
+              Qualquer pessoa com o link consegue ver a página pública desta mesa, mesmo sem login.
+            </DialogDescription>
+          </DialogHeader>
+
+          {(() => {
+            const shareUrl = `${window.location.origin}/m/${table.id}`;
+            const handleCopy = async () => {
+              try {
+                if (navigator.clipboard?.writeText) {
+                  await navigator.clipboard.writeText(shareUrl);
+                } else {
+                  // Fallback para iframes/contextos sem Clipboard API
+                  const ta = document.createElement("textarea");
+                  ta.value = shareUrl;
+                  ta.style.position = "fixed";
+                  ta.style.opacity = "0";
+                  document.body.appendChild(ta);
+                  ta.select();
+                  document.execCommand("copy");
+                  document.body.removeChild(ta);
+                }
+                setCopied(true);
+                toast.success("Link copiado!");
+                setTimeout(() => setCopied(false), 2000);
+              } catch {
+                toast.error("Não foi possível copiar", {
+                  description: "Selecione o link manualmente e copie.",
+                });
+              }
+            };
+            const handleNativeShare = async () => {
+              try {
+                await navigator.share?.({ title: table.title, url: shareUrl });
+              } catch {
+                // usuário cancelou
+              }
+            };
+            return (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    readOnly
+                    value={shareUrl}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="font-mono text-xs"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleCopy}
+                    className="gap-2 shrink-0"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="h-4 w-4" />
+                        Copiado
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4" />
+                        Copiar link
+                      </>
+                    )}
+                  </Button>
+                </div>
+                {typeof navigator !== "undefined" && typeof navigator.share === "function" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleNativeShare}
+                    className="w-full gap-2"
+                  >
+                    <Share2 className="h-4 w-4" />
+                    Compartilhar via…
+                  </Button>
+                )}
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
