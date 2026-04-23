@@ -367,7 +367,7 @@ const Mesas = () => {
                         </Button>
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant="destructive"
                           className="gap-1 min-h-10 w-full sm:w-auto col-span-2 sm:col-auto"
                           onClick={() => setDeleteTableId(table.id)}
                         >
