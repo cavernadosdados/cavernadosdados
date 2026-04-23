@@ -21,6 +21,7 @@ import { ClockTimePicker } from "@/components/ClockTimePicker";
 import { WeekdaySelector, composeSchedule, parseSchedule } from "@/components/WeekdaySelector";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMarkMesaChatRead } from "@/hooks/useUnreadMesaChat";
+import { EditTableForm } from "@/components/EditTableForm";
 
 // Chip presets for quick-fill multi-select
 const CHIPS = {
@@ -76,6 +77,7 @@ import {
   Hourglass,
   Monitor,
   MessageSquare,
+  Pencil,
 } from "lucide-react";
 import {
   Tooltip,
