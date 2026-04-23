@@ -1,4 +1,4 @@
-import { Home, Dice1, MessageCircle, User, Gem, Settings, Crown, Compass, ScrollText, Shield, Trophy } from "lucide-react";
+import { Home, Dice1, MessageCircle, User, Gem, Settings, Crown, Compass, ScrollText, Shield, Trophy, Calendar } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -29,6 +29,7 @@ export function AppSidebar() {
       ? [{ title: "Minhas Mesas", url: "/dashboard/mesas", icon: Dice1 }]
       : [{ title: "Minhas Aventuras", url: "/dashboard/aventuras", icon: ScrollText }]),
     { title: "Taverna", url: "/dashboard/mensagens", icon: MessageCircle },
+    { title: "Calendário", url: "/dashboard/calendario", icon: Calendar },
     { title: "Conquistas", url: "/dashboard/conquistas", icon: Trophy },
     { title: "Perfil", url: "/dashboard/perfil", icon: User },
     { title: "Loja de Tokens", url: "/dashboard/tokens", icon: Gem },
