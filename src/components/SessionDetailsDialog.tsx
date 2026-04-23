@@ -40,6 +40,23 @@ interface SessionDetailsDialogProps {
 
 export function SessionDetailsDialog({ open, onOpenChange, session }: SessionDetailsDialogProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Presença só faz sentido se for sessão futura agendada (is_upcoming) e o usuário for jogador
+  const canManageAttendance =
+    !!session && session.is_upcoming && session.role === "player" && !!session.next_session_date;
+
+  const { data: attendance } = useAttendanceList(
+    canManageAttendance ? session!.table_id : undefined,
+    canManageAttendance ? session!.next_session_date! : null
+  );
+  const setAttendance = useSetAttendance(
+    canManageAttendance ? session!.table_id : undefined,
+    canManageAttendance ? session!.next_session_date! : null
+  );
+
+  const myStatus: AttendanceStatus | null =
+    (attendance ?? []).find((a) => a.player_id === user?.id)?.status ?? null;
 
   if (!session) return null;
 
