@@ -1018,11 +1018,7 @@ const AdventurePanel = () => {
                     <NextSessionCard
                       tableId={tableId}
                       isMaster={isMaster}
-                      nextSessionDate={
-                        form.next_session_date
-                          ? combineDateTime(form.next_session_date, form.schedule_time)
-                          : null
-                      }
+                      nextSessionDate={(campaign as any)?.next_session_date ?? null}
                       editorValue={form.next_session_date}
                       onEditorChange={(v) => handleChange("next_session_date", v)}
                       scheduleTime={form.schedule_time}
