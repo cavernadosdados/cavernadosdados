@@ -56,6 +56,7 @@ const Financeiro = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const userType = user?.user_metadata?.user_type;
+  const [selectedPayment, setSelectedPayment] = useState<PaymentRow | null>(null);
 
   // Mesas do mestre
   const { data: tables, isLoading: loadingTables } = useQuery({
@@ -434,7 +435,11 @@ const Financeiro = () => {
                         const meta = STATUS_META[p.status] ?? STATUS_META.pending;
                         const Icon = meta.icon;
                         return (
-                          <TableRow key={p.id}>
+                          <TableRow
+                            key={p.id}
+                            className="cursor-pointer"
+                            onClick={() => setSelectedPayment(p)}
+                          >
                             <TableCell className="text-sm">
                               {format(new Date(p.created_at), "dd/MM/yyyy", { locale: ptBR })}
                             </TableCell>
