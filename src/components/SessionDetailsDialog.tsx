@@ -9,6 +9,9 @@ import {
   MapPin,
   Users,
   BookOpen,
+  Check,
+  X,
+  HelpCircle,
 } from "lucide-react";
 import {
   Dialog,
@@ -22,6 +25,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { CalendarSession } from "@/hooks/useSessionsCalendar";
+import {
+  useAttendanceList,
+  useSetAttendance,
+  type AttendanceStatus,
+} from "@/hooks/useNextSession";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SessionDetailsDialogProps {
   open: boolean;
