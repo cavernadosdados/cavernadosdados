@@ -47,6 +47,10 @@ const tableSchema = z.object({
   max_players: z.coerce.number().min(1).max(20),
   platform: z.string().min(1, 'Selecione a plataforma'),
   status: z.string(),
+  price_brl: z.coerce
+    .number({ invalid_type_error: 'Informe um valor válido' })
+    .min(0, 'O preço não pode ser negativo')
+    .max(9999, 'Valor muito alto'),
   cover_url: z
     .string()
     .trim()
@@ -69,6 +73,7 @@ export interface EditTableFormTable {
   max_players: number;
   platform: string;
   status: string;
+  price_cents?: number | null;
   cover_url?: string | null;
 }
 
@@ -91,6 +96,7 @@ export function EditTableForm({ table, onSaved }: EditTableFormProps) {
       max_players: table.max_players,
       platform: table.platform,
       status: table.status,
+      price_brl: (table.price_cents ?? 0) / 100,
       cover_url: table.cover_url || '',
     },
   });
@@ -105,6 +111,7 @@ export function EditTableForm({ table, onSaved }: EditTableFormProps) {
       max_players: table.max_players,
       platform: table.platform,
       status: table.status,
+      price_brl: (table.price_cents ?? 0) / 100,
       cover_url: table.cover_url || '',
     });
   }, [table, form]);
@@ -121,6 +128,7 @@ export function EditTableForm({ table, onSaved }: EditTableFormProps) {
         max_players: data.max_players,
         platform: data.platform,
         status: data.status,
+        price_cents: Math.round((data.price_brl || 0) * 100),
         cover_url: data.cover_url?.trim() || null,
       }).eq('id', table.id);
 
@@ -243,6 +251,32 @@ export function EditTableForm({ table, onSaved }: EditTableFormProps) {
             </FormItem>
           )} />
         </div>
+
+        <FormField control={form.control} name="price_brl" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Preço sugerido por jogador (R$)</FormLabel>
+            <FormControl>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
+                  R$
+                </span>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder="0,00"
+                  className="pl-9"
+                  {...field}
+                />
+              </div>
+            </FormControl>
+            <p className="text-xs text-muted-foreground">
+              Deixe <strong>0</strong> para mesa gratuita. O checkout ainda não está
+              ativo — esse valor fica registrado como sua intenção de cobrança.
+            </p>
+            <FormMessage />
+          </FormItem>
+        )} />
 
         <div className="flex justify-end pt-2">
           <Button type="submit" disabled={loading} className="gap-2">

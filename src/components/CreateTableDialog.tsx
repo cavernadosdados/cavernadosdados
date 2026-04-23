@@ -50,6 +50,10 @@ const tableSchema = z.object({
   duration: z.string().min(1, 'Selecione a duração'),
   max_players: z.coerce.number().min(1).max(20),
   platform: z.string().min(1, 'Selecione a plataforma'),
+  price_brl: z.coerce
+    .number({ invalid_type_error: 'Informe um valor válido' })
+    .min(0, 'O preço não pode ser negativo')
+    .max(9999, 'Valor muito alto'),
   cover_url: z
     .string()
     .trim()
@@ -82,6 +86,7 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
       duration: '',
       max_players: 4,
       platform: '',
+      price_brl: 0,
       cover_url: '',
     },
   });
@@ -101,6 +106,7 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
           duration: data.duration,
           max_players: data.max_players,
           platform: data.platform,
+          price_cents: Math.round((data.price_brl || 0) * 100),
           cover_url: data.cover_url?.trim() || null,
         });
 
@@ -226,6 +232,32 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
                     {PLATFORMS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )} />
+
+            <FormField control={form.control} name="price_brl" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Preço sugerido por jogador (R$)</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
+                      R$
+                    </span>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      placeholder="0,00"
+                      className="pl-9"
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+                <p className="text-xs text-muted-foreground">
+                  Deixe <strong>0</strong> para mesa gratuita. O checkout ainda não está
+                  ativo — esse valor fica registrado como sua intenção de cobrança.
+                </p>
                 <FormMessage />
               </FormItem>
             )} />

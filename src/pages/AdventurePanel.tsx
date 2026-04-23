@@ -1118,6 +1118,7 @@ const AdventurePanel = () => {
                       max_players: table.max_players,
                       platform: table.platform,
                       status: table.status,
+                      price_cents: table.price_cents,
                       cover_url: table.cover_url,
                     }}
                     onSaved={() => {

@@ -18,6 +18,7 @@ import {
   Sparkles,
   AlertTriangle,
   Rocket,
+  Coins,
 } from "lucide-react";
 import { CreateTableDialog } from "@/components/CreateTableDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
@@ -41,6 +42,7 @@ import { useActiveTableBoosts, useBoostTable } from "@/hooks/useTableBoosts";
 import { useTokens } from "@/hooks/useTokens";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { formatPriceBRL, isFreeTable } from "@/lib/price";
 
 const Mesas = () => {
   const { user } = useAuth();
@@ -276,6 +278,20 @@ const Mesas = () => {
                       </Badge>
                       <Badge variant="outline" className="gap-1">
                         <Monitor className="h-3 w-3" /> {table.platform}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={`gap-1 ${
+                          isFreeTable(table.price_cents)
+                            ? "border-emerald-500/40 text-emerald-400"
+                            : "border-primary/50 text-primary"
+                        }`}
+                      >
+                        <Coins className="h-3 w-3" />
+                        {formatPriceBRL(table.price_cents)}
+                        {!isFreeTable(table.price_cents) && (
+                          <span className="opacity-70 font-normal">/ jogador</span>
+                        )}
                       </Badge>
                       {acceptedCount > 0 && !isFull && (
                         <Badge variant="outline" className="gap-1 border-secondary/50 text-secondary">
