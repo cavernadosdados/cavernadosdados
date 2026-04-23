@@ -22,6 +22,7 @@ import { WeekdaySelector, composeSchedule, parseSchedule } from "@/components/We
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMarkMesaChatRead } from "@/hooks/useUnreadMesaChat";
 import { EditTableForm } from "@/components/EditTableForm";
+import { TableApplicationsList } from "@/components/TableApplicationsList";
 
 // Chip presets for quick-fill multi-select
 const CHIPS = {
