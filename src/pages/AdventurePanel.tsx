@@ -1020,11 +1020,12 @@ const AdventurePanel = () => {
                       isMaster={isMaster}
                       nextSessionDate={
                         form.next_session_date
-                          ? new Date(form.next_session_date).toISOString()
+                          ? combineDateTime(form.next_session_date, form.schedule_time)
                           : null
                       }
                       editorValue={form.next_session_date}
                       onEditorChange={(v) => handleChange("next_session_date", v)}
+                      scheduleTime={form.schedule_time}
                       acceptedPlayers={acceptedPlayers as any}
                     />
                   )}
