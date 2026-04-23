@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -26,9 +27,12 @@ import {
   AlertTriangle,
   Compass,
   Coins,
+  Search,
+  X,
 } from "lucide-react";
 import { CoverImage } from "@/components/CoverImage";
 import { ReportTableButton } from "@/components/ReportTableButton";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { useActiveTableBoosts } from "@/hooks/useTableBoosts";
 import { useAuth } from "@/hooks/useAuth";
 import { formatPriceBRL, isFreeTable } from "@/lib/price";
@@ -46,6 +50,7 @@ const Explorar = () => {
   const [duration, setDuration] = useState<string>(ANY);
   const [schedule, setSchedule] = useState<string>(ANY);
   const [price, setPrice] = useState<string>(ANY);
+  const [search, setSearch] = useState<string>("");
 
   const { data: tables, isLoading } = useQuery({
     queryKey: ["explorar-tables"],
@@ -119,6 +124,19 @@ const Explorar = () => {
     }
     if (price === "free" && !isFreeTable(t.price_cents)) return false;
     if (price === "paid" && isFreeTable(t.price_cents)) return false;
+    const q = search.trim().toLowerCase();
+    if (q) {
+      const haystack = [
+        t.title ?? "",
+        t.description ?? "",
+        t.system ?? "",
+        t.theme ?? "",
+        t.profiles?.display_name ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
     return true;
   });
 
@@ -137,10 +155,11 @@ const Explorar = () => {
     setDuration(ANY);
     setSchedule(ANY);
     setPrice(ANY);
+    setSearch("");
   };
 
   const hasFilters =
-    system !== ANY || theme !== ANY || duration !== ANY || schedule !== ANY || price !== ANY;
+    system !== ANY || theme !== ANY || duration !== ANY || schedule !== ANY || price !== ANY || search.trim() !== "";
 
   return (
     <DashboardLayout>
