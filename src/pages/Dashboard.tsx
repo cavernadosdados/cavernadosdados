@@ -20,6 +20,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { OnboardingModal } from "@/components/OnboardingModal";
+import { OnboardingChecklist } from "@/components/OnboardingChecklist";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -27,6 +30,7 @@ const Dashboard = () => {
   const userType = user?.user_metadata?.user_type;
   const isMaster = userType === "master";
   const displayName = user?.user_metadata?.display_name || user?.email?.split("@")[0];
+  const { showOnboarding, completeOnboarding } = useOnboarding();
 
   /* ============== MASTER DATA ============== */
   const { data: masterTables } = useQuery({
@@ -146,6 +150,12 @@ const Dashboard = () => {
           navigate={navigate}
         />}
       </div>
+
+      <OnboardingModal
+        open={showOnboarding}
+        userType={isMaster ? "master" : "player"}
+        onComplete={() => completeOnboarding()}
+      />
     </DashboardLayout>
   );
 };
