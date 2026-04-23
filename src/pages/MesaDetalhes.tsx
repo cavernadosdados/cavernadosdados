@@ -16,11 +16,21 @@ import { FullRulesDialog } from "@/components/FullRulesDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 import { ReportTableButton } from "@/components/ReportTableButton";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
   ArrowLeft,
   BookOpen,
   Calendar,
   Clock,
   Coins,
+  Copy,
+  Check,
   Flame,
   Gamepad2,
   Globe,
