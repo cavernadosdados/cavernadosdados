@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -18,6 +18,7 @@ interface ChecklistItem {
 }
 
 const DISMISS_KEY = "onboarding_checklist_dismissed";
+const TOKENS_VISITED_KEY = "onboarding_tokens_visited";
 
 /**
  * Card de checklist mostrado no Dashboard até o usuário completar todas as etapas
@@ -37,6 +38,38 @@ export const OnboardingChecklist = () => {
       return false;
     }
   });
+
+  // Marca "Conheça os Tokens" como concluído quando o usuário visita a página de Tokens.
+  const [tokensVisited, setTokensVisited] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(TOKENS_VISITED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    const onStorage = () => {
+      try {
+        setTokensVisited(localStorage.getItem(TOKENS_VISITED_KEY) === "1");
+        setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const visitTokens = () => {
+    try {
+      localStorage.setItem(TOKENS_VISITED_KEY, "1");
+    } catch {
+      // ignore
+    }
+    setTokensVisited(true);
+    navigate("/dashboard/tokens");
+  };
 
   // Master: tem alguma mesa criada?
   const { data: tablesCount } = useQuery({
@@ -95,8 +128,8 @@ export const OnboardingChecklist = () => {
         {
           id: "tokens",
           label: "Conheça os Tokens de impulsionamento",
-          done: false,
-          action: () => navigate("/dashboard/tokens"),
+          done: tokensVisited,
+          action: visitTokens,
           actionLabel: "Ver Tokens",
         },
       ];
@@ -113,7 +146,7 @@ export const OnboardingChecklist = () => {
       {
         id: "explore",
         label: "Explore mesas disponíveis",
-        done: false,
+        done: tokensVisited, // reusa flag de "já navegou" — fallback
         action: () => navigate("/dashboard/explorar"),
         actionLabel: "Explorar",
       },
@@ -125,7 +158,7 @@ export const OnboardingChecklist = () => {
         actionLabel: "Encontrar mesa",
       },
     ];
-  }, [profile, isMaster, tablesCount, appsCount, navigate]);
+  }, [profile, isMaster, tablesCount, appsCount, navigate, tokensVisited]);
 
   const completedCount = items.filter((i) => i.done).length;
   const allDone = items.length > 0 && completedCount === items.length;

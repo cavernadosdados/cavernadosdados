@@ -38,9 +38,30 @@ export const useOnboarding = () => {
     },
   });
 
+  const restartMutation = useMutation({
+    mutationFn: async () => {
+      if (!user) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({ onboarding_completed: false })
+        .eq("id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      // Permite que o checklist reapareça também
+      try {
+        localStorage.removeItem("onboarding_checklist_dismissed");
+      } catch {
+        // ignore
+      }
+      queryClient.invalidateQueries({ queryKey: ["onboarding", user?.id] });
+    },
+  });
+
   return {
     showOnboarding: !isLoading && data?.onboarding_completed === false,
     isLoading,
     completeOnboarding: completeMutation.mutate,
+    restartOnboarding: restartMutation.mutate,
   };
 };
