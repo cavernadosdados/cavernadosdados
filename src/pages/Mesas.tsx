@@ -25,7 +25,6 @@ import { CreateTableDialog } from "@/components/CreateTableDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 import { ReportTableButton } from "@/components/ReportTableButton";
 import { TableApplicationsDialog } from "@/components/TableApplicationsDialog";
-import { EditTableDialog } from "@/components/EditTableDialog";
 import {
   AlertDialog,
   AlertDialogAction,
