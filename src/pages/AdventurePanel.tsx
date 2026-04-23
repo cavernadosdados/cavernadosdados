@@ -88,11 +88,26 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-/** Converte ISO timestamp -> string compatível com <input type="datetime-local"> (sem timezone) */
-function toDatetimeLocal(iso: string): string {
+/** Converte ISO timestamp -> string YYYY-MM-DD compatível com <input type="date"> */
+function toDateLocal(iso: string): string {
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** Combina YYYY-MM-DD + HH:mm -> ISO timestamp local. Se hora vazia, usa 20:00. */
+function combineDateTime(date: string, time?: string | null): string {
+  const safeTime = time && /^\d{2}:\d{2}/.test(time) ? time.slice(0, 5) : "20:00";
+  return new Date(`${date}T${safeTime}:00`).toISOString();
+}
+
+/** Retorna true se a data YYYY-MM-DD é estritamente anterior a hoje (no fuso local). */
+function isPastDate(date: string): boolean {
+  if (!date) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(`${date}T00:00:00`);
+  return d < today;
 }
 
 const AdventurePanel = () => {
