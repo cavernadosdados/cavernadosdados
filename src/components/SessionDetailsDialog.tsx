@@ -11,7 +11,6 @@ import {
   BookOpen,
   Check,
   X,
-  HelpCircle,
 } from "lucide-react";
 import {
   Dialog,
@@ -165,7 +164,7 @@ export function SessionDetailsDialog({ open, onOpenChange, session }: SessionDet
                   </Badge>
                 )}
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <Button
                   size="sm"
                   variant={myStatus === "confirmed" ? "default" : "outline"}
@@ -175,16 +174,6 @@ export function SessionDetailsDialog({ open, onOpenChange, session }: SessionDet
                 >
                   <Check className="h-4 w-4" />
                   Confirmar
-                </Button>
-                <Button
-                  size="sm"
-                  variant={myStatus === "pending" ? "secondary" : "outline"}
-                  onClick={() => setAttendance.mutate("pending")}
-                  disabled={setAttendance.isPending}
-                  className="gap-1"
-                >
-                  <HelpCircle className="h-4 w-4" />
-                  Pendente
                 </Button>
                 <Button
                   size="sm"
