@@ -201,41 +201,41 @@ const MesaDetalhes = () => {
             <ArrowLeft className="h-4 w-4" /> Voltar
           </Button>
 
-          {/* Owner-only quick action (no edit controls on this page) */}
+          {/* Compartilhar — disponível para qualquer pessoa */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-2"
+            onClick={async () => {
+              const url = `${window.location.origin}/m/${table.id}`;
+              try {
+                if (navigator.share) {
+                  await navigator.share({ title: table.title, url });
+                } else {
+                  await navigator.clipboard.writeText(url);
+                  toast.success("Link público copiado!", {
+                    description: "Compartilhe fora da plataforma.",
+                  });
+                }
+              } catch {
+                // usuário cancelou — silencioso
+              }
+            }}
+          >
+            <Share2 className="h-4 w-4" />
+            Compartilhar
+          </Button>
+
+          {/* Owner-only quick action */}
           {isOwner && (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-2"
-                onClick={async () => {
-                  const url = `${window.location.origin}/m/${table.id}`;
-                  try {
-                    if (navigator.share) {
-                      await navigator.share({ title: table.title, url });
-                    } else {
-                      await navigator.clipboard.writeText(url);
-                      toast.success("Link público copiado!", {
-                        description: "Compartilhe fora da plataforma.",
-                      });
-                    }
-                  } catch {
-                    // usuário cancelou — silencioso
-                  }
-                }}
-              >
-                <Share2 className="h-4 w-4" />
-                Compartilhar
-              </Button>
-              <Button
-                size="sm"
-                className="gap-2"
-                onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                Gerenciar mesa
-              </Button>
-            </>
+            <Button
+              size="sm"
+              className="gap-2"
+              onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Gerenciar mesa
+            </Button>
           )}
 
           {/* Accepted players quick action */}
