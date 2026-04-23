@@ -14,6 +14,7 @@ import {
   Sparkles,
   Users,
   Hourglass,
+  HelpCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -30,7 +31,7 @@ const Dashboard = () => {
   const userType = user?.user_metadata?.user_type;
   const isMaster = userType === "master";
   const displayName = user?.user_metadata?.display_name || user?.email?.split("@")[0];
-  const { showOnboarding, completeOnboarding } = useOnboarding();
+  const { showOnboarding, completeOnboarding, restartOnboarding } = useOnboarding();
 
   /* ============== MASTER DATA ============== */
   const { data: masterTables } = useQuery({
@@ -127,15 +128,26 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold glow-gold">
-            Pronto pra próxima aventura, {displayName}!
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            {isMaster
-              ? "Conduza suas mesas e acompanhe novas candidaturas"
-              : "Acompanhe suas aventuras e descubra novas mesas"}
-          </p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold glow-gold">
+              Pronto pra próxima aventura, {displayName}!
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              {isMaster
+                ? "Conduza suas mesas e acompanhe novas candidaturas"
+                : "Acompanhe suas aventuras e descubra novas mesas"}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => restartOnboarding()}
+            className="shrink-0"
+          >
+            <HelpCircle className="h-4 w-4" />
+            Refazer tour
+          </Button>
         </div>
 
         {isMaster ? <MasterView
