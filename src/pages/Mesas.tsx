@@ -13,7 +13,6 @@ import {
   Gamepad2,
   Send,
   Inbox,
-  Pencil,
   Trash2,
   ScrollText,
   Flame,
@@ -52,7 +51,6 @@ const Mesas = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
   const [viewAppsTable, setViewAppsTable] = useState<{ id: string; title: string } | null>(null);
-  const [editTable, setEditTable] = useState<any | null>(null);
   const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [boostConfirm, setBoostConfirm] = useState<{ id: string; title: string } | null>(null);
