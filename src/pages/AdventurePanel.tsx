@@ -88,11 +88,26 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-/** Converte ISO timestamp -> string compatível com <input type="datetime-local"> (sem timezone) */
-function toDatetimeLocal(iso: string): string {
+/** Converte ISO timestamp -> string YYYY-MM-DD compatível com <input type="date"> */
+function toDateLocal(iso: string): string {
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** Combina YYYY-MM-DD + HH:mm -> ISO timestamp local. Se hora vazia, usa 20:00. */
+function combineDateTime(date: string, time?: string | null): string {
+  const safeTime = time && /^\d{2}:\d{2}/.test(time) ? time.slice(0, 5) : "20:00";
+  return new Date(`${date}T${safeTime}:00`).toISOString();
+}
+
+/** Retorna true se a data YYYY-MM-DD é estritamente anterior a hoje (no fuso local). */
+function isPastDate(date: string): boolean {
+  if (!date) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(`${date}T00:00:00`);
+  return d < today;
 }
 
 const AdventurePanel = () => {
@@ -214,6 +229,10 @@ const AdventurePanel = () => {
 
   useEffect(() => {
     if (campaign) {
+      const rawDate = (campaign as any).next_session_date;
+      const dateStr = rawDate ? toDateLocal(rawDate) : "";
+      // Limpa automaticamente datas que já passaram
+      const cleanedDate = dateStr && isPastDate(dateStr) ? "" : dateStr;
       setForm({
         campaign_objectives: campaign.campaign_objectives || "",
         progression_expectation: campaign.progression_expectation || "",
@@ -230,12 +249,22 @@ const AdventurePanel = () => {
         frequency: campaign.frequency || "",
         schedule_time: campaign.schedule_time || "",
         discord_webhook_url: (campaign as any).discord_webhook_url || "",
-        next_session_date: (campaign as any).next_session_date
-          ? toDatetimeLocal((campaign as any).next_session_date)
-          : "",
+        next_session_date: cleanedDate,
       });
+
+      // Se a data armazenada já passou, persiste a limpeza no banco (somente o mestre)
+      if (rawDate && cleanedDate === "" && isMaster) {
+        supabase
+          .from("campaign_details")
+          .update({ next_session_date: null })
+          .eq("table_id", tableId!)
+          .then(({ error }) => {
+            if (!error) refetchCampaign();
+          });
+      }
     }
-  }, [campaign]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaign, isMaster]);
 
   // Realtime: listen for table status changes (players detect "evaluation")
   useEffect(() => {
@@ -312,11 +341,16 @@ const AdventurePanel = () => {
     if (!tableId || !user) return;
     setSaving(true);
     try {
-      // Normaliza next_session_date: "" -> null, datetime-local -> ISO
+      // Normaliza next_session_date: "" -> null; combina YYYY-MM-DD com schedule_time -> ISO
       const payload: Record<string, any> = { ...form };
-      payload.next_session_date = form.next_session_date
-        ? new Date(form.next_session_date).toISOString()
-        : null;
+      if (form.next_session_date && isPastDate(form.next_session_date)) {
+        // Não permite agendar no passado: força limpeza
+        payload.next_session_date = null;
+      } else {
+        payload.next_session_date = form.next_session_date
+          ? combineDateTime(form.next_session_date, form.schedule_time)
+          : null;
+      }
 
       if (campaign) {
         const { error } = await supabase
@@ -986,11 +1020,12 @@ const AdventurePanel = () => {
                       isMaster={isMaster}
                       nextSessionDate={
                         form.next_session_date
-                          ? new Date(form.next_session_date).toISOString()
+                          ? combineDateTime(form.next_session_date, form.schedule_time)
                           : null
                       }
                       editorValue={form.next_session_date}
                       onEditorChange={(v) => handleChange("next_session_date", v)}
+                      scheduleTime={form.schedule_time}
                       acceptedPlayers={acceptedPlayers as any}
                     />
                   )}
