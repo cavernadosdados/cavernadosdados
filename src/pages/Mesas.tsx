@@ -369,13 +369,6 @@ const Mesas = () => {
                           size="sm"
                           variant="outline"
                           className="gap-1 min-h-10 w-full sm:w-auto"
-                          onClick={() => setEditTable(table)}
-                        >
-                          <Pencil className="h-3 w-3" /> Editar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
                           className="gap-1 min-h-10 w-full sm:w-auto col-span-2 sm:col-auto"
                           onClick={() => setDeleteTableId(table.id)}
                         >
