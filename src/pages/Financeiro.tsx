@@ -743,7 +743,7 @@ function CommissionBreakdown({ payment }: { payment: PaymentRow }) {
       </ul>
 
       {!sumCheck && (
-        <p className="text-[11px] text-amber-600 dark:text-amber-400 flex items-start gap-1">
+        <p className="text-[11px] text-destructive flex items-start gap-1">
           <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
           Diferença de arredondamento detectada entre comissão e repasse — o valor exato
           gravado prevalece.
