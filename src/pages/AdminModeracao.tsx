@@ -252,6 +252,74 @@ export default function AdminModeracao() {
               ))
             )}
           </TabsContent>
+
+          <TabsContent value="integrations" className="mt-4 space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Webhook className="h-4 w-4 text-primary" />
+                  Webhook do Discord (Moderação)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg border bg-muted/40 p-3 text-sm">
+                  <p className="font-medium mb-1">Status atual</p>
+                  {webhookStatus?.configured ? (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="default" className="gap-1">
+                        <CheckCircle2 className="h-3 w-3" /> Configurado
+                      </Badge>
+                      <code className="text-xs text-muted-foreground break-all">{webhookStatus.masked}</code>
+                    </div>
+                  ) : (
+                    <Badge variant="destructive" className="gap-1">
+                      <XCircle className="h-3 w-3" /> Não configurado
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="webhook-url">Novo webhook do Discord</Label>
+                  <Input
+                    id="webhook-url"
+                    type="url"
+                    placeholder="https://discord.com/api/webhooks/..."
+                    value={webhookUrl}
+                    onChange={(e) => setWebhookUrl(e.target.value)}
+                    autoComplete="off"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Cole a URL completa do webhook. No Discord: Configurações do canal → Integrações → Webhooks → Copiar URL.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleSaveWebhook(true)}
+                    disabled={testingWebhook || savingWebhook}
+                    className="gap-2"
+                  >
+                    {testingWebhook ? <Loader2 className="h-4 w-4 animate-spin" /> : <FlaskConical className="h-4 w-4" />}
+                    Testar (sem salvar)
+                  </Button>
+                  <Button
+                    onClick={() => handleSaveWebhook(false)}
+                    disabled={savingWebhook || testingWebhook}
+                    className="gap-2"
+                  >
+                    {savingWebhook ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    Salvar e ativar
+                  </Button>
+                </div>
+
+                <div className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground space-y-1">
+                  <p>💡 <strong>Como funciona:</strong> ao salvar, validamos o formato, enviamos uma mensagem de teste e atualizamos o secret <code>MODERATION_DISCORD_WEBHOOK</code> automaticamente.</p>
+                  <p>⚠️ Para ativar a atualização automática, é necessário configurar o secret <code>SUPABASE_MANAGEMENT_TOKEN</code> com um Personal Access Token. Sem ele, o teste funciona, mas a troca precisa ser feita manualmente.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
