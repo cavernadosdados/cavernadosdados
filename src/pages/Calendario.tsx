@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   addDays,
   addMonths,
@@ -24,13 +23,20 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSessionsCalendar, type CalendarSession } from "@/hooks/useSessionsCalendar";
+import { SessionDetailsDialog } from "@/components/SessionDetailsDialog";
 
 type ViewMode = "month" | "week";
 
 const Calendario = () => {
-  const navigate = useNavigate();
   const [view, setView] = useState<ViewMode>("month");
   const [cursor, setCursor] = useState<Date>(new Date());
+  const [selectedSession, setSelectedSession] = useState<CalendarSession | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
+  const openSession = (s: CalendarSession) => {
+    setSelectedSession(s);
+    setDetailsOpen(true);
+  };
 
   // Intervalo a buscar (sempre cobre o que está visível na grade)
   const { rangeStart, rangeEnd, days, headerLabel } = useMemo(() => {
@@ -175,7 +181,7 @@ const Calendario = () => {
                         {daySessions.slice(0, 3).map((s) => (
                           <button
                             key={s.id}
-                            onClick={() => navigate(`/dashboard/mesa/${s.table_id}`)}
+                            onClick={() => openSession(s)}
                             className="w-full text-left text-[11px] leading-tight px-1.5 py-1 rounded bg-primary/15 text-primary hover:bg-primary/25 transition-mystical truncate"
                             title={`${s.title} – ${s.table_title}`}
                           >
@@ -215,7 +221,7 @@ const Calendario = () => {
                   <li
                     key={s.id}
                     className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border hover:border-primary/50 transition-mystical cursor-pointer"
-                    onClick={() => navigate(`/dashboard/mesa/${s.table_id}`)}
+                    onClick={() => openSession(s)}
                   >
                     <div className="min-w-0">
                       <p className="font-medium truncate">{s.title}</p>
@@ -230,6 +236,12 @@ const Calendario = () => {
             )}
           </CardContent>
         </Card>
+
+        <SessionDetailsDialog
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+          session={selectedSession}
+        />
       </div>
     </DashboardLayout>
   );
