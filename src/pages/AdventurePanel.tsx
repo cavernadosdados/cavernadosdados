@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useMarkMesaChatRead } from "@/hooks/useUnreadMesaChat";
 import { EditTableForm } from "@/components/EditTableForm";
 import { TableApplicationsList } from "@/components/TableApplicationsList";
+import { NextSessionCard } from "@/components/NextSessionCard";
 
 // Chip presets for quick-fill multi-select
 const CHIPS = {
@@ -199,6 +200,7 @@ const AdventurePanel = () => {
     frequency: "",
     schedule_time: "",
     discord_webhook_url: "",
+    next_session_date: "", // datetime-local string ("" = não definida)
   });
 
   const [testingWebhook, setTestingWebhook] = useState(false);
@@ -221,6 +223,9 @@ const AdventurePanel = () => {
         frequency: campaign.frequency || "",
         schedule_time: campaign.schedule_time || "",
         discord_webhook_url: (campaign as any).discord_webhook_url || "",
+        next_session_date: (campaign as any).next_session_date
+          ? toDatetimeLocal((campaign as any).next_session_date)
+          : "",
       });
     }
   }, [campaign]);
