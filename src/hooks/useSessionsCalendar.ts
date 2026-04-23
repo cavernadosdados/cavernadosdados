@@ -115,6 +115,7 @@ export const useSessionsCalendar = (start: Date, end: Date) => {
             schedule_time: c.schedule_time ?? null,
             timezone: c.timezone ?? null,
             is_upcoming: true,
+            next_session_date: c.next_session_date,
           };
         });
 
