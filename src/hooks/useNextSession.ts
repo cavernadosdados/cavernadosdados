@@ -75,9 +75,34 @@ export const useSetAttendance = (tableId?: string, sessionDate?: string | null) 
           { onConflict: "table_id,player_id,next_session_date" }
         );
       if (error) throw error;
+      return status;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["attendance-list", tableId, sessionDate] });
+    onSuccess: async (status) => {
+      // Atualização otimista para refletir imediatamente o botão selecionado
+      qc.setQueryData<AttendanceRow[]>(
+        ["attendance-list", tableId, sessionDate],
+        (old) => {
+          if (!user) return old;
+          const list = old ?? [];
+          const existing = list.find((r) => r.player_id === user.id);
+          if (existing) {
+            return list.map((r) =>
+              r.player_id === user.id ? { ...r, status } : r
+            );
+          }
+          return [
+            ...list,
+            {
+              id: `optimistic-${user.id}`,
+              player_id: user.id,
+              status,
+              next_session_date: sessionDate!,
+            },
+          ];
+        }
+      );
+      await qc.invalidateQueries({ queryKey: ["attendance-list", tableId, sessionDate] });
+      await qc.invalidateQueries({ queryKey: ["calendar-sessions"] });
       toast({ title: "Presença atualizada", description: "Sua resposta foi salva." });
     },
     onError: (err: any) => {
