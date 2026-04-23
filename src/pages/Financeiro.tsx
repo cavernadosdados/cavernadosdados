@@ -148,11 +148,8 @@ const Financeiro = () => {
   const refundedCount = (payments ?? []).filter((p) => p.status === "refunded").length;
 
   // Lookup de título da mesa para o histórico
-  const tableTitleById = useMemo(() => {
-    const map: Record<string, string> = {};
-    (tables ?? []).forEach((t) => { map[t.id] = t.title; });
-    return map;
-  }, [tables]);
+  const tableTitleById: Record<string, string> = {};
+  (tables ?? []).forEach((t) => { tableTitleById[t.id] = t.title; });
 
   // Receita potencial: para cada mesa paga, payout estimado * vagas aceitas (ou max_players se 0)
   const potentialCents = paidTables.reduce((sum, t) => {
