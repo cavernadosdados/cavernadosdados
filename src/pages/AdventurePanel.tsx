@@ -88,6 +88,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+/** Converte ISO timestamp -> string compatível com <input type="datetime-local"> (sem timezone) */
+function toDatetimeLocal(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 const AdventurePanel = () => {
   const { tableId } = useParams<{ tableId: string }>();
   const navigate = useNavigate();
