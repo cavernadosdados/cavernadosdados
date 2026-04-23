@@ -1,4 +1,4 @@
-import { Home, Dice1, MessageCircle, User, Gem, Settings, Crown, Compass, ScrollText, Shield, Trophy, Calendar } from "lucide-react";
+import { Home, Dice1, MessageCircle, User, Gem, Settings, Crown, Compass, ScrollText, Shield, Trophy, Calendar, Wallet } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -78,6 +78,17 @@ export function AppSidebar() {
                     <NavLink to="/dashboard/pro" className={getNavCls}>
                       <Crown className="h-4 w-4" />
                       {!collapsed && <span>Área PRO</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+
+              {userType === 'master' && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink to="/dashboard/financeiro" className={getNavCls}>
+                      <Wallet className="h-4 w-4" />
+                      {!collapsed && <span>Financeiro</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
