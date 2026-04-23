@@ -1087,6 +1087,40 @@ const AdventurePanel = () => {
               </div>
             </TabsContent>
           )}
+
+          {/* ===== EDITAR MESA ===== */}
+          {isMaster && (
+            <TabsContent value="edit" className="space-y-6">
+              <Card className="border-border bg-card/60">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Pencil className="h-4 w-4 text-primary" />
+                    Informações da Mesa
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EditTableForm
+                    table={{
+                      id: table.id,
+                      title: table.title,
+                      description: table.description,
+                      system: table.system,
+                      theme: table.theme,
+                      duration: table.duration,
+                      max_players: table.max_players,
+                      platform: table.platform,
+                      status: table.status,
+                      cover_url: table.cover_url,
+                    }}
+                    onSaved={() => {
+                      refetchTable();
+                      queryClient.invalidateQueries({ queryKey: ["tables"] });
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </main>
 
