@@ -25,11 +25,13 @@ import {
   Sparkles,
   AlertTriangle,
   Compass,
+  Coins,
 } from "lucide-react";
 import { CoverImage } from "@/components/CoverImage";
 import { ReportTableButton } from "@/components/ReportTableButton";
 import { useActiveTableBoosts } from "@/hooks/useTableBoosts";
 import { useAuth } from "@/hooks/useAuth";
+import { formatPriceBRL, isFreeTable } from "@/lib/price";
 
 const ANY = "__any__";
 
@@ -115,8 +117,8 @@ const Explorar = () => {
       const cd = campaignDetails?.[t.id];
       if (!cd || cd.schedule_time !== schedule) return false;
     }
-    // Plataforma de preço: hoje todas mesas são gratuitas
-    if (price === "paid") return false;
+    if (price === "free" && !isFreeTable(t.price_cents)) return false;
+    if (price === "paid" && isFreeTable(t.price_cents)) return false;
     return true;
   });
 
