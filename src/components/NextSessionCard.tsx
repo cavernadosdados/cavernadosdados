@@ -20,9 +20,11 @@ interface NextSessionCardProps {
   isMaster: boolean;
   /** Data atual armazenada (ISO) — para mostrar */
   nextSessionDate: string | null;
-  /** Editor (apenas mestre): valor controlado em formato datetime-local (ou "") */
+  /** Editor (apenas mestre): valor controlado em formato YYYY-MM-DD (ou "") */
   editorValue: string;
   onEditorChange: (val: string) => void;
+  /** Horário da sessão (apenas para exibição informativa) */
+  scheduleTime?: string | null;
   /** Lista de jogadores aceitos (para mostrar pendentes mesmo sem registro) */
   acceptedPlayers?: Array<{
     player_id: string;
@@ -36,6 +38,7 @@ export function NextSessionCard({
   nextSessionDate,
   editorValue,
   onEditorChange,
+  scheduleTime,
   acceptedPlayers,
 }: NextSessionCardProps) {
   const { user } = useAuth();
@@ -50,7 +53,7 @@ export function NextSessionCard({
 
   const sessionDateObj = nextSessionDate ? new Date(nextSessionDate) : null;
   const formattedDate = sessionDateObj
-    ? format(sessionDateObj, "EEEE, dd 'de' MMM 'às' HH:mm", { locale: ptBR })
+    ? format(sessionDateObj, "EEEE, dd 'de' MMM", { locale: ptBR })
     : null;
 
   // Mestre: agrupa jogadores aceitos por status (incluindo pendentes sem registro)
@@ -81,25 +84,31 @@ export function NextSessionCard({
         {isMaster ? (
           <div className="mt-1.5 space-y-2">
             <Input
-              type="datetime-local"
+              type="date"
               value={editorValue}
               onChange={(e) => onEditorChange(e.target.value)}
               className="bg-background/50"
             />
             <p className="text-xs text-muted-foreground">
-              Defina a data e hora da próxima sessão para que os jogadores possam confirmar presença.
+              Defina a data da próxima sessão. O horário usado é o de "Horário da sessão"
+              {scheduleTime ? ` (${scheduleTime})` : ""}.
             </p>
           </div>
         ) : (
           <p className="text-sm text-muted-foreground mt-1 capitalize">
-            {formattedDate || "Ainda não agendada pelo mestre"}
+            {formattedDate
+              ? `${formattedDate}${scheduleTime ? ` às ${scheduleTime}` : ""}`
+              : "Ainda não agendada pelo mestre"}
           </p>
         )}
 
         {isMaster && nextSessionDate && (
           <div className="mt-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
             <span className="text-muted-foreground">Agendada: </span>
-            <span className="text-primary font-semibold capitalize">{formattedDate}</span>
+            <span className="text-primary font-semibold capitalize">
+              {formattedDate}
+              {scheduleTime ? ` às ${scheduleTime}` : ""}
+            </span>
           </div>
         )}
       </div>
