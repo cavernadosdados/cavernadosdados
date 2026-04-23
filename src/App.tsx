@@ -22,6 +22,7 @@ import AdminModeracao from "./pages/AdminModeracao";
 import Conquistas from "./pages/Conquistas";
 import Calendario from "./pages/Calendario";
 import NotFound from "./pages/NotFound";
+import Financeiro from "./pages/Financeiro";
 import { useAuth } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -77,6 +78,7 @@ const AppRoutes = () => (
     <Route path="/dashboard/admin/moderacao" element={<ProtectedRoute><AdminModeracao /></ProtectedRoute>} />
     <Route path="/dashboard/conquistas" element={<ProtectedRoute><Conquistas /></ProtectedRoute>} />
     <Route path="/dashboard/calendario" element={<ProtectedRoute><Calendario /></ProtectedRoute>} />
+    <Route path="/dashboard/financeiro" element={<RoleRoute allow="master"><Financeiro /></RoleRoute>} />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />
   </Routes>
