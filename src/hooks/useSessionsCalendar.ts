@@ -9,6 +9,12 @@ export interface CalendarSession {
   table_id: string;
   table_title: string;
   role: "master" | "player";
+  table_cover_url?: string | null;
+  table_system?: string | null;
+  table_platform?: string | null;
+  master_narrative?: string | null;
+  schedule_time?: string | null;
+  timezone?: string | null;
 }
 
 /**
@@ -50,7 +56,9 @@ export const useSessionsCalendar = (start: Date, end: Date) => {
 
       const { data, error } = await supabase
         .from("session_logs")
-        .select("id, title, session_date, table_id, tables(title)")
+        .select(
+          "id, title, session_date, master_narrative, table_id, tables(title, cover_url, system, platform, campaign_details(schedule_time, timezone))"
+        )
         .in("table_id", tableIds)
         .gte("session_date", startISO)
         .lte("session_date", endISO)
@@ -64,6 +72,12 @@ export const useSessionsCalendar = (start: Date, end: Date) => {
         table_id: s.table_id,
         table_title: s.tables?.title ?? "Mesa",
         role: isMaster ? "master" : "player",
+        table_cover_url: s.tables?.cover_url ?? null,
+        table_system: s.tables?.system ?? null,
+        table_platform: s.tables?.platform ?? null,
+        master_narrative: s.master_narrative ?? null,
+        schedule_time: s.tables?.campaign_details?.[0]?.schedule_time ?? null,
+        timezone: s.tables?.campaign_details?.[0]?.timezone ?? null,
       }));
     },
   });
