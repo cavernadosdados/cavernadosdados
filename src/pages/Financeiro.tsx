@@ -30,8 +30,6 @@ type PaymentRow = {
   released_at: string | null;
   refunded_at: string | null;
   payer_id: string;
-  tables?: { title: string | null } | null;
-  payer?: { display_name: string | null; avatar_url: string | null } | null;
 };
 
 type MasterTableRow = {
@@ -79,19 +77,10 @@ const Financeiro = () => {
     queryFn: async (): Promise<PaymentRow[]> => {
       const { data, error } = await supabase
         .from("payments")
-        .select("id,table_id,amount_cents,commission_cents,master_payout_cents,status,currency,created_at,escrow_at,released_at,refunded_at,payer_id,tables(title),payer:profiles!payments_payer_id_fkey(display_name,avatar_url)" as any)
+        .select("id,table_id,amount_cents,commission_cents,master_payout_cents,status,currency,created_at,escrow_at,released_at,refunded_at,payer_id")
         .eq("master_id", user!.id)
         .order("created_at", { ascending: false });
-      if (error) {
-        // Fallback sem joins se a relação não existir
-        const fallback = await supabase
-          .from("payments")
-          .select("id,table_id,amount_cents,commission_cents,master_payout_cents,status,currency,created_at,escrow_at,released_at,refunded_at,payer_id")
-          .eq("master_id", user!.id)
-          .order("created_at", { ascending: false });
-        if (fallback.error) throw fallback.error;
-        return (fallback.data ?? []) as PaymentRow[];
-      }
+      if (error) throw error;
       return (data ?? []) as PaymentRow[];
     },
   });
