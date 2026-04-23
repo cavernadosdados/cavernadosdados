@@ -24,46 +24,31 @@ import logoDragon from "@/assets/logo-dragon.png";
 const MesaPublica = () => {
   const { tableId } = useParams<{ tableId: string }>();
 
+  // Usa view pública segura — expõe apenas colunas seguras (sem tokens, webhooks, mensagens privadas)
   const { data: table, isLoading } = useQuery({
     queryKey: ["public-table", tableId],
     enabled: !!tableId,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tables")
-        .select("*, profiles:master_id(id, display_name, avatar_url)")
+      const { data, error } = await (supabase as any)
+        .from("public_tables_view")
+        .select("*")
         .eq("id", tableId!)
-        .neq("status", "under_review")
         .maybeSingle();
       if (error) throw error;
       return data;
     },
   });
 
-  const { data: campaign } = useQuery({
-    queryKey: ["public-campaign", tableId],
-    enabled: !!tableId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("campaign_details")
-        .select("schedule_time, frequency, next_session_date, timezone")
-        .eq("table_id", tableId!)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
-
+  // Contagem de vagas via função pública (não expõe mensagens individuais)
   const { data: acceptedCount } = useQuery({
     queryKey: ["public-accepted-count", tableId],
     enabled: !!tableId,
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from("table_applications")
-        .select("id", { count: "exact", head: true })
-        .eq("table_id", tableId!)
-        .eq("status", "accepted");
+      const { data, error } = await (supabase as any).rpc("public_accepted_count", {
+        _table_id: tableId,
+      });
       if (error) throw error;
-      return count ?? 0;
+      return (data as number) ?? 0;
     },
   });
 
