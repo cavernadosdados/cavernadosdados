@@ -572,6 +572,12 @@ const AdventurePanel = () => {
                   Integrações
                 </TabsTrigger>
               )}
+              {isMaster && (
+                <TabsTrigger value="edit" className="gap-1 min-h-10">
+                  <Pencil className="h-4 w-4" />
+                  Editar Mesa
+                </TabsTrigger>
+              )}
             </TabsList>
           </div>
 
