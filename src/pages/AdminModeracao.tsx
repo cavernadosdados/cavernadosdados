@@ -176,6 +176,7 @@ export default function AdminModeracao() {
               Em revisão {underReview?.length ? `(${underReview.length})` : ""}
             </TabsTrigger>
             <TabsTrigger value="reports">Todas denúncias</TabsTrigger>
+            <TabsTrigger value="integrations">Integrações</TabsTrigger>
           </TabsList>
 
           <TabsContent value="under_review" className="mt-4 space-y-3">
