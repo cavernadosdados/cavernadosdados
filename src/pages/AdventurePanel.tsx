@@ -22,6 +22,7 @@ import { WeekdaySelector, composeSchedule, parseSchedule } from "@/components/We
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMarkMesaChatRead } from "@/hooks/useUnreadMesaChat";
 import { EditTableForm } from "@/components/EditTableForm";
+import { TableApplicationsList } from "@/components/TableApplicationsList";
 
 // Chip presets for quick-fill multi-select
 const CHIPS = {
@@ -78,6 +79,7 @@ import {
   Monitor,
   MessageSquare,
   Pencil,
+  Inbox,
 } from "lucide-react";
 import {
   Tooltip,
@@ -566,6 +568,12 @@ const AdventurePanel = () => {
                 <MessageSquare className="h-4 w-4" />
                 Chat
               </TabsTrigger>
+              {isMaster && (
+                <TabsTrigger value="applications" className="gap-1 min-h-10">
+                  <Inbox className="h-4 w-4" />
+                  Candidaturas
+                </TabsTrigger>
+              )}
               {isMaster && (
                 <TabsTrigger value="integrations" className="gap-1 min-h-10">
                   <Plug className="h-4 w-4" />
@@ -1121,8 +1129,26 @@ const AdventurePanel = () => {
               </Card>
             </TabsContent>
           )}
+
+          {/* ===== CANDIDATURAS ===== */}
+          {isMaster && (
+            <TabsContent value="applications" className="space-y-6">
+              <Card className="border-border bg-card/60">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Inbox className="h-4 w-4 text-primary" />
+                    Candidaturas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TableApplicationsList tableId={tableId!} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </main>
+
 
       {/* Confirmation dialog for ending session */}
       <AlertDialog open={confirmEndOpen} onOpenChange={setConfirmEndOpen}>
