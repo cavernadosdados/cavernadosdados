@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +28,12 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading } = useAuth();
+  const [searchParams] = useSearchParams();
+  const rawRedirect = searchParams.get('redirect') ?? '';
+  // segurança: aceitar apenas paths internos
+  const safeRedirect = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//')
+    ? rawRedirect
+    : '/dashboard';
 
   if (loading) {
     return (
@@ -38,7 +44,7 @@ const Auth = () => {
   }
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={safeRedirect} replace />;
   }
 
   const handleAuth = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -85,7 +91,7 @@ const Auth = () => {
             title: "Cadastro realizado!",
             description: "Você já pode começar a usar a plataforma.",
           });
-          navigate('/dashboard');
+          navigate(safeRedirect);
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -108,7 +114,7 @@ const Auth = () => {
             title: "Login realizado!",
             description: "Bem-vindo de volta à Caverna.",
           });
-          navigate('/dashboard');
+          navigate(safeRedirect);
         }
       }
     } catch (error) {
