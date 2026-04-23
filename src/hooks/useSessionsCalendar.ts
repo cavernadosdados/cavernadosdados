@@ -15,6 +15,7 @@ export interface CalendarSession {
   master_narrative?: string | null;
   schedule_time?: string | null;
   timezone?: string | null;
+  is_upcoming?: boolean; // true quando vem de campaign_details.next_session_date
 }
 
 /**
@@ -65,7 +66,7 @@ export const useSessionsCalendar = (start: Date, end: Date) => {
         .order("session_date", { ascending: true });
       if (error) throw error;
 
-      return (data ?? []).map((s: any) => ({
+      const logged: CalendarSession[] = (data ?? []).map((s: any) => ({
         id: s.id,
         title: s.title,
         session_date: s.session_date,
@@ -78,7 +79,52 @@ export const useSessionsCalendar = (start: Date, end: Date) => {
         master_narrative: s.master_narrative ?? null,
         schedule_time: s.tables?.campaign_details?.[0]?.schedule_time ?? null,
         timezone: s.tables?.campaign_details?.[0]?.timezone ?? null,
+        is_upcoming: false,
       }));
+
+      // Também busca próximas sessões agendadas (campaign_details.next_session_date)
+      const { data: upcoming, error: upErr } = await supabase
+        .from("campaign_details")
+        .select(
+          "table_id, next_session_date, schedule_time, timezone, tables(title, cover_url, system, platform)"
+        )
+        .in("table_id", tableIds)
+        .not("next_session_date", "is", null);
+      if (upErr) throw upErr;
+
+      const upcomingSessions: CalendarSession[] = (upcoming ?? [])
+        .filter((c: any) => {
+          if (!c.next_session_date) return false;
+          const d = new Date(c.next_session_date).toISOString().slice(0, 10);
+          return d >= startISO && d <= endISO;
+        })
+        .map((c: any) => {
+          const dateStr = new Date(c.next_session_date).toISOString().slice(0, 10);
+          return {
+            id: `upcoming-${c.table_id}-${dateStr}`,
+            title: "Próxima sessão",
+            session_date: dateStr,
+            table_id: c.table_id,
+            table_title: c.tables?.title ?? "Mesa",
+            role: isMaster ? "master" : "player",
+            table_cover_url: c.tables?.cover_url ?? null,
+            table_system: c.tables?.system ?? null,
+            table_platform: c.tables?.platform ?? null,
+            master_narrative: null,
+            schedule_time: c.schedule_time ?? null,
+            timezone: c.timezone ?? null,
+            is_upcoming: true,
+          };
+        });
+
+      // Evita duplicar caso já exista um session_log no mesmo dia/mesa
+      const loggedKeys = new Set(logged.map((s) => `${s.table_id}-${s.session_date}`));
+      const merged = [
+        ...logged,
+        ...upcomingSessions.filter((s) => !loggedKeys.has(`${s.table_id}-${s.session_date}`)),
+      ];
+      merged.sort((a, b) => a.session_date.localeCompare(b.session_date));
+      return merged;
     },
   });
 };
