@@ -21,6 +21,7 @@ import { ClockTimePicker } from "@/components/ClockTimePicker";
 import { WeekdaySelector, composeSchedule, parseSchedule } from "@/components/WeekdaySelector";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMarkMesaChatRead } from "@/hooks/useUnreadMesaChat";
+import { EditTableForm } from "@/components/EditTableForm";
 
 // Chip presets for quick-fill multi-select
 const CHIPS = {
@@ -76,6 +77,7 @@ import {
   Hourglass,
   Monitor,
   MessageSquare,
+  Pencil,
 } from "lucide-react";
 import {
   Tooltip,
@@ -568,6 +570,12 @@ const AdventurePanel = () => {
                 <TabsTrigger value="integrations" className="gap-1 min-h-10">
                   <Plug className="h-4 w-4" />
                   Integrações
+                </TabsTrigger>
+              )}
+              {isMaster && (
+                <TabsTrigger value="edit" className="gap-1 min-h-10">
+                  <Pencil className="h-4 w-4" />
+                  Editar Mesa
                 </TabsTrigger>
               )}
             </TabsList>
@@ -1077,6 +1085,40 @@ const AdventurePanel = () => {
                   {saving ? "Salvando..." : "Salvar Alterações"}
                 </Button>
               </div>
+            </TabsContent>
+          )}
+
+          {/* ===== EDITAR MESA ===== */}
+          {isMaster && (
+            <TabsContent value="edit" className="space-y-6">
+              <Card className="border-border bg-card/60">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Pencil className="h-4 w-4 text-primary" />
+                    Informações da Mesa
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EditTableForm
+                    table={{
+                      id: table.id,
+                      title: table.title,
+                      description: table.description,
+                      system: table.system,
+                      theme: table.theme,
+                      duration: table.duration,
+                      max_players: table.max_players,
+                      platform: table.platform,
+                      status: table.status,
+                      cover_url: table.cover_url,
+                    }}
+                    onSaved={() => {
+                      refetchTable();
+                      queryClient.invalidateQueries({ queryKey: ["tables"] });
+                    }}
+                  />
+                </CardContent>
+              </Card>
             </TabsContent>
           )}
         </Tabs>

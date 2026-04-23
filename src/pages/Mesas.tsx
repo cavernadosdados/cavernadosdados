@@ -13,7 +13,6 @@ import {
   Gamepad2,
   Send,
   Inbox,
-  Pencil,
   Trash2,
   ScrollText,
   Flame,
@@ -25,7 +24,6 @@ import { CreateTableDialog } from "@/components/CreateTableDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 import { ReportTableButton } from "@/components/ReportTableButton";
 import { TableApplicationsDialog } from "@/components/TableApplicationsDialog";
-import { EditTableDialog } from "@/components/EditTableDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,7 +51,6 @@ const Mesas = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
   const [viewAppsTable, setViewAppsTable] = useState<{ id: string; title: string } | null>(null);
-  const [editTable, setEditTable] = useState<any | null>(null);
   const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [boostConfirm, setBoostConfirm] = useState<{ id: string; title: string } | null>(null);
@@ -370,14 +367,6 @@ const Mesas = () => {
                         </Button>
                         <Button
                           size="sm"
-                          variant="outline"
-                          className="gap-1 min-h-10 w-full sm:w-auto"
-                          onClick={() => setEditTable(table)}
-                        >
-                          <Pencil className="h-3 w-3" /> Editar
-                        </Button>
-                        <Button
-                          size="sm"
                           variant="destructive"
                           className="gap-1 min-h-10 w-full sm:w-auto col-span-2 sm:col-auto"
                           onClick={() => setDeleteTableId(table.id)}
@@ -426,15 +415,6 @@ const Mesas = () => {
           onOpenChange={(o) => !o && setViewAppsTable(null)}
           tableId={viewAppsTable.id}
           tableTitle={viewAppsTable.title}
-        />
-      )}
-
-      {editTable && (
-        <EditTableDialog
-          open={!!editTable}
-          onOpenChange={(o) => !o && setEditTable(null)}
-          table={editTable}
-          onUpdated={refetch}
         />
       )}
 
