@@ -24,18 +24,17 @@ import logoDragon from "@/assets/logo-dragon.png";
 const MesaPublica = () => {
   const { tableId } = useParams<{ tableId: string }>();
 
-  // Usa view pública segura — expõe apenas colunas seguras (sem tokens, webhooks, mensagens privadas)
+  // Usa função SECURITY DEFINER que devolve APENAS campos seguros (sem tokens, webhooks, mensagens privadas)
   const { data: table, isLoading } = useQuery({
     queryKey: ["public-table", tableId],
     enabled: !!tableId,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("public_tables_view")
-        .select("*")
-        .eq("id", tableId!)
-        .maybeSingle();
+      const { data, error } = await (supabase as any).rpc("get_public_table", {
+        _table_id: tableId,
+      });
       if (error) throw error;
-      return data;
+      const rows = Array.isArray(data) ? data : [];
+      return rows[0] ?? null;
     },
   });
 
