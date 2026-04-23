@@ -1132,6 +1132,7 @@ const AdventurePanel = () => {
         </Tabs>
       </main>
 
+
       {/* Confirmation dialog for ending session */}
       <AlertDialog open={confirmEndOpen} onOpenChange={setConfirmEndOpen}>
         <AlertDialogContent className="border-[hsl(var(--cavern-gold))]/30">
