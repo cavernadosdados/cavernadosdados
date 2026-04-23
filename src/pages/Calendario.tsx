@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   addDays,
   addMonths,
@@ -29,7 +28,6 @@ import { SessionDetailsDialog } from "@/components/SessionDetailsDialog";
 type ViewMode = "month" | "week";
 
 const Calendario = () => {
-  const navigate = useNavigate();
   const [view, setView] = useState<ViewMode>("month");
   const [cursor, setCursor] = useState<Date>(new Date());
   const [selectedSession, setSelectedSession] = useState<CalendarSession | null>(null);
