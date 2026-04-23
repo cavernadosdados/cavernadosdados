@@ -183,7 +183,7 @@ const Calendario = () => {
                         {daySessions.slice(0, 3).map((s) => (
                           <button
                             key={s.id}
-                            onClick={() => navigate(`/dashboard/mesa/${s.table_id}`)}
+                            onClick={() => openSession(s)}
                             className="w-full text-left text-[11px] leading-tight px-1.5 py-1 rounded bg-primary/15 text-primary hover:bg-primary/25 transition-mystical truncate"
                             title={`${s.title} – ${s.table_title}`}
                           >
