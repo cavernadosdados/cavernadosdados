@@ -569,6 +569,12 @@ const AdventurePanel = () => {
                 Chat
               </TabsTrigger>
               {isMaster && (
+                <TabsTrigger value="applications" className="gap-1 min-h-10">
+                  <Inbox className="h-4 w-4" />
+                  Candidaturas
+                </TabsTrigger>
+              )}
+              {isMaster && (
                 <TabsTrigger value="integrations" className="gap-1 min-h-10">
                   <Plug className="h-4 w-4" />
                   Integrações
