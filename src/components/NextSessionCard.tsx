@@ -1,13 +1,23 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarClock, Check, X, Clock as ClockIcon, Users } from "lucide-react";
+import {
+  CalendarClock,
+  Check,
+  X,
+  Clock as ClockIcon,
+  Users,
+  CalendarIcon,
+  CalendarOff,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import {
   useAttendanceList,
@@ -44,6 +54,7 @@ export function NextSessionCard({
   const { user } = useAuth();
   const { data: attendance } = useAttendanceList(tableId, nextSessionDate);
   const { mutate: setAttendance, isPending } = useSetAttendance(tableId, nextSessionDate);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const myStatus: AttendanceStatus | null = useMemo(() => {
     if (!user || !attendance) return null;
@@ -55,6 +66,15 @@ export function NextSessionCard({
   const formattedDate = sessionDateObj
     ? format(sessionDateObj, "EEEE, dd 'de' MMM", { locale: ptBR })
     : null;
+
+  // Valor selecionado no calendário (a partir do editorValue YYYY-MM-DD)
+  const selectedDate = editorValue ? new Date(`${editorValue}T00:00:00`) : undefined;
+  const triggerLabel = selectedDate
+    ? format(selectedDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+    : "Selecionar data";
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   // Mestre: agrupa jogadores aceitos por status (incluindo pendentes sem registro)
   const grouped = useMemo(() => {
@@ -83,12 +103,59 @@ export function NextSessionCard({
 
         {isMaster ? (
           <div className="mt-1.5 space-y-2">
-            <Input
-              type="date"
-              value={editorValue}
-              onChange={(e) => onEditorChange(e.target.value)}
-              className="bg-background/50"
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={cn(
+                      "justify-start text-left font-normal gap-2 bg-background/50 hover:bg-background border-primary/30 hover:border-primary/60 transition-colors min-w-[260px] capitalize",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="h-4 w-4 text-primary" />
+                    {triggerLabel}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  className="w-auto p-0 bg-card border-primary/30 shadow-xl"
+                >
+                  <Calendar
+                    mode="single"
+                    locale={ptBR}
+                    selected={selectedDate}
+                    onSelect={(d) => {
+                      if (!d) {
+                        onEditorChange("");
+                      } else {
+                        const pad = (n: number) => String(n).padStart(2, "0");
+                        onEditorChange(
+                          `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+                        );
+                      }
+                      setPickerOpen(false);
+                    }}
+                    disabled={(date) => date < today}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              {selectedDate && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEditorChange("")}
+                  className="text-muted-foreground hover:text-destructive gap-1"
+                >
+                  <CalendarOff className="h-3.5 w-3.5" />
+                  Limpar
+                </Button>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               Defina a data da próxima sessão. O horário usado é o de "Horário da sessão"
               {scheduleTime ? ` (${scheduleTime})` : ""}.
