@@ -1029,6 +1029,30 @@ export type Database = {
           xp_reward: number
         }[]
       }
+      get_public_table: {
+        Args: { _table_id: string }
+        Returns: {
+          cover_url: string
+          created_at: string
+          description: string
+          duration: string
+          frequency: string
+          id: string
+          master_avatar_url: string
+          master_display_name: string
+          master_id: string
+          max_players: number
+          next_session_date: string
+          platform: string
+          price_cents: number
+          schedule_time: string
+          status: string
+          system: string
+          theme: string
+          timezone: string
+          title: string
+        }[]
+      }
       grant_tokens: {
         Args: {
           _amount: number
@@ -1049,6 +1073,7 @@ export type Database = {
         Args: { _table_id: string; _user_id: string }
         Returns: boolean
       }
+      public_accepted_count: { Args: { _table_id: string }; Returns: number }
       spend_tokens: {
         Args: { _amount: number; _reason: string; _related_table_id?: string }
         Returns: number

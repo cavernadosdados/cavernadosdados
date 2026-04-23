@@ -24,46 +24,30 @@ import logoDragon from "@/assets/logo-dragon.png";
 const MesaPublica = () => {
   const { tableId } = useParams<{ tableId: string }>();
 
+  // Usa função SECURITY DEFINER que devolve APENAS campos seguros (sem tokens, webhooks, mensagens privadas)
   const { data: table, isLoading } = useQuery({
     queryKey: ["public-table", tableId],
     enabled: !!tableId,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tables")
-        .select("*, profiles:master_id(id, display_name, avatar_url)")
-        .eq("id", tableId!)
-        .neq("status", "under_review")
-        .maybeSingle();
+      const { data, error } = await (supabase as any).rpc("get_public_table", {
+        _table_id: tableId,
+      });
       if (error) throw error;
-      return data;
+      const rows = Array.isArray(data) ? data : [];
+      return rows[0] ?? null;
     },
   });
 
-  const { data: campaign } = useQuery({
-    queryKey: ["public-campaign", tableId],
-    enabled: !!tableId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("campaign_details")
-        .select("schedule_time, frequency, next_session_date, timezone")
-        .eq("table_id", tableId!)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
-
+  // Contagem de vagas via função pública (não expõe mensagens individuais)
   const { data: acceptedCount } = useQuery({
     queryKey: ["public-accepted-count", tableId],
     enabled: !!tableId,
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from("table_applications")
-        .select("id", { count: "exact", head: true })
-        .eq("table_id", tableId!)
-        .eq("status", "accepted");
+      const { data, error } = await (supabase as any).rpc("public_accepted_count", {
+        _table_id: tableId,
+      });
       if (error) throw error;
-      return count ?? 0;
+      return (data as number) ?? 0;
     },
   });
 
@@ -106,8 +90,8 @@ const MesaPublica = () => {
   const seatsLeft = table ? Math.max(0, (table.max_players ?? 0) - (acceptedCount ?? 0)) : 0;
   const isFull = !!table && seatsLeft === 0;
 
-  const nextSessionLabel = campaign?.next_session_date
-    ? new Date(campaign.next_session_date).toLocaleString("pt-BR", {
+  const nextSessionLabel = table?.next_session_date
+    ? new Date(table.next_session_date).toLocaleString("pt-BR", {
         dateStyle: "long",
         timeStyle: "short",
       })
@@ -171,9 +155,9 @@ const MesaPublica = () => {
                 <h1 className="text-3xl sm:text-5xl font-bold leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                   {table.title}
                 </h1>
-                {table.profiles?.display_name && (
+                {table.master_display_name && (
                   <p className="text-sm sm:text-base text-white/85">
-                    Mestre: <span className="font-semibold">{table.profiles.display_name}</span>
+                    Mestre: <span className="font-semibold">{table.master_display_name}</span>
                   </p>
                 )}
 
@@ -233,12 +217,12 @@ const MesaPublica = () => {
                       <InfoRow
                         icon={<Calendar className="h-4 w-4" />}
                         label="Frequência"
-                        value={campaign?.frequency || "A combinar"}
+                        value={table.frequency || "A combinar"}
                       />
                       <InfoRow
                         icon={<Clock className="h-4 w-4" />}
                         label="Horário"
-                        value={campaign?.schedule_time || "A combinar"}
+                        value={table.schedule_time || "A combinar"}
                       />
                       <InfoRow
                         icon={<Calendar className="h-4 w-4" />}
