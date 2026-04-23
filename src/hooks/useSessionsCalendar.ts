@@ -16,6 +16,7 @@ export interface CalendarSession {
   schedule_time?: string | null;
   timezone?: string | null;
   is_upcoming?: boolean; // true quando vem de campaign_details.next_session_date
+  next_session_date?: string | null; // timestamp original (apenas para is_upcoming)
 }
 
 /**
@@ -114,6 +115,7 @@ export const useSessionsCalendar = (start: Date, end: Date) => {
             schedule_time: c.schedule_time ?? null,
             timezone: c.timezone ?? null,
             is_upcoming: true,
+            next_session_date: c.next_session_date,
           };
         });
 

@@ -9,6 +9,9 @@ import {
   MapPin,
   Users,
   BookOpen,
+  Check,
+  X,
+  HelpCircle,
 } from "lucide-react";
 import {
   Dialog,
@@ -22,6 +25,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { CalendarSession } from "@/hooks/useSessionsCalendar";
+import {
+  useAttendanceList,
+  useSetAttendance,
+  type AttendanceStatus,
+} from "@/hooks/useNextSession";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SessionDetailsDialogProps {
   open: boolean;
@@ -31,6 +40,23 @@ interface SessionDetailsDialogProps {
 
 export function SessionDetailsDialog({ open, onOpenChange, session }: SessionDetailsDialogProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Presença só faz sentido se for sessão futura agendada (is_upcoming) e o usuário for jogador
+  const canManageAttendance =
+    !!session && session.is_upcoming && session.role === "player" && !!session.next_session_date;
+
+  const { data: attendance } = useAttendanceList(
+    canManageAttendance ? session!.table_id : undefined,
+    canManageAttendance ? session!.next_session_date! : null
+  );
+  const setAttendance = useSetAttendance(
+    canManageAttendance ? session!.table_id : undefined,
+    canManageAttendance ? session!.next_session_date! : null
+  );
+
+  const myStatus: AttendanceStatus | null =
+    (attendance ?? []).find((a) => a.player_id === user?.id)?.status ?? null;
 
   if (!session) return null;
 
@@ -111,6 +137,66 @@ export function SessionDetailsDialog({ open, onOpenChange, session }: SessionDet
               <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-6">
                 {session.master_narrative}
               </p>
+            </div>
+          </>
+        )}
+
+        {canManageAttendance && (
+          <>
+            <Separator />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-medium">Sua presença</p>
+                {myStatus && (
+                  <Badge
+                    variant={
+                      myStatus === "confirmed"
+                        ? "default"
+                        : myStatus === "declined"
+                        ? "destructive"
+                        : "secondary"
+                    }
+                  >
+                    {myStatus === "confirmed"
+                      ? "Confirmado"
+                      : myStatus === "declined"
+                      ? "Não vou"
+                      : "Pendente"}
+                  </Badge>
+                )}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  size="sm"
+                  variant={myStatus === "confirmed" ? "default" : "outline"}
+                  onClick={() => setAttendance.mutate("confirmed")}
+                  disabled={setAttendance.isPending}
+                  className="gap-1"
+                >
+                  <Check className="h-4 w-4" />
+                  Confirmar
+                </Button>
+                <Button
+                  size="sm"
+                  variant={myStatus === "pending" ? "secondary" : "outline"}
+                  onClick={() => setAttendance.mutate("pending")}
+                  disabled={setAttendance.isPending}
+                  className="gap-1"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  Pendente
+                </Button>
+                <Button
+                  size="sm"
+                  variant={myStatus === "declined" ? "destructive" : "outline"}
+                  onClick={() => setAttendance.mutate("declined")}
+                  disabled={setAttendance.isPending}
+                  className="gap-1"
+                >
+                  <X className="h-4 w-4" />
+                  Não vou
+                </Button>
+              </div>
             </div>
           </>
         )}
