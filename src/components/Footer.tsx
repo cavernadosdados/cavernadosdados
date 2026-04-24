@@ -1,6 +1,7 @@
 import logoText from "@/assets/logo-text.png";
 import logoDragon from "@/assets/logo-dragon.png";
 import { Github, Twitter, Instagram, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const Footer = () => {
   return (
@@ -96,14 +97,14 @@ export const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-mystical">
+                <Link to="/termos" className="text-muted-foreground hover:text-primary transition-mystical">
                   Termos de Uso
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-mystical">
+                <Link to="/privacidade" className="text-muted-foreground hover:text-primary transition-mystical">
                   Privacidade
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#" className="text-muted-foreground hover:text-primary transition-mystical">

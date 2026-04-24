@@ -25,6 +25,8 @@ import NotFound from "./pages/NotFound";
 import Financeiro from "./pages/Financeiro";
 import Favoritos from "./pages/Favoritos";
 import MesaPublica from "./pages/MesaPublica";
+import Privacidade from "./pages/Privacidade";
+import Termos from "./pages/Termos";
 import { useAuth } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -64,6 +66,8 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
     <Route path="/auth" element={<Auth />} />
+    <Route path="/privacidade" element={<Privacidade />} />
+    <Route path="/termos" element={<Termos />} />
     <Route path="/m/:tableId" element={<MesaPublica />} />
     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
     <Route path="/dashboard/mesas" element={<RoleRoute allow="master"><Mesas /></RoleRoute>} />

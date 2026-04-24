@@ -477,7 +477,11 @@ export type Database = {
           onboarding_completed: boolean
           plays_in_person: boolean | null
           preferred_themes: string[] | null
+          privacy_accepted_at: string | null
+          privacy_version: string | null
           signup_bonus_claimed: boolean
+          terms_accepted_at: string | null
+          terms_version: string | null
           tokens_balance: number
           updated_at: string
           user_type: Database["public"]["Enums"]["user_type"]
@@ -497,7 +501,11 @@ export type Database = {
           onboarding_completed?: boolean
           plays_in_person?: boolean | null
           preferred_themes?: string[] | null
+          privacy_accepted_at?: string | null
+          privacy_version?: string | null
           signup_bonus_claimed?: boolean
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           tokens_balance?: number
           updated_at?: string
           user_type: Database["public"]["Enums"]["user_type"]
@@ -517,7 +525,11 @@ export type Database = {
           onboarding_completed?: boolean
           plays_in_person?: boolean | null
           preferred_themes?: string[] | null
+          privacy_accepted_at?: string | null
+          privacy_version?: string | null
           signup_bonus_claimed?: boolean
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           tokens_balance?: number
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
