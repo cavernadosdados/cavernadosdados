@@ -12,11 +12,17 @@ import logoDragon from '@/assets/logo-dragon.png';
 import logoText from '@/assets/logo-text.png';
 import { Users, Scroll } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'react-router-dom';
+
+const LEGAL_VERSION = '2026-04-24';
 
 const authSchema = z.object({
   email: z.string().trim().email({ message: "Email inválido" }).max(255),
   password: z.string().min(6, { message: "Senha deve ter no mínimo 6 caracteres" }).max(100),
   displayName: z.string().trim().min(2, { message: "Nome deve ter no mínimo 2 caracteres" }).max(100).optional(),
+  acceptLegal: z.literal('on', {
+    errorMap: () => ({ message: 'Você precisa aceitar os Termos de Uso e a Política de Privacidade.' }),
+  }).optional(),
 });
 
 type UserType = 'player' | 'master';
@@ -55,11 +61,12 @@ const Auth = () => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const displayName = formData.get('displayName') as string;
+    const acceptLegal = formData.get('acceptLegal') as string | null;
 
     try {
       // Validate input
       const validationData = isSignUp 
-        ? { email, password, displayName }
+        ? { email, password, displayName, acceptLegal }
         : { email, password };
       authSchema.parse(validationData);
 
@@ -72,6 +79,10 @@ const Auth = () => {
             data: {
               user_type: selectedUserType,
               display_name: displayName,
+              terms_accepted: true,
+              terms_version: LEGAL_VERSION,
+              privacy_accepted: true,
+              privacy_version: LEGAL_VERSION,
             },
           },
         });
@@ -232,6 +243,26 @@ const Auth = () => {
                       disabled={isLoading}
                     />
                   </div>
+                  <label className="flex items-start gap-3 rounded-lg border border-border bg-muted/20 p-3 text-sm leading-relaxed text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      name="acceptLegal"
+                      required
+                      disabled={isLoading}
+                      className="mt-1 h-4 w-4 shrink-0 accent-primary"
+                    />
+                    <span>
+                      Li e aceito os{' '}
+                      <Link to="/termos" target="_blank" className="font-medium text-primary hover:underline">
+                        Termos de Uso
+                      </Link>{' '}
+                      e a{' '}
+                      <Link to="/privacidade" target="_blank" className="font-medium text-primary hover:underline">
+                        Política de Privacidade
+                      </Link>
+                      .
+                    </span>
+                  </label>
                   <Button
                     type="submit"
                     className="w-full"
