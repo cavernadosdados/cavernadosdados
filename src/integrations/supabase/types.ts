@@ -1001,6 +1001,15 @@ export type Database = {
       }
       boost_table: { Args: { _table_id: string }; Returns: string }
       buy_slot_boost: { Args: never; Returns: string }
+      can_create_session_feedback: {
+        Args: {
+          _reviewed_id: string
+          _reviewer_id: string
+          _reviewer_role: string
+          _table_id: string
+        }
+        Returns: boolean
+      }
       check_and_unlock_achievements: { Args: never; Returns: Json }
       claim_onboarding_reward: { Args: { _step_key: string }; Returns: Json }
       compute_achievement_metric: {
@@ -1067,6 +1076,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_session_log_participant: {
+        Args: { _session_log_id: string; _user_id: string }
         Returns: boolean
       }
       is_table_participant: {
