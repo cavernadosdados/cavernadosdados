@@ -1,5 +1,6 @@
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
+import { BeyondMatchmaking } from "@/components/BeyondMatchmaking";
 import { HowItWorks } from "@/components/HowItWorks";
 import { FeaturedTables } from "@/components/FeaturedTables";
 import { Footer } from "@/components/Footer";
@@ -26,6 +27,7 @@ const Index = () => {
       <Header />
       <main>
         <Hero />
+        <BeyondMatchmaking />
         <HowItWorks />
         <FeaturedTables />
       </main>
