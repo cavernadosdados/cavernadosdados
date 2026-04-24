@@ -21,17 +21,17 @@ export const Hero = () => {
         <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-primary/30 mb-4">
             <Dices className="w-4 h-4 text-primary animate-glow-pulse" />
-            <span className="text-sm font-medium">Plataforma #1 para Mestres de RPG</span>
+            <span className="text-sm font-medium">Gestão, segurança e diversão para RPG</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold leading-tight">
-            Onde <span className="text-primary glow-cyan">Mestres</span> e{" "}
-            <span className="text-secondary">Jogadores</span> se Encontram
+            Descubra, organize, proteja e evolua suas{" "}
+            <span className="text-primary glow-gold">campanhas de RPG</span>
           </h1>
 
           <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Entre na caverna e descubra aventuras épicas. Conecte-se com mestres experientes 
-            ou comece sua jornada como narrador. Seus dados aguardam.
+            A Caverna dos Dados conecta mestres e jogadores, mas vai além do encontro: ajuda a gerir mesas,
+            criar um ambiente mais seguro e transformar cada sessão em uma jornada viva.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 w-full max-w-md sm:max-w-none mx-auto">
