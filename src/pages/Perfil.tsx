@@ -16,6 +16,18 @@ import { Star, Clock, Dice1, MapPin, Gamepad2, Users, Monitor, Send, ScrollText 
 import { ReportTableButton } from "@/components/ReportTableButton";
 import { Skeleton } from "@/components/ui/skeleton";
 
+type ReceivedFeedback = {
+  id: string;
+  reviewer_role: string;
+  rating_1: number;
+  rating_2: number;
+  rating_3: number;
+  compliments: string[] | null;
+  comment: string | null;
+  created_at: string;
+  session_number: number;
+};
+
 const Perfil = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -62,6 +74,29 @@ const Perfil = () => {
 
   const getAppStatus = (tableId: string) =>
     myApplications?.find((a) => a.table_id === tableId);
+
+  const { data: receivedFeedback = [] } = useQuery({
+    queryKey: ['profile-feedback', viewedUserId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('session_feedback')
+        .select('id, reviewer_role, rating_1, rating_2, rating_3, compliments, comment, created_at, session_number')
+        .eq('reviewed_id', viewedUserId!)
+        .order('created_at', { ascending: false })
+        .limit(8);
+
+      if (error) throw error;
+      return data as ReceivedFeedback[];
+    },
+    enabled: !!viewedUserId,
+  });
+
+  const feedbackCount = receivedFeedback.length;
+  const ratingAverage = feedbackCount
+    ? receivedFeedback.reduce((sum, feedback) => {
+        return sum + (feedback.rating_1 + feedback.rating_2 + feedback.rating_3) / 3;
+      }, 0) / feedbackCount
+    : null;
 
   const appStatusLabel: Record<string, string> = {
     pending: 'Candidatura Enviada',
@@ -137,7 +172,9 @@ const Perfil = () => {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2">
                 <Star className="h-4 w-4 text-primary" />
-                <span className="text-sm">Avaliação: 4.8/5</span>
+                <span className="text-sm">
+                  {ratingAverage ? `Avaliação: ${ratingAverage.toFixed(1)}/5 (${feedbackCount})` : 'Sem avaliações ainda'}
+                </span>
               </div>
               {viewedCreatedAt && (
                 <div className="flex items-center gap-2">
@@ -384,12 +421,62 @@ const Perfil = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>Avaliações</CardTitle>
-                    <CardDescription>O que os jogadores dizem</CardDescription>
+                    <CardDescription>
+                      Feedbacks reais recebidos após sessões
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm">
-                      Nenhuma avaliação ainda.
-                    </p>
+                  <CardContent className="space-y-4">
+                    {ratingAverage && (
+                      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-background/40 p-3">
+                        <div className="flex items-center gap-1 text-primary">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`h-4 w-4 ${star <= Math.round(ratingAverage) ? 'fill-current' : 'text-muted-foreground/30'}`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm font-medium">{ratingAverage.toFixed(1)} de 5</span>
+                        <span className="text-sm text-muted-foreground">
+                          {feedbackCount} {feedbackCount === 1 ? 'avaliação recebida' : 'avaliações recebidas'}
+                        </span>
+                      </div>
+                    )}
+
+                    {receivedFeedback.length === 0 ? (
+                      <p className="text-muted-foreground text-sm">
+                        Nenhuma avaliação disponível para você visualizar ainda.
+                      </p>
+                    ) : (
+                      receivedFeedback.map((feedback) => {
+                        const score = (feedback.rating_1 + feedback.rating_2 + feedback.rating_3) / 3;
+                        return (
+                          <div key={feedback.id} className="rounded-lg border border-border bg-background/40 p-4">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <Star className="h-4 w-4 fill-current text-primary" />
+                                <span className="text-sm font-semibold">{score.toFixed(1)}/5</span>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                Sessão #{feedback.session_number} • {new Date(feedback.created_at).toLocaleDateString('pt-BR')}
+                              </span>
+                            </div>
+                            {feedback.compliments && feedback.compliments.length > 0 && (
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                {feedback.compliments.map((compliment) => (
+                                  <Badge key={compliment} variant="outline" className="text-xs">
+                                    {compliment}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                            {feedback.comment && (
+                              <p className="mt-3 text-sm text-muted-foreground">“{feedback.comment}”</p>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
                   </CardContent>
                 </Card>
               </>
