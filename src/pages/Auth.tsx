@@ -269,6 +269,29 @@ const Auth = () => {
                       </button>
                     </div>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirmar senha</Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="Repita a senha"
+                        required
+                        disabled={isLoading}
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((v) => !v)}
+                        disabled={isLoading}
+                        aria-label={showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                        className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
                   <label className="flex items-start gap-3 rounded-lg border border-border bg-muted/20 p-3 text-sm leading-relaxed text-muted-foreground">
                     <input
                       type="checkbox"
