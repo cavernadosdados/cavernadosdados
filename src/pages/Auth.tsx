@@ -358,6 +358,14 @@ const Auth = () => {
                         {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                    <div className="text-right">
+                      <Link
+                        to="/esqueci-senha"
+                        className="text-sm text-primary hover:underline"
+                      >
+                        Esqueci minha senha
+                      </Link>
+                    </div>
                   </div>
                   <Button
                     type="submit"
