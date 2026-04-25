@@ -34,6 +34,7 @@ const Auth = () => {
   const [selectedUserType, setSelectedUserType] = useState<UserType>('player');
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading } = useAuth();
@@ -63,10 +64,20 @@ const Auth = () => {
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
     const displayName = formData.get('displayName') as string;
     const acceptLegal = formData.get('acceptLegal') as string | null;
 
     try {
+      if (isSignUp && password !== confirmPassword) {
+        toast({
+          title: "Senhas não coincidem",
+          description: "A confirmação de senha deve ser igual à senha.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
       // Validate input
       const validationData = isSignUp 
         ? { email, password, displayName, acceptLegal }
@@ -255,6 +266,29 @@ const Auth = () => {
                         className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                       >
                         {showSignupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirmar senha</Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="Repita a senha"
+                        required
+                        disabled={isLoading}
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((v) => !v)}
+                        disabled={isLoading}
+                        aria-label={showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                        className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                   </div>
