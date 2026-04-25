@@ -27,6 +27,8 @@ import Favoritos from "./pages/Favoritos";
 import MesaPublica from "./pages/MesaPublica";
 import Privacidade from "./pages/Privacidade";
 import Termos from "./pages/Termos";
+import EsqueciSenha from "./pages/EsqueciSenha";
+import RedefinirSenha from "./pages/RedefinirSenha";
 import { useAuth } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -66,6 +68,8 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
     <Route path="/auth" element={<Auth />} />
+    <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+    <Route path="/redefinir-senha" element={<RedefinirSenha />} />
     <Route path="/privacidade" element={<Privacidade />} />
     <Route path="/termos" element={<Termos />} />
     <Route path="/m/:tableId" element={<MesaPublica />} />
