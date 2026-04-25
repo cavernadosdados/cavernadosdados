@@ -13,6 +13,7 @@ import logoText from '@/assets/logo-text.png';
 import { Users, Scroll } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 
 const LEGAL_VERSION = '2026-04-24';
 
@@ -31,6 +32,8 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [selectedUserType, setSelectedUserType] = useState<UserType>('player');
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading } = useAuth();
@@ -234,14 +237,26 @@ const Auth = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password">Senha</Label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      placeholder="Mínimo 6 caracteres"
-                      required
-                      disabled={isLoading}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        name="password"
+                        type={showSignupPassword ? 'text' : 'password'}
+                        placeholder="Mínimo 6 caracteres"
+                        required
+                        disabled={isLoading}
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSignupPassword((v) => !v)}
+                        disabled={isLoading}
+                        aria-label={showSignupPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                        className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                      >
+                        {showSignupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
                   <label className="flex items-start gap-3 rounded-lg border border-border bg-muted/20 p-3 text-sm leading-relaxed text-muted-foreground">
                     <input
@@ -289,14 +304,26 @@ const Auth = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Senha</Label>
-                    <Input
-                      id="login-password"
-                      name="password"
-                      type="password"
-                      placeholder="Sua senha"
-                      required
-                      disabled={isLoading}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="login-password"
+                        name="password"
+                        type={showLoginPassword ? 'text' : 'password'}
+                        placeholder="Sua senha"
+                        required
+                        disabled={isLoading}
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowLoginPassword((v) => !v)}
+                        disabled={isLoading}
+                        aria-label={showLoginPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                        className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                      >
+                        {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
                   <Button
                     type="submit"
