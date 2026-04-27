@@ -10,6 +10,10 @@ import { z } from 'zod';
 import logoDragon from '@/assets/logo-dragon.png';
 import logoText from '@/assets/logo-text.png';
 import { Eye, EyeOff } from 'lucide-react';
+import {
+  clearPasswordResetNonce,
+  hasValidPasswordResetNonce,
+} from '@/lib/passwordResetNonce';
 
 const passwordSchema = z
   .object({
@@ -30,12 +34,20 @@ const RedefinirSenha = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [recoveryReady, setRecoveryReady] = useState(false);
   const [linkInvalid, setLinkInvalid] = useState(false);
+  const [nonceInvalid, setNonceInvalid] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   // Detectar sessão de recuperação enviada pelo Supabase via URL hash
   useEffect(() => {
     let resolved = false;
+
+    // Camada anti-CSRF/anti-replay: o link só é aceito no mesmo browser que
+    // solicitou a recuperação (onde o nonce foi emitido e ainda é válido).
+    const nonceOk = hasValidPasswordResetNonce();
+    if (!nonceOk) {
+      setNonceInvalid(true);
+    }
 
     const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
@@ -74,14 +86,32 @@ const RedefinirSenha = () => {
     try {
       passwordSchema.parse({ password, confirmPassword });
 
+      // Revalidação defensiva do nonce no momento do submit
+      if (!hasValidPasswordResetNonce()) {
+        setNonceInvalid(true);
+        toast({
+          title: 'Solicitação não validada',
+          description:
+            'Por segurança, abra o link de redefinição no mesmo dispositivo em que você o solicitou.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
 
+      // Single-use: invalida o nonce e encerra a sessão de recovery,
+      // forçando login com a nova senha.
+      clearPasswordResetNonce();
+      await supabase.auth.signOut();
+
       toast({
         title: 'Senha redefinida!',
-        description: 'Sua senha foi atualizada com sucesso.',
+        description: 'Sua senha foi atualizada. Faça login com a nova senha.',
       });
-      navigate('/dashboard');
+      navigate('/auth');
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
@@ -120,7 +150,23 @@ const RedefinirSenha = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {linkInvalid && !recoveryReady ? (
+            {nonceInvalid ? (
+              <div className="space-y-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Por segurança, esta redefinição precisa ser concluída no mesmo
+                  dispositivo e navegador em que o link foi solicitado, dentro
+                  de 15 minutos. Solicite um novo link e abra-o no mesmo
+                  dispositivo.
+                </p>
+                <Button
+                  onClick={() => navigate('/esqueci-senha')}
+                  variant="hero"
+                  className="w-full"
+                >
+                  Solicitar novo link
+                </Button>
+              </div>
+            ) : linkInvalid && !recoveryReady ? (
               <div className="space-y-4 text-center">
                 <p className="text-sm text-muted-foreground">
                   Este link de redefinição é inválido ou expirou. Solicite um novo link
