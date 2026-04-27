@@ -10,6 +10,7 @@ import { z } from 'zod';
 import logoDragon from '@/assets/logo-dragon.png';
 import logoText from '@/assets/logo-text.png';
 import { ArrowLeft, MailCheck } from 'lucide-react';
+import { issuePasswordResetNonce } from '@/lib/passwordResetNonce';
 
 const emailSchema = z.object({
   email: z.string().trim().email({ message: 'Email inválido' }).max(255),
@@ -29,6 +30,12 @@ const EsqueciSenha = () => {
 
     try {
       emailSchema.parse({ email });
+
+      // Emite um nonce anti-CSRF/anti-replay neste browser ANTES de disparar
+      // o e-mail. A página de redefinição exige que o nonce esteja presente
+      // e válido, garantindo que o link só funcione no mesmo dispositivo que
+      // o solicitou.
+      issuePasswordResetNonce();
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/redefinir-senha`,
