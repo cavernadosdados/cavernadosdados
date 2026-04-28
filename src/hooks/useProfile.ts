@@ -15,6 +15,8 @@ export interface Profile {
   discord_link: string | null;
   active_tables_count: number | null;
   user_type?: string;
+  availability_days: string[] | null;
+  availability_periods: string[] | null;
 }
 
 export interface UpdateProfileData {
@@ -26,6 +28,8 @@ export interface UpdateProfileData {
   plays_in_person?: boolean;
   apps_used?: string[];
   discord_link?: string;
+  availability_days?: string[];
+  availability_periods?: string[];
 }
 
 export const useProfile = (userId?: string) => {

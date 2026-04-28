@@ -24,6 +24,9 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useProfile, Profile } from '@/hooks/useProfile';
 import { SearchableMultiAdd } from '@/components/SearchableMultiAdd';
+import { WeekdaySelector } from '@/components/WeekdaySelector';
+import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
 
 const RPG_SYSTEMS = [
   'D&D 5e',
@@ -61,6 +64,13 @@ const APPS = [
   'Fantasy Grounds',
 ];
 
+const PERIODS: { key: string; label: string; hint: string }[] = [
+  { key: 'manha', label: 'Manhã', hint: '06h–12h' },
+  { key: 'tarde', label: 'Tarde', hint: '12h–18h' },
+  { key: 'noite', label: 'Noite', hint: '18h–00h' },
+  { key: 'madrugada', label: 'Madrugada', hint: '00h–06h' },
+];
+
 const profileSchema = z.object({
   display_name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(50),
   bio: z.string().max(500, 'Bio deve ter no máximo 500 caracteres').optional(),
@@ -70,6 +80,8 @@ const profileSchema = z.object({
   plays_in_person: z.boolean().optional(),
   apps_used: z.array(z.string()).optional(),
   discord_link: z.string().url('Link inválido').or(z.literal('')).optional(),
+  availability_days: z.array(z.string()).optional(),
+  availability_periods: z.array(z.string()).optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -102,6 +114,8 @@ export const EditProfileDialog = ({
       plays_in_person: profile?.plays_in_person || false,
       apps_used: profile?.apps_used || [],
       discord_link: profile?.discord_link || '',
+      availability_days: profile?.availability_days || [],
+      availability_periods: profile?.availability_periods || [],
     },
   });
 
@@ -116,6 +130,8 @@ export const EditProfileDialog = ({
         plays_in_person: profile.plays_in_person || false,
         apps_used: profile.apps_used || [],
         discord_link: profile.discord_link || '',
+        availability_days: profile.availability_days || [],
+        availability_periods: profile.availability_periods || [],
       });
     }
   }, [open, profile]);
@@ -126,6 +142,8 @@ export const EditProfileDialog = ({
       bio: values.bio || null,
       master_systems: values.master_systems || [],
       preferred_themes: values.preferred_themes || [],
+      availability_days: values.availability_days || [],
+      availability_periods: values.availability_periods || [],
     };
 
     if (isMaster) {
@@ -247,6 +265,85 @@ export const EditProfileDialog = ({
                   <FormMessage />
                 </FormItem>
               )}
+            />
+
+            <FormField
+              control={form.control}
+              name="availability_days"
+              render={({ field }) => (
+                <FormItem>
+                  <WeekdaySelector
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    label="Melhores dias para jogar"
+                  />
+                  <FormDescription>
+                    Selecione um ou mais dias em que você costuma estar disponível.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="availability_periods"
+              render={({ field }) => {
+                const selected = field.value || [];
+                const toggle = (key: string) => {
+                  if (selected.includes(key)) {
+                    field.onChange(selected.filter((p) => p !== key));
+                  } else {
+                    field.onChange([...selected, key]);
+                  }
+                };
+                const allSelected = selected.length === PERIODS.length;
+                return (
+                  <FormItem>
+                    <Label className="text-sm font-medium">Melhores períodos</Label>
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {PERIODS.map((p) => {
+                        const active = selected.includes(p.key);
+                        return (
+                          <button
+                            key={p.key}
+                            type="button"
+                            onClick={() => toggle(p.key)}
+                            title={p.hint}
+                            className={cn(
+                              'h-10 px-3 rounded-md text-xs font-semibold border transition-all',
+                              active
+                                ? 'bg-primary/20 border-primary text-primary shadow-[0_0_12px_hsl(var(--cavern-gold)/0.4)]'
+                                : 'bg-muted border-border text-muted-foreground hover:text-foreground hover:border-primary/40',
+                            )}
+                          >
+                            {p.label}
+                            <span className="ml-1 opacity-60 font-normal">{p.hint}</span>
+                          </button>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          field.onChange(allSelected ? [] : PERIODS.map((p) => p.key))
+                        }
+                        className={cn(
+                          'h-10 px-3 rounded-md text-xs font-semibold border transition-all',
+                          allSelected
+                            ? 'bg-primary/20 border-primary text-primary'
+                            : 'bg-muted border-border text-muted-foreground hover:text-foreground hover:border-primary/40',
+                        )}
+                      >
+                        Todos
+                      </button>
+                    </div>
+                    <FormDescription>
+                      Em quais turnos você prefere jogar?
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             {isMaster && (
