@@ -466,6 +466,8 @@ export type Database = {
         Row: {
           active_tables_count: number | null
           apps_used: string[] | null
+          availability_days: string[]
+          availability_periods: string[]
           avatar_url: string | null
           bio: string | null
           created_at: string
@@ -490,6 +492,8 @@ export type Database = {
         Insert: {
           active_tables_count?: number | null
           apps_used?: string[] | null
+          availability_days?: string[]
+          availability_periods?: string[]
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -514,6 +518,8 @@ export type Database = {
         Update: {
           active_tables_count?: number | null
           apps_used?: string[] | null
+          availability_days?: string[]
+          availability_periods?: string[]
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
