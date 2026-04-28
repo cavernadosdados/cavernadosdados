@@ -236,6 +236,42 @@ const Perfil = () => {
                     )}
                   </p>
                 </div>
+                <div>
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-primary" />
+                    Disponibilidade
+                  </label>
+                  <div className="mt-2 space-y-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Dias</p>
+                      <div className="flex flex-wrap gap-2">
+                        {profile?.availability_days && profile.availability_days.length > 0 ? (
+                          profile.availability_days.map((d, idx) => (
+                            <Badge key={idx} variant="secondary">{d}</Badge>
+                          ))
+                        ) : (
+                          <span className="text-sm text-muted-foreground italic">
+                            Não informado
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Períodos</p>
+                      <div className="flex flex-wrap gap-2">
+                        {profile?.availability_periods && profile.availability_periods.length > 0 ? (
+                          profile.availability_periods.map((p, idx) => (
+                            <Badge key={idx} variant="outline" className="capitalize">{p}</Badge>
+                          ))
+                        ) : (
+                          <span className="text-sm text-muted-foreground italic">
+                            Não informado
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
