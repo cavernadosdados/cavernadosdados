@@ -162,6 +162,11 @@ const MesaPublica = () => {
                 )}
 
                 <div className="flex flex-wrap gap-2">
+                  {(table as any).is_adult_only && (
+                    <Badge className="gap-1 h-7 px-2.5 bg-destructive/90 text-destructive-foreground border-0 backdrop-blur-sm font-bold">
+                      18+
+                    </Badge>
+                  )}
                   <Badge variant="outline" className="gap-1 h-7 px-2.5 bg-black/40 border-white/20 text-white backdrop-blur-sm">
                     <Gamepad2 className="h-3.5 w-3.5" /> {table.system}
                   </Badge>

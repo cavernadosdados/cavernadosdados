@@ -906,6 +906,7 @@ export type Database = {
           description: string | null
           duration: string
           id: string
+          is_adult_only: boolean
           master_id: string
           max_players: number
           platform: string
@@ -923,6 +924,7 @@ export type Database = {
           description?: string | null
           duration: string
           id?: string
+          is_adult_only?: boolean
           master_id: string
           max_players?: number
           platform: string
@@ -940,6 +942,7 @@ export type Database = {
           description?: string | null
           duration?: string
           id?: string
+          is_adult_only?: boolean
           master_id?: string
           max_players?: number
           platform?: string
@@ -1065,6 +1068,7 @@ export type Database = {
           duration: string
           frequency: string
           id: string
+          is_adult_only: boolean
           master_avatar_url: string
           master_display_name: string
           master_id: string
