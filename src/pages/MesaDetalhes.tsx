@@ -274,6 +274,11 @@ const MesaDetalhes = () => {
 
           <div className="relative z-10 flex flex-col justify-end h-full w-full p-5 sm:p-8 gap-3 text-white min-h-[280px] sm:min-h-[340px]">
             <div className="flex flex-wrap gap-2">
+              {(table as any).is_adult_only && (
+                <Badge className="gap-1 text-xs bg-destructive/90 text-destructive-foreground border-0 backdrop-blur-sm font-bold">
+                  18+
+                </Badge>
+              )}
               <Badge variant="outline" className="gap-1 text-xs bg-black/40 border-white/20 text-white backdrop-blur-sm">
                 <Gamepad2 className="h-3 w-3" /> {table.system}
               </Badge>
