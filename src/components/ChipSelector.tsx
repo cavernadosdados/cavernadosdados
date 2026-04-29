@@ -1,6 +1,8 @@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Lightbulb, ChevronDown } from "lucide-react";
 
 interface ChipSelectorProps {
   label?: string;
@@ -12,6 +14,7 @@ interface ChipSelectorProps {
   prefix?: string;
   helperText?: string;
   showTextarea?: boolean;
+  hideChipsByDefault?: boolean;
 }
 
 export function ChipSelector({
@@ -24,7 +27,9 @@ export function ChipSelector({
   prefix = "• ",
   helperText,
   showTextarea = true,
+  hideChipsByDefault = true,
 }: ChipSelectorProps) {
+  const [showChips, setShowChips] = useState(!hideChipsByDefault);
   const isActive = (chip: string) => {
     if (mode === "single") {
       return value.trim().toLowerCase() === chip.trim().toLowerCase();
@@ -59,8 +64,26 @@ export function ChipSelector({
       {helperText && (
         <p className="text-xs text-muted-foreground">{helperText}</p>
       )}
-      <div className="flex flex-wrap gap-1.5">
-        {chips.map((chip) => {
+      {chips.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setShowChips((s) => !s)}
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-[hsl(var(--cavern-gold))] transition-colors"
+          aria-expanded={showChips}
+        >
+          <Lightbulb className="h-3.5 w-3.5" />
+          {showChips ? "Ocultar sugestões" : "Ver sugestões"}
+          <ChevronDown
+            className={cn(
+              "h-3.5 w-3.5 transition-transform",
+              showChips && "rotate-180"
+            )}
+          />
+        </button>
+      )}
+      {showChips && (
+        <div className="flex flex-wrap gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+          {chips.map((chip) => {
           const active = isActive(chip);
           return (
             <button
@@ -78,8 +101,9 @@ export function ChipSelector({
               {chip}
             </button>
           );
-        })}
-      </div>
+          })}
+        </div>
+      )}
       {showTextarea && mode === "append" && (
         <Textarea
           value={value}
