@@ -1068,6 +1068,7 @@ export type Database = {
           duration: string
           frequency: string
           id: string
+          is_adult_only: boolean
           master_avatar_url: string
           master_display_name: string
           master_id: string
