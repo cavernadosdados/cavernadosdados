@@ -34,7 +34,7 @@ export const OnboardingChecklist = () => {
   const userType = user?.user_metadata?.user_type;
   const isMaster = userType === "master";
   const { profile } = useProfile(user?.id);
-  const { claimedSet, claim } = useOnboardingRewards();
+  const { claimedSet, claim, isLoading: rewardsLoading } = useOnboardingRewards();
 
   const [dismissed, setDismissed] = useState<boolean>(() => {
     try {
@@ -124,7 +124,7 @@ export const OnboardingChecklist = () => {
   });
 
   const items = useMemo<ChecklistItem[]>(() => {
-    if (!profile) return [];
+    if (!profile || rewardsLoading) return [];
 
     const profileDone = Boolean(
       profile.bio &&
@@ -138,7 +138,7 @@ export const OnboardingChecklist = () => {
         {
           id: "profile",
           label: "Complete seu perfil de mestre",
-          done: profileDone,
+          done: profileDone || claimedSet.has("profile"),
           action: () => navigate("/dashboard/perfil"),
           actionLabel: "Editar perfil",
           tokens: 1,
@@ -147,7 +147,7 @@ export const OnboardingChecklist = () => {
         {
           id: "table",
           label: "Crie sua primeira mesa",
-          done: (tablesCount ?? 0) > 0,
+          done: (tablesCount ?? 0) > 0 || claimedSet.has("table"),
           action: () => navigate("/dashboard/mesas"),
           actionLabel: "Criar mesa",
           tokens: 1,
@@ -156,7 +156,7 @@ export const OnboardingChecklist = () => {
         {
           id: "tokens",
           label: "Conheça os Tokens de impulsionamento",
-          done: tokensVisited,
+          done: tokensVisited || claimedSet.has("tokens"),
           action: visitTokens,
           actionLabel: "Ver Tokens",
           tokens: 2,
@@ -169,7 +169,7 @@ export const OnboardingChecklist = () => {
       {
         id: "profile",
         label: "Complete seu perfil de jogador",
-        done: profileDone,
+        done: profileDone || claimedSet.has("profile"),
         action: () => navigate("/dashboard/perfil"),
         actionLabel: "Editar perfil",
         tokens: 1,
@@ -178,7 +178,7 @@ export const OnboardingChecklist = () => {
       {
         id: "explore",
         label: "Explore mesas disponíveis",
-        done: exploreVisited,
+        done: exploreVisited || claimedSet.has("explore"),
         action: visitExplore,
         actionLabel: "Explorar",
         tokens: 1,
@@ -187,14 +187,14 @@ export const OnboardingChecklist = () => {
       {
         id: "apply",
         label: "Envie sua primeira candidatura",
-        done: (appsCount ?? 0) > 0,
+        done: (appsCount ?? 0) > 0 || claimedSet.has("apply"),
         action: () => navigate("/dashboard/explorar"),
         actionLabel: "Encontrar mesa",
         tokens: 2,
         xp: 75,
       },
     ];
-  }, [profile, isMaster, tablesCount, appsCount, navigate, tokensVisited, exploreVisited]);
+  }, [profile, rewardsLoading, claimedSet, isMaster, tablesCount, appsCount, navigate, tokensVisited, exploreVisited]);
 
   const completedCount = items.filter((i) => i.done).length;
   const allDone = items.length > 0 && completedCount === items.length;
