@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -75,7 +75,7 @@ export const OnboardingChecklist = () => {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const visitTokens = () => {
+  const visitTokens = useCallback(() => {
     try {
       localStorage.setItem(TOKENS_VISITED_KEY, "1");
     } catch {
@@ -83,9 +83,9 @@ export const OnboardingChecklist = () => {
     }
     setTokensVisited(true);
     navigate("/dashboard/tokens");
-  };
+  }, [navigate]);
 
-  const visitExplore = () => {
+  const visitExplore = useCallback(() => {
     try {
       localStorage.setItem(EXPLORE_VISITED_KEY, "1");
     } catch {
@@ -93,7 +93,7 @@ export const OnboardingChecklist = () => {
     }
     setExploreVisited(true);
     navigate("/dashboard/explorar");
-  };
+  }, [navigate]);
 
   // Master: tem alguma mesa criada?
   const { data: tablesCount } = useQuery({
@@ -194,7 +194,7 @@ export const OnboardingChecklist = () => {
         xp: 75,
       },
     ];
-  }, [profile, rewardsLoading, claimedSet, isMaster, tablesCount, appsCount, navigate, tokensVisited, exploreVisited]);
+  }, [profile, rewardsLoading, claimedSet, isMaster, tablesCount, appsCount, navigate, tokensVisited, exploreVisited, visitTokens, visitExplore]);
 
   const completedCount = items.filter((i) => i.done).length;
   const allDone = items.length > 0 && completedCount === items.length;
