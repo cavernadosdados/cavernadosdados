@@ -329,6 +329,11 @@ const Explorar = () => {
                           <Sparkles className="h-3 w-3" /> Nova
                         </Badge>
                       )}
+                      {table.is_adult_only && (
+                        <Badge className="gap-1 bg-destructive/90 text-destructive-foreground border-0 text-xs shadow-lg backdrop-blur-sm font-bold">
+                          18+
+                        </Badge>
+                      )}
                     </div>
 
                   {/* Botão de denúncia (canto superior esquerdo) */}
