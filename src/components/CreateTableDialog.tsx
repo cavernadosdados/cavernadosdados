@@ -19,6 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { Sparkles } from 'lucide-react';
 import { CoverGalleryPicker } from '@/components/CoverGalleryPicker';
+import { Switch } from '@/components/ui/switch';
 
 const RPG_SYSTEMS = [
   'D&D 5e', 'D&D 3.5', 'Pathfinder 1e', 'Pathfinder 2e', 'Tormenta20',
@@ -54,6 +55,7 @@ const tableSchema = z.object({
     .number({ invalid_type_error: 'Informe um valor válido' })
     .min(0, 'O preço não pode ser negativo')
     .max(9999, 'Valor muito alto'),
+  is_adult_only: z.boolean().default(false),
   cover_url: z
     .string()
     .trim()
@@ -87,6 +89,7 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
       max_players: 4,
       platform: '',
       price_brl: 0,
+      is_adult_only: false,
       cover_url: '',
     },
   });
@@ -107,6 +110,7 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
           max_players: data.max_players,
           platform: data.platform,
           price_cents: Math.round((data.price_brl || 0) * 100),
+          is_adult_only: data.is_adult_only,
           cover_url: data.cover_url?.trim() || null,
         });
 
@@ -259,6 +263,20 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
                   ativo — esse valor fica registrado como sua intenção de cobrança.
                 </p>
                 <FormMessage />
+              </FormItem>
+            )} />
+
+            <FormField control={form.control} name="is_adult_only" render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border border-border/60 bg-muted/30 px-3 py-2.5">
+                <div className="space-y-0.5 pr-3">
+                  <FormLabel className="text-sm">Conteúdo adulto (18+)</FormLabel>
+                  <p className="text-xs text-muted-foreground">
+                    Marque se sua mesa é restrita a maiores de 18 anos (temas explícitos, violência intensa etc.).
+                  </p>
+                </div>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
               </FormItem>
             )} />
 
