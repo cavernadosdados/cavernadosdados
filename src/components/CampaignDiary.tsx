@@ -463,6 +463,14 @@ export const CampaignDiary = ({ tableId, tableTitle, tableSystem, isMaster, webh
               </Card>
             )}
 
+            {/* === PRESENÇA DA SESSÃO === */}
+            <SessionPresencePanel
+              tableId={tableId}
+              sessionLogId={selectedLog.id}
+              sessionDate={selectedLog.session_date}
+              isMaster={isMaster}
+            />
+
             {/* === RELATOS DOS AVENTUREIROS === */}
             <Card className="border-border bg-card/60">
               <CardHeader className="pb-3">
