@@ -27,6 +27,7 @@ import {
   Trash2,
   MessageCircle,
 } from "lucide-react";
+import { SessionPresencePanel } from "@/components/SessionPresencePanel";
 
 const REACTION_EMOJIS = ["⚔️", "🎲", "🔥", "💀", "✨", "🛡️"];
 
@@ -461,6 +462,14 @@ export const CampaignDiary = ({ tableId, tableTitle, tableSystem, isMaster, webh
                 </CardContent>
               </Card>
             )}
+
+            {/* === PRESENÇA DA SESSÃO === */}
+            <SessionPresencePanel
+              tableId={tableId}
+              sessionLogId={selectedLog.id}
+              sessionDate={selectedLog.session_date}
+              isMaster={isMaster}
+            />
 
             {/* === RELATOS DOS AVENTUREIROS === */}
             <Card className="border-border bg-card/60">

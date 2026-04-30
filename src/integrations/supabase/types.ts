@@ -762,6 +762,51 @@ export type Database = {
           },
         ]
       }
+      session_presence: {
+        Row: {
+          created_at: string
+          had_prior_notice: boolean
+          id: string
+          justification_status: string | null
+          marked_by: string
+          master_note: string | null
+          player_id: string
+          player_justification: string | null
+          session_log_id: string
+          status: string
+          table_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          had_prior_notice?: boolean
+          id?: string
+          justification_status?: string | null
+          marked_by: string
+          master_note?: string | null
+          player_id: string
+          player_justification?: string | null
+          session_log_id: string
+          status?: string
+          table_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          had_prior_notice?: boolean
+          id?: string
+          justification_status?: string | null
+          marked_by?: string
+          master_note?: string | null
+          player_id?: string
+          player_justification?: string | null
+          session_log_id?: string
+          status?: string
+          table_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       slot_boosts: {
         Row: {
           created_at: string
@@ -1057,6 +1102,16 @@ export type Database = {
           unlocked: boolean
           unlocked_at: string
           xp_reward: number
+        }[]
+      }
+      get_player_reliability: {
+        Args: { _player_id: string }
+        Returns: {
+          attended: number
+          excused: number
+          no_shows: number
+          reliability_pct: number
+          total_sessions: number
         }[]
       }
       get_public_table: {
