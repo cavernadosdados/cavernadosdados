@@ -15,6 +15,7 @@ import { EditProfileDialog } from "@/components/EditProfileDialog";
 import { Star, Clock, Dice1, MapPin, Gamepad2, Users, Monitor, Send, ScrollText } from "lucide-react";
 import { ReportTableButton } from "@/components/ReportTableButton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ReliabilityBadge } from "@/components/ReliabilityBadge";
 
 type ReceivedFeedback = {
   id: string;
@@ -166,6 +167,11 @@ const Perfil = () => {
                   <Badge variant={isMaster ? 'default' : 'secondary'} className="mt-2">
                     {isMaster ? 'Mestre' : 'Jogador'}
                   </Badge>
+                  {!isMaster && viewedUserId && (
+                    <div className="mt-2 flex justify-center">
+                      <ReliabilityBadge playerId={viewedUserId} />
+                    </div>
+                  )}
                 </div>
               </div>
             </CardHeader>
