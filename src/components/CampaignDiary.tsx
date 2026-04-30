@@ -27,6 +27,7 @@ import {
   Trash2,
   MessageCircle,
 } from "lucide-react";
+import { SessionPresencePanel } from "@/components/SessionPresencePanel";
 
 const REACTION_EMOJIS = ["⚔️", "🎲", "🔥", "💀", "✨", "🛡️"];
 
