@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Shield, ExternalLink, CheckCircle2, XCircle, Loader2, Webhook, Save, FlaskConical } from "lucide-react";
+import {
+  Shield, ExternalLink, CheckCircle2, XCircle, Loader2, Webhook, Save, FlaskConical,
+  Users, LayoutDashboard, Activity, Search, ShieldAlert, ShieldCheck, Coins, Gamepad2, Flag, FileText, UserPlus
+} from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,10 +33,85 @@ export default function AdminModeracao() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"under_review" | "reports" | "integrations">("under_review");
+  const [tab, setTab] = useState<"overview" | "users" | "tables" | "activity" | "under_review" | "reports" | "integrations">("overview");
   const [webhookUrl, setWebhookUrl] = useState("");
   const [savingWebhook, setSavingWebhook] = useState(false);
   const [testingWebhook, setTestingWebhook] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
+  const [tableStatusFilter, setTableStatusFilter] = useState<string>("all");
+
+  const { data: metrics, isLoading: loadingMetrics } = useQuery({
+    queryKey: ["admin-metrics"],
+    enabled: !!isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_admin_metrics");
+      if (error) throw error;
+      return data as Record<string, number>;
+    },
+  });
+
+  const { data: activity, isLoading: loadingActivity } = useQuery({
+    queryKey: ["admin-activity"],
+    enabled: !!isAdmin && (tab === "activity" || tab === "overview"),
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_admin_recent_activity", { _limit: 30 });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: usersList, isLoading: loadingUsers } = useQuery({
+    queryKey: ["admin-users", userSearch],
+    enabled: !!isAdmin && tab === "users",
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_list_users", { _search: userSearch, _limit: 100 });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: allTables, isLoading: loadingAllTables } = useQuery({
+    queryKey: ["admin-all-tables", tableStatusFilter],
+    enabled: !!isAdmin && tab === "tables",
+    queryFn: async () => {
+      let q = supabase
+        .from("tables")
+        .select("id, title, status, master_id, created_at, max_players, is_adult_only, profiles:master_id(display_name)")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (tableStatusFilter !== "all") q = q.eq("status", tableStatusFilter);
+      const { data, error } = await q;
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const toggleAdmin = useMutation({
+    mutationFn: async ({ userId, grant }: { userId: string; grant: boolean }) => {
+      const { error } = await supabase.rpc("admin_set_user_role", {
+        _target_user_id: userId, _role: "admin", _grant: grant,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_d, vars) => {
+      toast({ title: vars.grant ? "Admin promovido" : "Admin removido" });
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    },
+    onError: (err: any) => toast({ title: "Erro", description: err.message, variant: "destructive" }),
+  });
+
+  const adminRemoveTable = useMutation({
+    mutationFn: async (tableId: string) => {
+      const { error } = await supabase.from("tables").delete().eq("id", tableId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Mesa removida" });
+      qc.invalidateQueries({ queryKey: ["admin-all-tables"] });
+      qc.invalidateQueries({ queryKey: ["admin-metrics"] });
+    },
+    onError: (err: any) => toast({ title: "Erro", description: err.message, variant: "destructive" }),
+  });
 
   const { data: webhookStatus, refetch: refetchWebhook } = useQuery({
     queryKey: ["admin-webhook-status"],
@@ -171,13 +250,175 @@ export default function AdminModeracao() {
         </div>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-          <TabsList>
+          <TabsList className="flex flex-wrap h-auto">
+            <TabsTrigger value="overview" className="gap-1"><LayoutDashboard className="h-3.5 w-3.5" /> Painel</TabsTrigger>
+            <TabsTrigger value="users" className="gap-1"><Users className="h-3.5 w-3.5" /> Usuários</TabsTrigger>
+            <TabsTrigger value="tables" className="gap-1"><Gamepad2 className="h-3.5 w-3.5" /> Mesas</TabsTrigger>
+            <TabsTrigger value="activity" className="gap-1"><Activity className="h-3.5 w-3.5" /> Atividade</TabsTrigger>
             <TabsTrigger value="under_review">
               Em revisão {underReview?.length ? `(${underReview.length})` : ""}
             </TabsTrigger>
-            <TabsTrigger value="reports">Todas denúncias</TabsTrigger>
+            <TabsTrigger value="reports">Denúncias</TabsTrigger>
             <TabsTrigger value="integrations">Integrações</TabsTrigger>
           </TabsList>
+
+          {/* PAINEL: métricas gerais */}
+          <TabsContent value="overview" className="mt-4 space-y-4">
+            {loadingMetrics ? (
+              <Skeleton className="h-48" />
+            ) : (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <MetricCard icon={<Users className="h-4 w-4" />} label="Usuários" value={metrics?.users_total ?? 0} hint={`+${metrics?.users_new_7d ?? 0} em 7d`} />
+                  <MetricCard icon={<ShieldCheck className="h-4 w-4" />} label="Mestres" value={metrics?.users_masters ?? 0} />
+                  <MetricCard icon={<UserPlus className="h-4 w-4" />} label="Jogadores" value={metrics?.users_players ?? 0} />
+                  <MetricCard icon={<Gamepad2 className="h-4 w-4" />} label="Mesas" value={metrics?.tables_total ?? 0} hint={`+${metrics?.tables_new_7d ?? 0} em 7d`} />
+                  <MetricCard icon={<CheckCircle2 className="h-4 w-4 text-green-500" />} label="Mesas abertas" value={metrics?.tables_open ?? 0} />
+                  <MetricCard icon={<ShieldAlert className="h-4 w-4 text-destructive" />} label="Em revisão" value={metrics?.tables_under_review ?? 0} />
+                  <MetricCard icon={<FileText className="h-4 w-4" />} label="Sessões" value={metrics?.sessions_total ?? 0} hint={`+${metrics?.sessions_new_7d ?? 0} em 7d`} />
+                  <MetricCard icon={<Flag className="h-4 w-4 text-destructive" />} label="Denúncias" value={metrics?.reports_total ?? 0} hint={`${metrics?.reports_pending ?? 0} pendentes`} />
+                  <MetricCard icon={<UserPlus className="h-4 w-4" />} label="Candidaturas" value={metrics?.applications_total ?? 0} hint={`${metrics?.applications_pending ?? 0} pendentes`} />
+                  <MetricCard icon={<CheckCircle2 className="h-4 w-4" />} label="Aceitas" value={metrics?.applications_accepted ?? 0} />
+                  <MetricCard icon={<Coins className="h-4 w-4 text-primary" />} label="Tokens em circulação" value={metrics?.tokens_circulating ?? 0} />
+                  <MetricCard icon={<Coins className="h-4 w-4" />} label="Tokens gastos (7d)" value={metrics?.tokens_spent_7d ?? 0} hint={`+${metrics?.tokens_granted_7d ?? 0} concedidos`} />
+                </div>
+
+                <Card>
+                  <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2"><Activity className="h-4 w-4" /> Atividade recente</CardTitle></CardHeader>
+                  <CardContent className="space-y-1 max-h-96 overflow-y-auto">
+                    {loadingActivity ? <Skeleton className="h-24" /> : (activity ?? []).slice(0, 15).map((a: any, i: number) => (
+                      <ActivityRow key={i} a={a} onClick={() => navigate(a.link)} />
+                    ))}
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </TabsContent>
+
+          {/* USUÁRIOS */}
+          <TabsContent value="users" className="mt-4 space-y-3">
+            <div className="relative">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome ou ID..."
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            {loadingUsers ? <Skeleton className="h-32" /> : usersList?.length === 0 ? (
+              <Card><CardContent className="p-6 text-center text-muted-foreground">Nenhum usuário encontrado.</CardContent></Card>
+            ) : (
+              <div className="space-y-2">
+                {usersList?.map((u: any) => (
+                  <Card key={u.id}>
+                    <CardContent className="p-3 flex items-center gap-3 flex-wrap">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={u.avatar_url ?? undefined} />
+                        <AvatarFallback>{u.display_name?.[0]?.toUpperCase() ?? "?"}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium truncate">{u.display_name ?? "Sem nome"}</span>
+                          <Badge variant="outline" className="capitalize">{u.user_type}</Badge>
+                          {u.is_admin && <Badge className="gap-1 bg-destructive/90"><Shield className="h-3 w-3" /> admin</Badge>}
+                        </div>
+                        <div className="text-xs text-muted-foreground flex gap-3 flex-wrap mt-0.5">
+                          <span>🪙 {u.tokens_balance}</span>
+                          <span>⭐ {u.xp} XP</span>
+                          <span>🎲 {u.tables_count} mesas</span>
+                          <span>📩 {u.applications_count} candidaturas</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => navigate(`/dashboard/perfil/${u.id}`)} className="gap-1">
+                          <ExternalLink className="h-3 w-3" /> Perfil
+                        </Button>
+                        {u.id !== user.id && (
+                          <Button
+                            size="sm"
+                            variant={u.is_admin ? "destructive" : "outline"}
+                            onClick={() => toggleAdmin.mutate({ userId: u.id, grant: !u.is_admin })}
+                            disabled={toggleAdmin.isPending}
+                            className="gap-1"
+                          >
+                            <Shield className="h-3 w-3" /> {u.is_admin ? "Remover admin" : "Tornar admin"}
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* MESAS */}
+          <TabsContent value="tables" className="mt-4 space-y-3">
+            <div className="flex gap-2 flex-wrap">
+              {["all", "open", "under_review", "closed"].map((s) => (
+                <Button
+                  key={s}
+                  size="sm"
+                  variant={tableStatusFilter === s ? "default" : "outline"}
+                  onClick={() => setTableStatusFilter(s)}
+                >
+                  {s === "all" ? "Todas" : s === "open" ? "Abertas" : s === "under_review" ? "Em revisão" : "Fechadas"}
+                </Button>
+              ))}
+            </div>
+            {loadingAllTables ? <Skeleton className="h-32" /> : allTables?.length === 0 ? (
+              <Card><CardContent className="p-6 text-center text-muted-foreground">Nenhuma mesa.</CardContent></Card>
+            ) : (
+              <div className="space-y-2">
+                {allTables?.map((t: any) => (
+                  <Card key={t.id}>
+                    <CardContent className="p-3 flex items-center gap-3 flex-wrap">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium truncate">{t.title}</span>
+                          <Badge variant={t.status === "under_review" ? "destructive" : t.status === "open" ? "default" : "secondary"}>{t.status}</Badge>
+                          {t.is_adult_only && <Badge className="bg-destructive/90 text-destructive-foreground">18+</Badge>}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          Mestre: {t.profiles?.display_name ?? "—"} • Máx {t.max_players} jogadores • {new Date(t.created_at).toLocaleDateString("pt-BR")}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => navigate(`/dashboard/mesa/${t.id}/detalhes`)} className="gap-1">
+                          <ExternalLink className="h-3 w-3" /> Ver
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => { if (confirm(`Remover "${t.title}"?`)) adminRemoveTable.mutate(t.id); }}
+                          disabled={adminRemoveTable.isPending}
+                          className="gap-1"
+                        >
+                          <XCircle className="h-3 w-3" /> Remover
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* ATIVIDADE */}
+          <TabsContent value="activity" className="mt-4 space-y-2">
+            {loadingActivity ? <Skeleton className="h-32" /> : (activity ?? []).length === 0 ? (
+              <Card><CardContent className="p-6 text-center text-muted-foreground">Sem atividade recente.</CardContent></Card>
+            ) : (
+              <Card>
+                <CardContent className="p-2 space-y-1">
+                  {(activity ?? []).map((a: any, i: number) => (
+                    <ActivityRow key={i} a={a} onClick={() => navigate(a.link)} />
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
 
           <TabsContent value="under_review" className="mt-4 space-y-3">
             {loadingTables ? (
