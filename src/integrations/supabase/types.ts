@@ -949,6 +949,8 @@ export type Database = {
           cover_url: string | null
           created_at: string
           description: string | null
+          disabled_at: string | null
+          disabled_reason: string | null
           duration: string
           id: string
           is_adult_only: boolean
@@ -967,6 +969,8 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          disabled_at?: string | null
+          disabled_reason?: string | null
           duration: string
           id?: string
           is_adult_only?: boolean
@@ -985,6 +989,8 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          disabled_at?: string | null
+          disabled_reason?: string | null
           duration?: string
           id?: string
           is_adult_only?: boolean
@@ -1061,6 +1067,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_disable_table: {
+        Args: { _reason: string; _table_id: string }
+        Returns: boolean
+      }
       admin_list_users: {
         Args: { _limit?: number; _search?: string }
         Returns: {
@@ -1075,6 +1085,10 @@ export type Database = {
           user_type: string
           xp: number
         }[]
+      }
+      admin_resolve_report: {
+        Args: { _new_status: string; _report_id: string }
+        Returns: boolean
       }
       admin_set_user_role: {
         Args: {
