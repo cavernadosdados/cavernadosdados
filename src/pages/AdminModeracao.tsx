@@ -566,3 +566,42 @@ export default function AdminModeracao() {
     </DashboardLayout>
   );
 }
+
+function MetricCard({ icon, label, value, hint }: { icon: React.ReactNode; label: string; value: number; hint?: string }) {
+  return (
+    <Card>
+      <CardContent className="p-3">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">{icon}<span>{label}</span></div>
+        <div className="text-2xl font-bold mt-1">{value.toLocaleString("pt-BR")}</div>
+        {hint && <div className="text-[11px] text-muted-foreground mt-0.5">{hint}</div>}
+      </CardContent>
+    </Card>
+  );
+}
+
+const KIND_LABEL: Record<string, { label: string; cls: string }> = {
+  report: { label: "Denúncia", cls: "bg-destructive/15 text-destructive" },
+  table: { label: "Mesa", cls: "bg-primary/15 text-primary" },
+  application: { label: "Candidatura", cls: "bg-blue-500/15 text-blue-500" },
+  session: { label: "Sessão", cls: "bg-green-500/15 text-green-500" },
+  user: { label: "Usuário", cls: "bg-amber-500/15 text-amber-500" },
+};
+
+function ActivityRow({ a, onClick }: { a: any; onClick: () => void }) {
+  const meta = KIND_LABEL[a.kind] ?? { label: a.kind, cls: "bg-muted" };
+  return (
+    <button
+      onClick={onClick}
+      className="w-full text-left flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors"
+    >
+      <Badge className={`${meta.cls} shrink-0`} variant="outline">{meta.label}</Badge>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium truncate">{a.title}</div>
+        <div className="text-xs text-muted-foreground truncate">{a.subtitle}</div>
+      </div>
+      <span className="text-[11px] text-muted-foreground shrink-0">
+        {new Date(a.occurred_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+      </span>
+    </button>
+  );
+}
