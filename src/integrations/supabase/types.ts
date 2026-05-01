@@ -1061,6 +1061,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_users: {
+        Args: { _limit?: number; _search?: string }
+        Returns: {
+          applications_count: number
+          avatar_url: string
+          created_at: string
+          display_name: string
+          id: string
+          is_admin: boolean
+          tables_count: number
+          tokens_balance: number
+          user_type: string
+          xp: number
+        }[]
+      }
+      admin_set_user_role: {
+        Args: {
+          _grant: boolean
+          _role: Database["public"]["Enums"]["app_role"]
+          _target_user_id: string
+        }
+        Returns: boolean
+      }
       apply_priority_to_application: {
         Args: { _application_id: string }
         Returns: boolean
@@ -1102,6 +1125,18 @@ export type Database = {
           unlocked: boolean
           unlocked_at: string
           xp_reward: number
+        }[]
+      }
+      get_admin_metrics: { Args: never; Returns: Json }
+      get_admin_recent_activity: {
+        Args: { _limit?: number }
+        Returns: {
+          kind: string
+          link: string
+          occurred_at: string
+          related_id: string
+          subtitle: string
+          title: string
         }[]
       }
       get_player_reliability: {
