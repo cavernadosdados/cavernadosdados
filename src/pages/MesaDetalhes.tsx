@@ -202,6 +202,31 @@ const MesaDetalhes = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {/* Banner: mesa desabilitada pela moderação (visível ao mestre) */}
+        {isOwner && (table as any).disabled_reason && (
+          <Card className="border-destructive/50 bg-destructive/10">
+            <CardContent className="p-4 flex items-start gap-3">
+              <ShieldAlert className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-destructive">Mesa desabilitada pela moderação</p>
+                <p className="text-sm text-foreground/90 mt-1">
+                  <span className="font-medium">Motivo:</span> {(table as any).disabled_reason}
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Sua mesa não aparece nas buscas até você editá-la para corrigir o problema. Após salvar uma alteração relevante, ela voltará a ficar pública automaticamente.
+                </p>
+                <Button
+                  size="sm"
+                  className="mt-3 gap-2"
+                  onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
+                >
+                  <LayoutDashboard className="h-4 w-4" /> Editar mesa agora
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Top nav */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <Button
