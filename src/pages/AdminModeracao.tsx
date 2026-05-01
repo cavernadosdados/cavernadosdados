@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Navigate, useNavigate } from "react-router-dom";
 import {
   Shield, ExternalLink, CheckCircle2, XCircle, Loader2, Webhook, Save, FlaskConical,
-  Users, LayoutDashboard, Activity, Search, ShieldAlert, ShieldCheck, Coins, Gamepad2, Flag, FileText, UserPlus
+  Users, LayoutDashboard, Activity, Search, ShieldAlert, ShieldCheck, Coins, Gamepad2, Flag, FileText, UserPlus, Ban
 } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,6 +108,39 @@ export default function AdminModeracao() {
     onSuccess: () => {
       toast({ title: "Mesa removida" });
       qc.invalidateQueries({ queryKey: ["admin-all-tables"] });
+      qc.invalidateQueries({ queryKey: ["admin-metrics"] });
+    },
+    onError: (err: any) => toast({ title: "Erro", description: err.message, variant: "destructive" }),
+  });
+
+  const adminDisableTable = useMutation({
+    mutationFn: async ({ tableId, reason }: { tableId: string; reason: string }) => {
+      const { error } = await supabase.rpc("admin_disable_table" as any, {
+        _table_id: tableId,
+        _reason: reason,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Mesa desabilitada", description: "O mestre foi notificado e a mesa não aparecerá nas buscas." });
+      qc.invalidateQueries({ queryKey: ["admin-all-tables"] });
+      qc.invalidateQueries({ queryKey: ["admin-under-review"] });
+      qc.invalidateQueries({ queryKey: ["admin-metrics"] });
+    },
+    onError: (err: any) => toast({ title: "Erro", description: err.message, variant: "destructive" }),
+  });
+
+  const resolveReport = useMutation({
+    mutationFn: async ({ reportId, status }: { reportId: string; status: "resolved" | "dismissed" | "pending" }) => {
+      const { error } = await supabase.rpc("admin_resolve_report" as any, {
+        _report_id: reportId,
+        _new_status: status,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Denúncia atualizada" });
+      qc.invalidateQueries({ queryKey: ["admin-reports"] });
       qc.invalidateQueries({ queryKey: ["admin-metrics"] });
     },
     onError: (err: any) => toast({ title: "Erro", description: err.message, variant: "destructive" }),
@@ -388,6 +421,24 @@ export default function AdminModeracao() {
                         <Button size="sm" variant="ghost" onClick={() => navigate(`/dashboard/mesa/${t.id}/detalhes`)} className="gap-1">
                           <ExternalLink className="h-3 w-3" /> Ver
                         </Button>
+                        {t.status !== "under_review" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const reason = prompt(`Desabilitar "${t.title}"\n\nMotivo (visível ao mestre, mín. 5 caracteres):`);
+                              if (reason && reason.trim().length >= 5) {
+                                adminDisableTable.mutate({ tableId: t.id, reason: reason.trim() });
+                              } else if (reason !== null) {
+                                toast({ title: "Motivo muito curto", description: "Descreva o motivo com pelo menos 5 caracteres.", variant: "destructive" });
+                              }
+                            }}
+                            disabled={adminDisableTable.isPending}
+                            className="gap-1"
+                          >
+                            <Ban className="h-3 w-3" /> Desabilitar
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="destructive"
@@ -476,7 +527,9 @@ export default function AdminModeracao() {
                     <div className="flex flex-wrap items-center gap-2 justify-between">
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge variant="outline">{REASON_LABEL[r.reason] ?? r.reason}</Badge>
-                        <Badge variant={r.status === "pending" ? "default" : "secondary"}>{r.status}</Badge>
+                        <Badge variant={r.status === "pending" ? "default" : r.status === "resolved" ? "secondary" : "outline"}>
+                          {r.status === "pending" ? "pendente" : r.status === "resolved" ? "resolvida" : r.status === "dismissed" ? "descartada" : r.status}
+                        </Badge>
                         <span className="text-xs text-muted-foreground">
                           {new Date(r.created_at).toLocaleString("pt-BR")}
                         </span>
@@ -488,6 +541,40 @@ export default function AdminModeracao() {
                     {r.description && (
                       <p className="text-sm text-muted-foreground italic">"{r.description}"</p>
                     )}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {r.status === "pending" ? (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => resolveReport.mutate({ reportId: r.id, status: "resolved" })}
+                            disabled={resolveReport.isPending}
+                            className="gap-1"
+                          >
+                            <CheckCircle2 className="h-3 w-3" /> Marcar como resolvida
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => resolveReport.mutate({ reportId: r.id, status: "dismissed" })}
+                            disabled={resolveReport.isPending}
+                            className="gap-1"
+                          >
+                            <XCircle className="h-3 w-3" /> Descartar
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => resolveReport.mutate({ reportId: r.id, status: "pending" })}
+                          disabled={resolveReport.isPending}
+                          className="gap-1"
+                        >
+                          Reabrir
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ))
