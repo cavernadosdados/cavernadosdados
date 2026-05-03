@@ -20,13 +20,9 @@ export const useXp = (): { data: XpInfo | undefined; isLoading: boolean } => {
     queryKey: ["profile_xp", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("xp")
-        .eq("id", user!.id)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("get_my_xp");
       if (error) throw error;
-      return data?.xp ?? 0;
+      return (data as number | null) ?? 0;
     },
   });
 
