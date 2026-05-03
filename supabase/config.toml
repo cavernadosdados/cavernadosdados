@@ -1,1 +1,4 @@
 project_id = "eadntfolimxkswgwyzkk"
+
+[functions.discord-webhook]
+verify_jwt = true
