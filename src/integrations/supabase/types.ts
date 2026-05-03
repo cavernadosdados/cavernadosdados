@@ -1153,6 +1153,9 @@ export type Database = {
           title: string
         }[]
       }
+      get_my_onboarding_status: { Args: never; Returns: boolean }
+      get_my_tokens_balance: { Args: never; Returns: number }
+      get_my_xp: { Args: never; Returns: number }
       get_player_reliability: {
         Args: { _player_id: string }
         Returns: {

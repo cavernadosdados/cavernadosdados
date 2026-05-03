@@ -19,13 +19,9 @@ export const useTokens = () => {
     queryKey: ["tokens_balance", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("tokens_balance")
-        .eq("id", user!.id)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("get_my_tokens_balance");
       if (error) throw error;
-      return data?.tokens_balance ?? 0;
+      return (data as number | null) ?? 0;
     },
   });
 

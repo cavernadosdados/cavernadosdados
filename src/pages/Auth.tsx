@@ -20,7 +20,15 @@ const LEGAL_VERSION = '2026-04-24';
 const authSchema = z.object({
   email: z.string().trim().email({ message: "Email inválido" }).max(255),
   password: z.string().min(6, { message: "Senha deve ter no mínimo 6 caracteres" }).max(100),
-  displayName: z.string().trim().min(2, { message: "Nome deve ter no mínimo 2 caracteres" }).max(100).optional(),
+  displayName: z
+    .string()
+    .trim()
+    .min(2, { message: "Nome deve ter no mínimo 2 caracteres" })
+    .max(60, { message: "Nome deve ter no máximo 60 caracteres" })
+    .regex(/^[\p{L}\p{N} '._-]+$/u, {
+      message: "Use apenas letras, números, espaços, '.', '_', '-' ou apóstrofo",
+    })
+    .optional(),
   acceptLegal: z.literal('on', {
     errorMap: () => ({ message: 'Você precisa aceitar os Termos de Uso e a Política de Privacidade.' }),
   }).optional(),
