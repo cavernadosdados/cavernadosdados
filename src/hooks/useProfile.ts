@@ -41,9 +41,13 @@ export const useProfile = (userId?: string) => {
     queryFn: async () => {
       if (!userId) return null;
       
+      // Avoid selecting sensitive columns (tokens_balance, xp, onboarding_completed,
+      // signup_bonus_claimed) — those are owner-only via dedicated RPCs.
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select(
+          'id, display_name, avatar_url, bio, experience_years, master_systems, preferred_themes, plays_in_person, apps_used, discord_link, active_tables_count, user_type, availability_days, availability_periods, created_at, updated_at'
+        )
         .eq('id', userId)
         .maybeSingle();
 
