@@ -14,13 +14,9 @@ export const useOnboarding = () => {
     queryKey: ["onboarding", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("onboarding_completed")
-        .eq("id", user!.id)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("get_my_onboarding_status");
       if (error) throw error;
-      return data;
+      return { onboarding_completed: data as boolean | null };
     },
   });
 
