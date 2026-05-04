@@ -5,14 +5,13 @@ import { Gem, Zap, Crown, TrendingUp, Clock } from "lucide-react";
 import { useTokens } from "@/hooks/useTokens";
 import { useSlotBoosts } from "@/hooks/useSlotBoosts";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserType } from "@/hooks/useUserType";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const Tokens = () => {
   const { balance } = useTokens();
   const { user } = useAuth();
-  const { isMaster } = useUserType();
+  const isMaster = false; // Unified: show all sections to everyone
   const {
     boosts,
     totalSlots,
