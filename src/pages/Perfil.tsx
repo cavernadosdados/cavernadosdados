@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useUserType } from "@/hooks/useUserType";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
@@ -42,7 +43,8 @@ const Perfil = () => {
   const [viewedCreatedAt, setViewedCreatedAt] = useState<string | null>(null);
   const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
 
-  const isMasterProfile = (profile?.user_type ?? user?.user_metadata?.user_type) === 'master';
+  const { isMaster: viewerIsMasterRole } = useUserType();
+  const isMasterProfile = profile?.user_type === 'master';
 
   // Fetch master's tables (only when viewing a master's profile)
   const { data: masterTables } = useQuery({
@@ -116,9 +118,9 @@ const Perfil = () => {
     }
   }, [isOwnProfile, user]);
 
-  const userType = profile?.user_type ?? user?.user_metadata?.user_type;
+  const userType = profile?.user_type;
   const isMaster = userType === 'master';
-  const viewerIsMaster = user?.user_metadata?.user_type === 'master';
+  const viewerIsMaster = viewerIsMasterRole;
   const displayName = profile?.display_name || (isOwnProfile ? user?.email?.split('@')[0] : 'Usuário') || 'Usuário';
   const initials = displayName?.substring(0, 2).toUpperCase();
 
