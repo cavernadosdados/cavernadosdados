@@ -1,5 +1,6 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserType } from "@/hooks/useUserType";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,8 +32,7 @@ import { useEffect } from "react";
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const userType = user?.user_metadata?.user_type;
-  const isMaster = userType === "master";
+  const { isMaster } = useUserType();
   const displayName = user?.user_metadata?.display_name || user?.email?.split("@")[0];
   const { showOnboarding, completeOnboarding, restartOnboarding } = useOnboarding();
   const checkAchievements = useCheckAchievements();

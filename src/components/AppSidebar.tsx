@@ -14,12 +14,13 @@ import {
 import logoDragon from "@/assets/logo-dragon.png";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useUserType } from "@/hooks/useUserType";
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const { user } = useAuth();
   const { data: isAdmin } = useIsAdmin();
-  const userType = user?.user_metadata?.user_type;
+  const { userType } = useUserType();
   const collapsed = state === "collapsed";
 
   const navigationItems = [
