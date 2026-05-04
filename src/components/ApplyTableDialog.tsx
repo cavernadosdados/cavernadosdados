@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserType } from '@/hooks/useUserType';
 import { toast } from '@/hooks/use-toast';
 import { useSlotBoosts } from '@/hooks/useSlotBoosts';
 import { useTokens } from '@/hooks/useTokens';
@@ -30,7 +31,7 @@ export function ApplyTableDialog({ open, onOpenChange, tableId, tableTitle, onAp
   const [message, setMessage] = useState('');
   const [makePriority, setMakePriority] = useState(false);
   const [loading, setLoading] = useState(false);
-  const isMaster = user?.user_metadata?.user_type === 'master';
+  const { isMaster } = useUserType();
   const noSlots = remainingSlots <= 0;
   const canPriority = balance >= 1;
 

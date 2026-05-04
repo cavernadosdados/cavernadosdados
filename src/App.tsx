@@ -30,6 +30,7 @@ import Termos from "./pages/Termos";
 import EsqueciSenha from "./pages/EsqueciSenha";
 import RedefinirSenha from "./pages/RedefinirSenha";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserType } from "@/hooks/useUserType";
 
 const queryClient = new QueryClient();
 
@@ -48,17 +49,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 // Role-restricted route: redirects to /dashboard if user_type doesn't match
 const RoleRoute = ({ children, allow }: { children: React.ReactNode; allow: "master" | "player" }) => {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { userType, loading: roleLoading } = useUserType();
 
-  if (loading) {
+  if (authLoading || roleLoading) {
     return <div className="min-h-screen flex items-center justify-center">
       <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
     </div>;
   }
 
   if (!user) return <Navigate to="/auth" />;
-
-  const userType = user.user_metadata?.user_type;
   if (userType !== allow) return <Navigate to="/dashboard" replace />;
 
   return <>{children}</>;

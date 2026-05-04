@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserType } from "@/hooks/useUserType";
 
 export interface CalendarSession {
   id: string;
@@ -25,7 +26,7 @@ export interface CalendarSession {
  */
 export const useSessionsCalendar = (start: Date, end: Date) => {
   const { user } = useAuth();
-  const userType = user?.user_metadata?.user_type;
+  const { userType } = useUserType();
   const isMaster = userType === "master";
 
   const startISO = start.toISOString().slice(0, 10);
