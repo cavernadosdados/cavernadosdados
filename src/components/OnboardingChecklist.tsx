@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Circle, Gem, Sparkles, X, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserType } from "@/hooks/useUserType";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,7 +32,7 @@ const EXPLORE_VISITED_KEY = "onboarding_explore_visited";
 export const OnboardingChecklist = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const userType = user?.user_metadata?.user_type;
+  const { userType } = useUserType();
   const isMaster = userType === "master";
   const { profile } = useProfile(user?.id);
   const { claimedSet, claim, isLoading: rewardsLoading } = useOnboardingRewards();

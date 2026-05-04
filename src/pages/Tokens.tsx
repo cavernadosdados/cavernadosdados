@@ -5,13 +5,14 @@ import { Gem, Zap, Crown, TrendingUp, Clock } from "lucide-react";
 import { useTokens } from "@/hooks/useTokens";
 import { useSlotBoosts } from "@/hooks/useSlotBoosts";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserType } from "@/hooks/useUserType";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const Tokens = () => {
   const { balance } = useTokens();
   const { user } = useAuth();
-  const isMaster = user?.user_metadata?.user_type === "master";
+  const { isMaster } = useUserType();
   const {
     boosts,
     totalSlots,

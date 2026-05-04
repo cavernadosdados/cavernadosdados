@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserType } from "@/hooks/useUserType";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,7 +48,7 @@ import { formatPriceBRL, isFreeTable } from "@/lib/price";
 const Mesas = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const userType = user?.user_metadata?.user_type;
+  const { userType } = useUserType();
   const [createOpen, setCreateOpen] = useState(false);
   const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
   const [deleteTableId, setDeleteTableId] = useState<string | null>(null);

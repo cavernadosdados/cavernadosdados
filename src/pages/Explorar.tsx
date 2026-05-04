@@ -35,6 +35,7 @@ import { ReportTableButton } from "@/components/ReportTableButton";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { useActiveTableBoosts } from "@/hooks/useTableBoosts";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserType } from "@/hooks/useUserType";
 import { formatPriceBRL, isFreeTable } from "@/lib/price";
 
 const ANY = "__any__";
@@ -43,7 +44,7 @@ const Explorar = () => {
   const navigate = useNavigate();
   const { boostsMap } = useActiveTableBoosts();
   const { user } = useAuth();
-  const isMaster = user?.user_metadata?.user_type === "master";
+  const { isMaster } = useUserType();
 
   const [system, setSystem] = useState<string>(ANY);
   const [theme, setTheme] = useState<string>(ANY);

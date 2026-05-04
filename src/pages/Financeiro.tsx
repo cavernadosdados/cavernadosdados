@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserType } from "@/hooks/useUserType";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPriceBRL, isFreeTable } from "@/lib/price";
 import { cn } from "@/lib/utils";
@@ -55,7 +56,7 @@ const STATUS_META: Record<string, { label: string; tone: string; icon: any }> = 
 const Financeiro = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const userType = user?.user_metadata?.user_type;
+  const { userType } = useUserType();
   const [selectedPayment, setSelectedPayment] = useState<PaymentRow | null>(null);
 
   // Mesas do mestre
