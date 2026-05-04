@@ -442,7 +442,7 @@ const Perfil = () => {
                                   >
                                     {appStatusLabel[status.status] || status.status}
                                   </Badge>
-                                ) : viewerIsMaster ? null : (
+                                ) : (
                                   <Button
                                     size="sm"
                                     className="gap-1 h-8"
