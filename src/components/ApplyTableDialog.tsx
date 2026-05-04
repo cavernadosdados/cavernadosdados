@@ -6,7 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useUserType } from '@/hooks/useUserType';
 import { toast } from '@/hooks/use-toast';
 import { useSlotBoosts } from '@/hooks/useSlotBoosts';
 import { useTokens } from '@/hooks/useTokens';
@@ -31,20 +30,11 @@ export function ApplyTableDialog({ open, onOpenChange, tableId, tableTitle, onAp
   const [message, setMessage] = useState('');
   const [makePriority, setMakePriority] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { isMaster } = useUserType();
   const noSlots = remainingSlots <= 0;
   const canPriority = balance >= 1;
 
   const handleApply = async () => {
     if (!user) return;
-    if (isMaster) {
-      toast({
-        title: 'Mestres não podem se candidatar',
-        description: 'Sua conta é de mestre. Crie suas próprias mesas em "Minhas Mesas".',
-        variant: 'destructive',
-      });
-      return;
-    }
     if (!message.trim()) {
       toast({ title: 'Escreva uma mensagem', description: 'Diga ao mestre por que você quer participar.', variant: 'destructive' });
       return;
