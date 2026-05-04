@@ -214,7 +214,6 @@ const MasterView = ({
   const openTables = tables.filter((t) => t.status === "open").length;
   return (
     <>
-      <OnboardingChecklist />
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard
@@ -360,7 +359,6 @@ const PlayerView = ({
 }) => {
   return (
     <>
-      <OnboardingChecklist />
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard
