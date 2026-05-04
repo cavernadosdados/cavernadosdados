@@ -146,12 +146,11 @@ export const EditProfileDialog = ({
       availability_periods: values.availability_periods || [],
     };
 
-    if (isMaster) {
-      updateData.experience_years = values.experience_years || 0;
-      updateData.plays_in_person = values.plays_in_person || false;
-      updateData.apps_used = values.apps_used || [];
-      updateData.discord_link = values.discord_link || null;
-    }
+    // Unified profile: any user can fill master-oriented fields
+    updateData.experience_years = values.experience_years || 0;
+    updateData.plays_in_person = values.plays_in_person || false;
+    updateData.apps_used = values.apps_used || [];
+    updateData.discord_link = values.discord_link || null;
 
     updateProfile(updateData, {
       onSuccess: () => {

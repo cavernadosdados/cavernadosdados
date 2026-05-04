@@ -10,7 +10,6 @@ import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import logoDragon from '@/assets/logo-dragon.png';
 import logoText from '@/assets/logo-text.png';
-import { Users, Scroll } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
@@ -34,12 +33,9 @@ const authSchema = z.object({
   }).optional(),
 });
 
-type UserType = 'player' | 'master';
-
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
-  const [selectedUserType, setSelectedUserType] = useState<UserType>('player');
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -99,7 +95,6 @@ const Auth = () => {
           options: {
             emailRedirectTo: `${window.location.origin}/`,
             data: {
-              user_type: selectedUserType,
               display_name: displayName,
               terms_accepted: true,
               terms_version: LEGAL_VERSION,
@@ -187,7 +182,7 @@ const Auth = () => {
             </CardTitle>
             <CardDescription className="text-center">
               {isSignUp 
-                ? 'Escolha seu caminho e junte-se à comunidade'
+                ? 'Junte-se à comunidade — você poderá mestrar e jogar'
                 : 'Acesse sua conta na Caverna dos Dados'
               }
             </CardDescription>
@@ -204,34 +199,6 @@ const Auth = () => {
               </TabsList>
 
               <TabsContent value="signup">
-                {/* User Type Selection */}
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedUserType('player')}
-                    className={`p-4 rounded-lg border-2 transition-all ${
-                      selectedUserType === 'player'
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <Users className="w-8 h-8 mx-auto mb-2" />
-                    <div className="text-sm font-medium">Jogador</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedUserType('master')}
-                    className={`p-4 rounded-lg border-2 transition-all ${
-                      selectedUserType === 'master'
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <Scroll className="w-8 h-8 mx-auto mb-2" />
-                    <div className="text-sm font-medium">Mestre</div>
-                  </button>
-                </div>
-
                 <form onSubmit={handleAuth} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="displayName">Nome</Label>

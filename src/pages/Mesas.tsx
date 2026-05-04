@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserType } from "@/hooks/useUserType";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +47,6 @@ import { formatPriceBRL, isFreeTable } from "@/lib/price";
 const Mesas = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { userType } = useUserType();
   const [createOpen, setCreateOpen] = useState(false);
   const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
   const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
@@ -64,13 +62,13 @@ const Mesas = () => {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["tables", userType === "master" ? user?.id : "all"],
+    queryKey: ["my-tables", user?.id],
     queryFn: async () => {
-      let query = supabase.from("tables").select("*, profiles(id, display_name, avatar_url)");
-      if (userType === "master") {
-        query = query.eq("master_id", user!.id);
-      }
-      const { data, error } = await query.order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("tables")
+        .select("*, profiles(id, display_name, avatar_url)")
+        .eq("master_id", user!.id)
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -118,7 +116,7 @@ const Mesas = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && userType !== "master",
+    enabled: !!user,
   });
 
   const getApplicationStatus = (tableId: string) => {
@@ -160,18 +158,16 @@ const Mesas = () => {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold glow-gold">
-              {userType === "master" ? "Minhas Mesas" : "Mesas Disponíveis"}
+              Minhas Mesas
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
-              {userType === "master" ? "Gerencie suas campanhas e sessões" : "Encontre e participe de aventuras"}
+              Gerencie as campanhas que você mestra
             </p>
           </div>
-          {userType === "master" && (
-            <Button className="gap-2 w-full sm:w-auto min-h-11" onClick={() => setCreateOpen(true)}>
-              <Plus className="h-4 w-4" />
-              Criar Nova Mesa
-            </Button>
-          )}
+          <Button className="gap-2 w-full sm:w-auto min-h-11" onClick={() => setCreateOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Criar Nova Mesa
+          </Button>
         </div>
 
         {isLoading ? (
@@ -183,7 +179,8 @@ const Mesas = () => {
         ) : sortedTables && sortedTables.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2">
             {sortedTables.map((table: any) => {
-              const appStatus = userType !== "master" ? getApplicationStatus(table.id) : null;
+              const isOwner = table.master_id === user?.id;
+              const appStatus = !isOwner ? getApplicationStatus(table.id) : null;
               const acceptedCount = acceptedCounts?.[table.id] ?? 0;
               const seatsLeft = Math.max(0, (table.max_players ?? 0) - acceptedCount);
               const isFull = seatsLeft === 0;
@@ -192,7 +189,6 @@ const Mesas = () => {
               const isFresh = ageMs < 1000 * 60 * 60 * 48;
               const boostExpires = boostsMap[table.id];
               const isBoosted = !!boostExpires;
-              const isOwner = userType === "master" && table.master_id === user?.id;
 
               return (
                 <Card
@@ -230,7 +226,7 @@ const Mesas = () => {
                         Destaque expira {formatDistanceToNow(new Date(boostExpires), { addSuffix: true, locale: ptBR })}
                       </p>
                     )}
-                    {userType !== "master" && table.profiles && (
+                    {!isOwner && table.profiles && (
                       <button
                         type="button"
                         onClick={(e) => {
@@ -302,7 +298,7 @@ const Mesas = () => {
                     </div>
 
                     {/* Player actions */}
-                    {userType !== "master" && (
+                    {!isOwner && (
                       <div className="pt-2 flex flex-col sm:flex-row gap-2 flex-wrap">
                         <Button
                           size="sm"
@@ -389,15 +385,13 @@ const Mesas = () => {
         ) : (
           <Card className="bg-gradient-to-br from-card to-card/50">
             <CardHeader>
-              <CardTitle>{userType === "master" ? "Nenhuma mesa criada ainda" : "Nenhuma mesa encontrada"}</CardTitle>
+              <CardTitle>Nenhuma mesa criada ainda</CardTitle>
               <CardDescription>
-                {userType === "master"
-                  ? "Crie sua primeira mesa — ela ganha destaque grátis por 24h!"
-                  : "Explore o catálogo e encontre sua aventura perfeita"}
+                Crie sua primeira mesa — ela ganha destaque grátis por 24h!
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {userType === "master" && <Button onClick={() => setCreateOpen(true)}>Criar Primeira Mesa</Button>}
+              <Button onClick={() => setCreateOpen(true)}>Criar Primeira Mesa</Button>
             </CardContent>
           </Card>
         )}

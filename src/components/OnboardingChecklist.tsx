@@ -32,8 +32,8 @@ const EXPLORE_VISITED_KEY = "onboarding_explore_visited";
 export const OnboardingChecklist = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { userType } = useUserType();
-  const isMaster = userType === "master";
+  const { hasMasteredTables } = useUserType();
+  const isMaster = hasMasteredTables;
   const { profile } = useProfile(user?.id);
   const { claimedSet, claim, isLoading: rewardsLoading } = useOnboardingRewards();
 

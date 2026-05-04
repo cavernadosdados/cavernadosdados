@@ -32,7 +32,7 @@ import { useEffect } from "react";
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { isMaster } = useUserType();
+  const { hasMasteredTables, hasPlayerActivity } = useUserType();
   const displayName = user?.user_metadata?.display_name || user?.email?.split("@")[0];
   const { showOnboarding, completeOnboarding, restartOnboarding } = useOnboarding();
   const checkAchievements = useCheckAchievements();
@@ -46,7 +46,7 @@ const Dashboard = () => {
   /* ============== MASTER DATA ============== */
   const { data: masterTables } = useQuery({
     queryKey: ["dashboard-master-tables", user?.id],
-    enabled: !!user && isMaster,
+    enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tables")
@@ -59,7 +59,7 @@ const Dashboard = () => {
 
   const { data: pendingApplications } = useQuery({
     queryKey: ["dashboard-master-pending", user?.id],
-    enabled: !!user && isMaster,
+    enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("table_applications")
@@ -77,7 +77,7 @@ const Dashboard = () => {
 
   const { data: masterUpcomingSessions } = useQuery({
     queryKey: ["dashboard-master-sessions", user?.id, masterTables?.length],
-    enabled: !!user && isMaster && (masterTables?.length ?? 0) > 0,
+    enabled: !!user && (masterTables?.length ?? 0) > 0,
     queryFn: async () => {
       const ids = (masterTables ?? []).map((t) => t.id);
       if (!ids.length) return [];
@@ -97,7 +97,7 @@ const Dashboard = () => {
   /* ============== PLAYER DATA ============== */
   const { data: playerApps } = useQuery({
     queryKey: ["dashboard-player-apps", user?.id],
-    enabled: !!user && !isMaster,
+    enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("table_applications")
@@ -119,7 +119,7 @@ const Dashboard = () => {
   const activeIds = activeAdventures.map((a) => a.table_id);
   const { data: playerNextSessions } = useQuery({
     queryKey: ["dashboard-player-sessions", user?.id, activeIds.join(",")],
-    enabled: !!user && !isMaster && activeIds.length > 0,
+    enabled: !!user && activeIds.length > 0,
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
       const { data, error } = await supabase
@@ -135,6 +135,11 @@ const Dashboard = () => {
   });
 
   /* ============== RENDER ============== */
+  const showMasterSection = hasMasteredTables || (masterTables?.length ?? 0) > 0;
+  const showPlayerSection = hasPlayerActivity || (playerApps?.length ?? 0) > 0;
+  const showBoth = showMasterSection && showPlayerSection;
+  const showNeither = !showMasterSection && !showPlayerSection;
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -144,9 +149,11 @@ const Dashboard = () => {
               Pronto pra próxima aventura, {displayName}!
             </h1>
             <p className="text-muted-foreground mt-2">
-              {isMaster
-                ? "Conduza suas mesas e acompanhe novas candidaturas"
-                : "Acompanhe suas aventuras e descubra novas mesas"}
+              {showBoth
+                ? "Suas mesas, candidaturas e próximas sessões em um só lugar"
+                : showMasterSection
+                  ? "Conduza suas mesas e acompanhe novas candidaturas"
+                  : "Acompanhe suas aventuras e descubra novas mesas"}
             </p>
           </div>
           <Button
@@ -162,22 +169,30 @@ const Dashboard = () => {
 
         <LevelProgress />
 
-        {isMaster ? <MasterView
-          tables={masterTables ?? []}
-          pending={pendingApplications ?? []}
-          sessions={masterUpcomingSessions ?? []}
-          navigate={navigate}
-        /> : <PlayerView
-          active={activeAdventures}
-          pending={pendingAdventures}
-          sessions={playerNextSessions ?? []}
-          navigate={navigate}
-        />}
+        <OnboardingChecklist />
+
+        {(showMasterSection || showNeither) && (
+          <MasterView
+            tables={masterTables ?? []}
+            pending={pendingApplications ?? []}
+            sessions={masterUpcomingSessions ?? []}
+            navigate={navigate}
+          />
+        )}
+
+        {(showPlayerSection || showNeither) && (
+          <PlayerView
+            active={activeAdventures}
+            pending={pendingAdventures}
+            sessions={playerNextSessions ?? []}
+            navigate={navigate}
+          />
+        )}
       </div>
 
       <OnboardingModal
         open={showOnboarding}
-        userType={isMaster ? "master" : "player"}
+        userType={showMasterSection ? "master" : "player"}
         onComplete={() => completeOnboarding()}
       />
     </DashboardLayout>
@@ -199,7 +214,6 @@ const MasterView = ({
   const openTables = tables.filter((t) => t.status === "open").length;
   return (
     <>
-      <OnboardingChecklist />
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard
@@ -345,7 +359,6 @@ const PlayerView = ({
 }) => {
   return (
     <>
-      <OnboardingChecklist />
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard
