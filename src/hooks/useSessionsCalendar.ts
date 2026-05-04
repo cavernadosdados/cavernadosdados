@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserType } from "@/hooks/useUserType";
 
 export interface CalendarSession {
   id: string;
@@ -26,36 +25,33 @@ export interface CalendarSession {
  */
 export const useSessionsCalendar = (start: Date, end: Date) => {
   const { user } = useAuth();
-  const { userType } = useUserType();
-  const isMaster = userType === "master";
 
   const startISO = start.toISOString().slice(0, 10);
   const endISO = end.toISOString().slice(0, 10);
 
   return useQuery({
-    queryKey: ["calendar-sessions", user?.id, startISO, endISO, isMaster],
+    queryKey: ["calendar-sessions", user?.id, startISO, endISO],
     enabled: !!user,
     queryFn: async (): Promise<CalendarSession[]> => {
-      let tableIds: string[] = [];
-
-      if (isMaster) {
-        const { data: tables, error } = await supabase
-          .from("tables")
-          .select("id")
-          .eq("master_id", user!.id);
-        if (error) throw error;
-        tableIds = (tables ?? []).map((t) => t.id);
-      } else {
-        const { data: apps, error } = await supabase
+      // Unified: fetch tables where user is master OR accepted player
+      const [{ data: ownTables, error: tErr }, { data: apps, error: aErr }] = await Promise.all([
+        supabase.from("tables").select("id").eq("master_id", user!.id),
+        supabase
           .from("table_applications")
           .select("table_id")
           .eq("player_id", user!.id)
-          .eq("status", "accepted");
-        if (error) throw error;
-        tableIds = (apps ?? []).map((a) => a.table_id);
-      }
+          .eq("status", "accepted"),
+      ]);
+      if (tErr) throw tErr;
+      if (aErr) throw aErr;
 
+      const masterIds = new Set((ownTables ?? []).map((t) => t.id));
+      const playerIds = new Set((apps ?? []).map((a) => a.table_id));
+      const tableIds = Array.from(new Set([...masterIds, ...playerIds]));
       if (tableIds.length === 0) return [];
+
+      const roleFor = (id: string): "master" | "player" =>
+        masterIds.has(id) ? "master" : "player";
 
       const { data, error } = await supabase
         .from("session_logs")
@@ -74,7 +70,7 @@ export const useSessionsCalendar = (start: Date, end: Date) => {
         session_date: s.session_date,
         table_id: s.table_id,
         table_title: s.tables?.title ?? "Mesa",
-        role: isMaster ? "master" : "player",
+        role: roleFor(s.table_id),
         table_cover_url: s.tables?.cover_url ?? null,
         table_system: s.tables?.system ?? null,
         table_platform: s.tables?.platform ?? null,
@@ -108,7 +104,7 @@ export const useSessionsCalendar = (start: Date, end: Date) => {
             session_date: dateStr,
             table_id: c.table_id,
             table_title: c.tables?.title ?? "Mesa",
-            role: isMaster ? "master" : "player",
+            role: roleFor(c.table_id),
             table_cover_url: c.tables?.cover_url ?? null,
             table_system: c.tables?.system ?? null,
             table_platform: c.tables?.platform ?? null,

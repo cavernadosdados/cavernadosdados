@@ -15,7 +15,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserType } from "@/hooks/useUserType";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPriceBRL, isFreeTable } from "@/lib/price";
 import { cn } from "@/lib/utils";
@@ -56,13 +55,12 @@ const STATUS_META: Record<string, { label: string; tone: string; icon: any }> = 
 const Financeiro = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const { userType } = useUserType();
   const [selectedPayment, setSelectedPayment] = useState<PaymentRow | null>(null);
 
   // Mesas do mestre
   const { data: tables, isLoading: loadingTables } = useQuery({
     queryKey: ["finance-tables", user?.id],
-    enabled: !!user && userType === "master",
+    enabled: !!user,
     queryFn: async (): Promise<MasterTableRow[]> => {
       const { data, error } = await supabase
         .from("tables")
@@ -77,7 +75,7 @@ const Financeiro = () => {
   // Pagamentos recebidos (master_id = user)
   const { data: payments, isLoading: loadingPayments } = useQuery({
     queryKey: ["finance-payments", user?.id],
-    enabled: !!user && userType === "master",
+    enabled: !!user,
     queryFn: async (): Promise<PaymentRow[]> => {
       const { data, error } = await supabase
         .from("payments")
@@ -134,7 +132,6 @@ const Financeiro = () => {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
-  if (userType !== "master") return <Navigate to="/dashboard" replace />;
 
   // ====== Cálculos ======
   const paidTables = (tables ?? []).filter((t) => !isFreeTable(t.price_cents));
