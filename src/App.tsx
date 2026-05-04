@@ -30,7 +30,6 @@ import Termos from "./pages/Termos";
 import EsqueciSenha from "./pages/EsqueciSenha";
 import RedefinirSenha from "./pages/RedefinirSenha";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserType } from "@/hooks/useUserType";
 
 const queryClient = new QueryClient();
 
@@ -47,23 +46,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return user ? <>{children}</> : <Navigate to="/auth" />;
 };
 
-// Role-restricted route: redirects to /dashboard if user_type doesn't match
-const RoleRoute = ({ children, allow }: { children: React.ReactNode; allow: "master" | "player" }) => {
-  const { user, loading: authLoading } = useAuth();
-  const { userType, loading: roleLoading } = useUserType();
-
-  if (authLoading || roleLoading) {
-    return <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-    </div>;
-  }
-
-  if (!user) return <Navigate to="/auth" />;
-  if (userType !== allow) return <Navigate to="/dashboard" replace />;
-
-  return <>{children}</>;
-};
-
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
@@ -74,10 +56,10 @@ const AppRoutes = () => (
     <Route path="/termos" element={<Termos />} />
     <Route path="/m/:tableId" element={<MesaPublica />} />
     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-    <Route path="/dashboard/mesas" element={<RoleRoute allow="master"><Mesas /></RoleRoute>} />
+    <Route path="/dashboard/mesas" element={<ProtectedRoute><Mesas /></ProtectedRoute>} />
     <Route path="/dashboard/explorar" element={<ProtectedRoute><Explorar /></ProtectedRoute>} />
     <Route path="/dashboard/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
-    <Route path="/dashboard/aventuras" element={<RoleRoute allow="player"><MinhasAventuras /></RoleRoute>} />
+    <Route path="/dashboard/aventuras" element={<ProtectedRoute><MinhasAventuras /></ProtectedRoute>} />
     <Route path="/dashboard/mensagens" element={<ProtectedRoute><Mensagens /></ProtectedRoute>} />
     <Route path="/dashboard/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
     <Route path="/dashboard/perfil/:userId" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
@@ -90,7 +72,7 @@ const AppRoutes = () => (
     <Route path="/dashboard/admin/moderacao" element={<ProtectedRoute><AdminModeracao /></ProtectedRoute>} />
     <Route path="/dashboard/conquistas" element={<ProtectedRoute><Conquistas /></ProtectedRoute>} />
     <Route path="/dashboard/calendario" element={<ProtectedRoute><Calendario /></ProtectedRoute>} />
-    <Route path="/dashboard/financeiro" element={<RoleRoute allow="master"><Financeiro /></RoleRoute>} />
+    <Route path="/dashboard/financeiro" element={<ProtectedRoute><Financeiro /></ProtectedRoute>} />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />
   </Routes>
