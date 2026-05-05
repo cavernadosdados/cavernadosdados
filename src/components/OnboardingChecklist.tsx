@@ -5,7 +5,6 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Circle, Gem, Sparkles, X, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserType } from "@/hooks/useUserType";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,8 +31,6 @@ const EXPLORE_VISITED_KEY = "onboarding_explore_visited";
 export const OnboardingChecklist = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { hasMasteredTables } = useUserType();
-  const isMaster = hasMasteredTables;
   const { profile } = useProfile(user?.id);
   const { claimedSet, claim, isLoading: rewardsLoading } = useOnboardingRewards();
 
@@ -96,10 +93,9 @@ export const OnboardingChecklist = () => {
     navigate("/dashboard/explorar");
   }, [navigate]);
 
-  // Master: tem alguma mesa criada?
   const { data: tablesCount } = useQuery({
     queryKey: ["onboarding-tables-count", user?.id],
-    enabled: !!user && isMaster,
+    enabled: !!user,
     queryFn: async () => {
       const { count, error } = await supabase
         .from("tables")
@@ -110,10 +106,9 @@ export const OnboardingChecklist = () => {
     },
   });
 
-  // Player: tem alguma candidatura?
   const { data: appsCount } = useQuery({
     queryKey: ["onboarding-apps-count", user?.id],
-    enabled: !!user && !isMaster,
+    enabled: !!user,
     queryFn: async () => {
       const { count, error } = await supabase
         .from("table_applications")
@@ -134,42 +129,11 @@ export const OnboardingChecklist = () => {
           (profile.preferred_themes?.length ?? 0) > 0)
     );
 
-    if (isMaster) {
-      return [
-        {
-          id: "profile",
-          label: "Complete seu perfil de mestre",
-          done: profileDone || claimedSet.has("profile"),
-          action: () => navigate("/dashboard/perfil"),
-          actionLabel: "Editar perfil",
-          tokens: 1,
-          xp: 50,
-        },
-        {
-          id: "table",
-          label: "Crie sua primeira mesa",
-          done: (tablesCount ?? 0) > 0 || claimedSet.has("table"),
-          action: () => navigate("/dashboard/mesas"),
-          actionLabel: "Criar mesa",
-          tokens: 1,
-          xp: 75,
-        },
-        {
-          id: "tokens",
-          label: "Conheça os Tokens de impulsionamento",
-          done: tokensVisited || claimedSet.has("tokens"),
-          action: visitTokens,
-          actionLabel: "Ver Tokens",
-          tokens: 2,
-          xp: 50,
-        },
-      ];
-    }
-
+    // Unified checklist: every user sees both paths (master + player).
     return [
       {
         id: "profile",
-        label: "Complete seu perfil de jogador",
+        label: "Complete seu perfil",
         done: profileDone || claimedSet.has("profile"),
         action: () => navigate("/dashboard/perfil"),
         actionLabel: "Editar perfil",
@@ -187,15 +151,33 @@ export const OnboardingChecklist = () => {
       },
       {
         id: "apply",
-        label: "Envie sua primeira candidatura",
+        label: "Candidate-se a uma aventura",
         done: (appsCount ?? 0) > 0 || claimedSet.has("apply"),
         action: () => navigate("/dashboard/explorar"),
         actionLabel: "Encontrar mesa",
         tokens: 2,
         xp: 75,
       },
+      {
+        id: "table",
+        label: "Crie sua primeira mesa como mestre",
+        done: (tablesCount ?? 0) > 0 || claimedSet.has("table"),
+        action: () => navigate("/dashboard/mesas"),
+        actionLabel: "Criar mesa",
+        tokens: 1,
+        xp: 75,
+      },
+      {
+        id: "tokens",
+        label: "Conheça os Tokens de impulsionamento",
+        done: tokensVisited || claimedSet.has("tokens"),
+        action: visitTokens,
+        actionLabel: "Ver Tokens",
+        tokens: 2,
+        xp: 50,
+      },
     ];
-  }, [profile, rewardsLoading, claimedSet, isMaster, tablesCount, appsCount, navigate, tokensVisited, exploreVisited, visitTokens, visitExplore]);
+  }, [profile, rewardsLoading, claimedSet, tablesCount, appsCount, navigate, tokensVisited, exploreVisited, visitTokens, visitExplore]);
 
   const completedCount = items.filter((i) => i.done).length;
   const allDone = items.length > 0 && completedCount === items.length;

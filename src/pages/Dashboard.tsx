@@ -192,7 +192,6 @@ const Dashboard = () => {
 
       <OnboardingModal
         open={showOnboarding}
-        userType={showMasterSection ? "master" : "player"}
         onComplete={() => completeOnboarding()}
       />
     </DashboardLayout>
