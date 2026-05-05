@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, Compass, Dice1, Inbox, MessageSquare, ScrollText, Sparkles, UserCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Compass, Dice1, MessageSquare, ScrollText, Sparkles, UserCircle } from "lucide-react";
 
 interface OnboardingStep {
   icon: React.ReactNode;
@@ -10,80 +10,52 @@ interface OnboardingStep {
   description: string;
 }
 
-const masterSteps: OnboardingStep[] = [
+const unifiedSteps: OnboardingStep[] = [
   {
     icon: <Sparkles className="h-10 w-10 text-primary" />,
-    title: "Bem-vindo, Mestre!",
+    title: "Bem-vindo à Caverna dos Dados!",
     description:
-      "A Caverna dos Dados é o seu portal pra reunir jogadores e conduzir aventuras inesquecíveis. Vamos te mostrar o essencial em alguns passos.",
-  },
-  {
-    icon: <UserCircle className="h-10 w-10 text-primary" />,
-    title: "1. Complete seu perfil",
-    description:
-      "Adicione seus sistemas favoritos, anos de experiência e ferramentas que usa. Quanto mais completo, mais jogadores se interessam pelas suas mesas.",
-  },
-  {
-    icon: <Dice1 className="h-10 w-10 text-primary" />,
-    title: "2. Crie sua primeira mesa",
-    description:
-      "Defina sistema, tema, plataforma e número de vagas. Sua primeira mesa ganha 24h de destaque grátis pra atrair jogadores!",
-  },
-  {
-    icon: <Inbox className="h-10 w-10 text-primary" />,
-    title: "3. Gerencie candidaturas",
-    description:
-      "Quando jogadores se candidatarem, você verá tudo na aba Gerenciar da mesa. Lá também controla sessões, regras e edita a campanha.",
-  },
-  {
-    icon: <Sparkles className="h-10 w-10 text-secondary" />,
-    title: "4. Use Tokens pra impulsionar",
-    description:
-      "Tokens destacam suas mesas no topo do Explorar e dão mais visibilidade. Você ganhou 3 tokens grátis ao se cadastrar!",
-  },
-];
-
-const playerSteps: OnboardingStep[] = [
-  {
-    icon: <Sparkles className="h-10 w-10 text-primary" />,
-    title: "Bem-vindo, Aventureiro!",
-    description:
-      "A Caverna dos Dados conecta você aos melhores mestres e mesas de RPG. Vamos te mostrar como começar sua próxima jornada.",
+      "Aqui você pode ser mestre, jogador, ou os dois. Tudo no mesmo perfil, sem precisar escolher um caminho. Vamos te mostrar como começar.",
   },
   {
     icon: <UserCircle className="h-10 w-10 text-primary" />,
     title: "1. Monte seu perfil",
     description:
-      "Conte seus sistemas favoritos, temas que curte e se prefere jogar online ou presencial. Mestres olham isso ao avaliar candidaturas.",
+      "Conte seus sistemas favoritos, temas que curte, experiência e ferramentas que usa. Quanto mais completo, melhor combinam mestres e jogadores com você.",
   },
   {
     icon: <Compass className="h-10 w-10 text-primary" />,
     title: "2. Explore mesas",
     description:
-      "Filtre por sistema, tema, plataforma e preço pra encontrar a aventura ideal. Salve mesas e descubra novidades sempre que quiser.",
+      "Filtre por sistema, tema, plataforma e preço pra encontrar aventuras. Salve favoritas e candidate-se às que combinam com você.",
+  },
+  {
+    icon: <Dice1 className="h-10 w-10 text-primary" />,
+    title: "3. Crie sua mesa quando quiser",
+    description:
+      "Quer mestrar? É só ir em Minhas Mesas e abrir uma aventura. Defina sistema, vagas e plataforma — sua primeira mesa ganha destaque grátis.",
   },
   {
     icon: <ScrollText className="h-10 w-10 text-primary" />,
-    title: "3. Candidate-se",
+    title: "4. Acompanhe suas aventuras",
     description:
-      "Encontrou uma mesa? Mande uma candidatura com uma mensagem caprichada. Você pode ter até 3 candidaturas pendentes ao mesmo tempo.",
+      "O Dashboard mostra suas mesas como mestre e como jogador no mesmo lugar: candidaturas, próximas sessões e mensagens do grupo.",
   },
   {
     icon: <MessageSquare className="h-10 w-10 text-secondary" />,
-    title: "4. Aproveite a aventura",
+    title: "5. Use Tokens pra se destacar",
     description:
-      "Quando aceito, acesse o painel da mesa pra conversar com o grupo, ler relatórios das sessões e acompanhar a campanha em tempo real.",
+      "Tokens impulsionam suas mesas no Explorar e dão prioridade nas candidaturas. Você ganhou tokens grátis ao se cadastrar!",
   },
 ];
 
 interface OnboardingModalProps {
   open: boolean;
-  userType: "master" | "player";
   onComplete: () => void;
 }
 
-export const OnboardingModal = ({ open, userType, onComplete }: OnboardingModalProps) => {
-  const steps = userType === "master" ? masterSteps : playerSteps;
+export const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
+  const steps = unifiedSteps;
   const [current, setCurrent] = useState(0);
   const isLast = current === steps.length - 1;
   const step = steps[current];
