@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Circle, Gem, Sparkles, X, Zap } from "lucide-react";
+import { CheckCircle2, Circle, Gem, HelpCircle, Sparkles, X, Zap } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -18,6 +19,7 @@ interface ChecklistItem {
   actionLabel: string;
   tokens: number;
   xp: number;
+  hint: string;
 }
 
 const DISMISS_KEY = "onboarding_checklist_dismissed";
@@ -139,6 +141,7 @@ export const OnboardingChecklist = () => {
         actionLabel: "Editar perfil",
         tokens: 1,
         xp: 50,
+        hint: "No menu lateral esquerdo, clique em \"Perfil\" e depois em \"Editar perfil\". Preencha sua bio e selecione ao menos um sistema ou tema favorito.",
       },
       {
         id: "explore",
@@ -148,6 +151,7 @@ export const OnboardingChecklist = () => {
         actionLabel: "Explorar",
         tokens: 1,
         xp: 50,
+        hint: "No menu lateral, clique em \"Explorar Mesas\". Use os filtros no topo (sistema, tema, plataforma) para encontrar aventuras.",
       },
       {
         id: "apply",
@@ -157,6 +161,7 @@ export const OnboardingChecklist = () => {
         actionLabel: "Encontrar mesa",
         tokens: 2,
         xp: 75,
+        hint: "Em \"Explorar Mesas\", abra um card de mesa e clique no botão \"Candidatar-se\". Escreva uma mensagem curta para o mestre.",
       },
       {
         id: "table",
@@ -166,6 +171,7 @@ export const OnboardingChecklist = () => {
         actionLabel: "Criar mesa",
         tokens: 1,
         xp: 75,
+        hint: "No menu lateral, clique em \"Minhas Mesas\" e depois no botão \"Criar mesa\" no canto superior direito.",
       },
       {
         id: "tokens",
@@ -175,6 +181,7 @@ export const OnboardingChecklist = () => {
         actionLabel: "Ver Tokens",
         tokens: 2,
         xp: 50,
+        hint: "No menu lateral, clique em \"Loja de Tokens\". Você também vê seu saldo no canto superior direito da tela, ao lado do sino de notificações.",
       },
     ];
   }, [profile, rewardsLoading, claimedSet, tablesCount, appsCount, navigate, tokensVisited, exploreVisited, visitTokens, visitExplore]);
@@ -205,6 +212,7 @@ export const OnboardingChecklist = () => {
   };
 
   return (
+    <TooltipProvider delayDuration={150}>
     <Card className="bg-gradient-to-br from-card to-card/50 border-primary/40 relative">
       <button
         onClick={handleDismiss}
@@ -237,15 +245,38 @@ export const OnboardingChecklist = () => {
                 <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
               )}
               <div className="min-w-0 flex flex-col">
-                <span
-                  className={
-                    item.done
-                      ? "text-sm text-muted-foreground line-through"
-                      : "text-sm font-medium"
-                  }
-                >
-                  {item.label}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={
+                      item.done
+                        ? "text-sm text-muted-foreground line-through"
+                        : "text-sm font-medium"
+                    }
+                  >
+                    {item.label}
+                  </span>
+                  {!item.done && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label={`Dica: ${item.label}`}
+                          className="text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          <HelpCircle className="h-3.5 w-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
+                        {item.hint}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
+                {!item.done && (
+                  <span className="text-[11px] text-muted-foreground/80 mt-0.5 leading-snug">
+                    {item.hint}
+                  </span>
+                )}
                 <span className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
                   <span className="inline-flex items-center gap-1">
                     <Gem className="h-3 w-3 text-primary" />+{item.tokens}
@@ -265,5 +296,6 @@ export const OnboardingChecklist = () => {
         ))}
       </CardContent>
     </Card>
+    </TooltipProvider>
   );
 };
