@@ -10,6 +10,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOnboardingRewards, type OnboardingStepKey } from "@/hooks/useOnboardingRewards";
+import { START_PATH_KEY, type StartPath } from "@/components/OnboardingModal";
 
 interface ChecklistItem {
   id: OnboardingStepKey;
@@ -20,6 +21,7 @@ interface ChecklistItem {
   tokens: number;
   xp: number;
   hint: string;
+  priority: number;
 }
 
 const DISMISS_KEY = "onboarding_checklist_dismissed";
@@ -61,12 +63,21 @@ export const OnboardingChecklist = () => {
     }
   });
 
+  const [startPath, setStartPath] = useState<StartPath | null>(() => {
+    try {
+      return (localStorage.getItem(START_PATH_KEY) as StartPath | null) ?? null;
+    } catch {
+      return null;
+    }
+  });
+
   useEffect(() => {
     const onStorage = () => {
       try {
         setTokensVisited(localStorage.getItem(TOKENS_VISITED_KEY) === "1");
         setExploreVisited(localStorage.getItem(EXPLORE_VISITED_KEY) === "1");
         setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
+        setStartPath((localStorage.getItem(START_PATH_KEY) as StartPath | null) ?? null);
       } catch {
         // ignore
       }
@@ -132,7 +143,11 @@ export const OnboardingChecklist = () => {
     );
 
     // Unified checklist: every user sees both paths (master + player).
-    return [
+    // Priorities reorder based on the path chosen in onboarding (lower = first).
+    const playerFirst = startPath === "player" || startPath === "both" || startPath === null;
+    const masterFirst = startPath === "master";
+
+    const base: ChecklistItem[] = [
       {
         id: "profile",
         label: "Complete seu perfil",
@@ -142,6 +157,7 @@ export const OnboardingChecklist = () => {
         tokens: 1,
         xp: 50,
         hint: "No menu lateral esquerdo, clique em \"Perfil\" e depois em \"Editar perfil\". Preencha sua bio e selecione ao menos um sistema ou tema favorito.",
+        priority: 0,
       },
       {
         id: "explore",
@@ -152,6 +168,7 @@ export const OnboardingChecklist = () => {
         tokens: 1,
         xp: 50,
         hint: "No menu lateral, clique em \"Explorar Mesas\". Use os filtros no topo (sistema, tema, plataforma) para encontrar aventuras.",
+        priority: playerFirst ? 1 : 4,
       },
       {
         id: "apply",
@@ -162,6 +179,7 @@ export const OnboardingChecklist = () => {
         tokens: 2,
         xp: 75,
         hint: "Em \"Explorar Mesas\", abra um card de mesa e clique no botão \"Candidatar-se\". Escreva uma mensagem curta para o mestre.",
+        priority: playerFirst ? 2 : 5,
       },
       {
         id: "table",
@@ -172,6 +190,7 @@ export const OnboardingChecklist = () => {
         tokens: 1,
         xp: 75,
         hint: "No menu lateral, clique em \"Minhas Mesas\" e depois no botão \"Criar mesa\" no canto superior direito.",
+        priority: masterFirst ? 1 : 3,
       },
       {
         id: "tokens",
@@ -182,9 +201,16 @@ export const OnboardingChecklist = () => {
         tokens: 2,
         xp: 50,
         hint: "No menu lateral, clique em \"Loja de Tokens\". Você também vê seu saldo no canto superior direito da tela, ao lado do sino de notificações.",
+        priority: 6,
       },
     ];
-  }, [profile, rewardsLoading, claimedSet, tablesCount, appsCount, navigate, tokensVisited, exploreVisited, visitTokens, visitExplore]);
+
+    // Sort: incomplete by priority first; completed at the bottom.
+    return base.sort((a, b) => {
+      if (a.done !== b.done) return a.done ? 1 : -1;
+      return a.priority - b.priority;
+    });
+  }, [profile, rewardsLoading, claimedSet, tablesCount, appsCount, navigate, tokensVisited, exploreVisited, visitTokens, visitExplore, startPath]);
 
   const completedCount = items.filter((i) => i.done).length;
   const allDone = items.length > 0 && completedCount === items.length;
@@ -229,6 +255,14 @@ export const OnboardingChecklist = () => {
         <CardDescription>
           {completedCount} de {items.length} concluído
           {completedCount === 1 ? "" : "s"}
+          {startPath && (
+            <>
+              {" · "}
+              <span className="text-primary">
+                Foco: {startPath === "master" ? "Mestrar" : startPath === "player" ? "Jogar" : "Explorar tudo"}
+              </span>
+            </>
+          )}
         </CardDescription>
         <Progress value={progress} className="h-1.5 mt-2" />
       </CardHeader>
