@@ -2,7 +2,11 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, Compass, Dice1, MessageSquare, ScrollText, Sparkles, UserCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Compass, Dice1, MessageSquare, ScrollText, Sparkles, UserCircle, Dices, Users, Wand2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export type StartPath = "player" | "master" | "both";
+export const START_PATH_KEY = "onboarding_start_path";
 
 interface OnboardingStep {
   icon: React.ReactNode;
@@ -57,12 +61,38 @@ interface OnboardingModalProps {
 export const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
   const steps = unifiedSteps;
   const [current, setCurrent] = useState(0);
+  const [startPath, setStartPath] = useState<StartPath | null>(() => {
+    try {
+      return (localStorage.getItem(START_PATH_KEY) as StartPath | null) ?? null;
+    } catch {
+      return null;
+    }
+  });
+  // Question step appears after the welcome (index 0), so total = steps.length + 1.
+  const QUESTION_INDEX = 1;
+  const totalSteps = steps.length + 1;
+  const isQuestion = current === QUESTION_INDEX;
+  // Map current -> step index in unifiedSteps (skip question slot).
+  const stepIndex = current === 0 ? 0 : current - 1;
   const isLast = current === steps.length - 1;
   const step = steps[current];
-  const progress = ((current + 1) / steps.length) * 100;
+  const stepForRender = isQuestion ? null : steps[stepIndex];
+  const isLastReal = current === totalSteps - 1;
+  const progress = ((current + 1) / totalSteps) * 100;
+
+  const choosePath = (p: StartPath) => {
+    setStartPath(p);
+    try {
+      localStorage.setItem(START_PATH_KEY, p);
+      // Trigger storage listeners in same tab (checklist listens to it).
+      window.dispatchEvent(new StorageEvent("storage", { key: START_PATH_KEY }));
+    } catch {
+      // ignore
+    }
+  };
 
   const handleNext = () => {
-    if (isLast) {
+    if (isLastReal) {
       onComplete();
     } else {
       setCurrent((c) => c + 1);
@@ -74,18 +104,57 @@ export const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onComplete()}>
       <DialogContent className="max-w-md">
-        <DialogHeader>
-          <div className="flex justify-center mb-2">{step.icon}</div>
-          <DialogTitle className="text-center text-2xl">{step.title}</DialogTitle>
-          <DialogDescription className="text-center text-base pt-2">
-            {step.description}
-          </DialogDescription>
-        </DialogHeader>
+        {isQuestion ? (
+          <>
+            <DialogHeader>
+              <div className="flex justify-center mb-2">
+                <Wand2 className="h-10 w-10 text-primary" />
+              </div>
+              <DialogTitle className="text-center text-2xl">
+                Por onde você quer começar?
+              </DialogTitle>
+              <DialogDescription className="text-center text-base pt-2">
+                Vamos priorizar as próximas etapas pra você. Você pode mudar quando quiser.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-2 pt-2">
+              <PathOption
+                icon={<Users className="h-5 w-5" />}
+                title="Quero jogar"
+                description="Explorar mesas e me candidatar a aventuras"
+                selected={startPath === "player"}
+                onClick={() => choosePath("player")}
+              />
+              <PathOption
+                icon={<Dices className="h-5 w-5" />}
+                title="Quero mestrar"
+                description="Criar minha mesa e receber jogadores"
+                selected={startPath === "master"}
+                onClick={() => choosePath("master")}
+              />
+              <PathOption
+                icon={<Sparkles className="h-5 w-5" />}
+                title="Os dois"
+                description="Quero conhecer todos os caminhos da plataforma"
+                selected={startPath === "both"}
+                onClick={() => choosePath("both")}
+              />
+            </div>
+          </>
+        ) : (
+          <DialogHeader>
+            <div className="flex justify-center mb-2">{stepForRender!.icon}</div>
+            <DialogTitle className="text-center text-2xl">{stepForRender!.title}</DialogTitle>
+            <DialogDescription className="text-center text-base pt-2">
+              {stepForRender!.description}
+            </DialogDescription>
+          </DialogHeader>
+        )}
 
         <div className="space-y-2 pt-2">
           <Progress value={progress} className="h-1.5" />
           <p className="text-xs text-center text-muted-foreground">
-            Passo {current + 1} de {steps.length}
+            Passo {current + 1} de {totalSteps}
           </p>
         </div>
 
@@ -107,12 +176,45 @@ export const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
             Pular tour
           </button>
 
-          <Button size="sm" onClick={handleNext}>
-            {isLast ? "Começar!" : "Próximo"}
-            {!isLast && <ChevronRight className="h-4 w-4" />}
+          <Button size="sm" onClick={handleNext} disabled={isQuestion && !startPath}>
+            {isLastReal ? "Começar!" : "Próximo"}
+            {!isLastReal && <ChevronRight className="h-4 w-4" />}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
   );
 };
+
+const PathOption = ({
+  icon,
+  title,
+  description,
+  selected,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  selected: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      "flex items-start gap-3 text-left p-3 rounded-lg border transition-colors",
+      selected
+        ? "border-primary bg-primary/10"
+        : "border-border hover:border-primary/50 hover:bg-muted/30"
+    )}
+  >
+    <div className={cn("mt-0.5", selected ? "text-primary" : "text-muted-foreground")}>
+      {icon}
+    </div>
+    <div className="min-w-0">
+      <p className="font-medium text-sm">{title}</p>
+      <p className="text-xs text-muted-foreground">{description}</p>
+    </div>
+  </button>
+);
