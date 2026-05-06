@@ -74,8 +74,6 @@ export const OnboardingModal = ({ open, onComplete }: OnboardingModalProps) => {
   const isQuestion = current === QUESTION_INDEX;
   // Map current -> step index in unifiedSteps (skip question slot).
   const stepIndex = current === 0 ? 0 : current - 1;
-  const isLast = current === steps.length - 1;
-  const step = steps[current];
   const stepForRender = isQuestion ? null : steps[stepIndex];
   const isLastReal = current === totalSteps - 1;
   const progress = ((current + 1) / totalSteps) * 100;
