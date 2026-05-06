@@ -1078,11 +1078,12 @@ export type Database = {
           avatar_url: string
           created_at: string
           display_name: string
+          has_created_tables: boolean
+          has_player_activity: boolean
           id: string
           is_admin: boolean
           tables_count: number
           tokens_balance: number
-          user_type: string
           xp: number
         }[]
       }

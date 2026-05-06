@@ -303,8 +303,8 @@ export default function AdminModeracao() {
               <>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <MetricCard icon={<Users className="h-4 w-4" />} label="Usuários" value={metrics?.users_total ?? 0} hint={`+${metrics?.users_new_7d ?? 0} em 7d`} />
-                  <MetricCard icon={<ShieldCheck className="h-4 w-4" />} label="Mestres" value={metrics?.users_masters ?? 0} />
-                  <MetricCard icon={<UserPlus className="h-4 w-4" />} label="Jogadores" value={metrics?.users_players ?? 0} />
+                  <MetricCard icon={<ShieldCheck className="h-4 w-4" />} label="Criadores ativos" value={metrics?.users_active_creators ?? 0} hint="criaram ≥1 mesa" />
+                  <MetricCard icon={<UserPlus className="h-4 w-4" />} label="Jogadores ativos" value={metrics?.users_active_players ?? 0} hint="≥1 candidatura" />
                   <MetricCard icon={<Gamepad2 className="h-4 w-4" />} label="Mesas" value={metrics?.tables_total ?? 0} hint={`+${metrics?.tables_new_7d ?? 0} em 7d`} />
                   <MetricCard icon={<CheckCircle2 className="h-4 w-4 text-green-500" />} label="Mesas abertas" value={metrics?.tables_open ?? 0} />
                   <MetricCard icon={<ShieldAlert className="h-4 w-4 text-destructive" />} label="Em revisão" value={metrics?.tables_under_review ?? 0} />
@@ -353,7 +353,9 @@ export default function AdminModeracao() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-medium truncate">{u.display_name ?? "Sem nome"}</span>
-                          <Badge variant="outline" className="capitalize">{u.user_type}</Badge>
+                          {u.has_created_tables && <Badge variant="outline">Mestre</Badge>}
+                          {u.has_player_activity && <Badge variant="outline">Jogador</Badge>}
+                          {!u.has_created_tables && !u.has_player_activity && <Badge variant="outline" className="text-muted-foreground">Sem atividade</Badge>}
                           {u.is_admin && <Badge className="gap-1 bg-destructive/90"><Shield className="h-3 w-3" /> admin</Badge>}
                         </div>
                         <div className="text-xs text-muted-foreground flex gap-3 flex-wrap mt-0.5">
