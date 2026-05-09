@@ -35,7 +35,6 @@ import { ReportTableButton } from "@/components/ReportTableButton";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { useActiveTableBoosts } from "@/hooks/useTableBoosts";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserType } from "@/hooks/useUserType";
 import { formatPriceBRL, isFreeTable } from "@/lib/price";
 
 const ANY = "__any__";
@@ -44,7 +43,6 @@ const Explorar = () => {
   const navigate = useNavigate();
   const { boostsMap } = useActiveTableBoosts();
   const { user } = useAuth();
-  const { isMaster } = useUserType();
 
   const [system, setSystem] = useState<string>(ANY);
   const [theme, setTheme] = useState<string>(ANY);
@@ -436,7 +434,7 @@ const Explorar = () => {
 
                       {/* Ações */}
                       <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                        {!isMaster && (
+                        {table.master_id !== user?.id && (
                           <Button
                             size="default"
                             className="gap-2 w-full sm:flex-1 h-10 font-semibold"

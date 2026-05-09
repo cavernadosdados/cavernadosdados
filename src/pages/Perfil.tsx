@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { useUserType } from "@/hooks/useUserType";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
@@ -12,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
 import { Star, Clock, Dice1, MapPin, Gamepad2, Users, Monitor, Send, ScrollText } from "lucide-react";
 import { ReportTableButton } from "@/components/ReportTableButton";
@@ -43,9 +43,8 @@ const Perfil = () => {
   const [viewedCreatedAt, setViewedCreatedAt] = useState<string | null>(null);
   const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
 
-  const isMasterProfile = profile?.user_type === 'master';
-
-  // Fetch master's tables (only when viewing a master's profile)
+  // Always fetch tables this user mastered — capability is derived from data,
+  // not from a global role flag.
   const { data: masterTables } = useQuery({
     queryKey: ['master-tables', viewedUserId],
     queryFn: async () => {
@@ -57,7 +56,22 @@ const Perfil = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!viewedUserId && isMasterProfile,
+    enabled: !!viewedUserId,
+  });
+
+  // Count campaigns this user participated in as accepted player.
+  const { data: playerCampaignsCount } = useQuery({
+    queryKey: ['player-campaigns-count', viewedUserId],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('table_applications')
+        .select('id', { count: 'exact', head: true })
+        .eq('player_id', viewedUserId!)
+        .eq('status', 'accepted');
+      if (error) throw error;
+      return count ?? 0;
+    },
+    enabled: !!viewedUserId,
   });
 
   // For visiting players: which tables have they already applied to?
@@ -71,7 +85,7 @@ const Perfil = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && !isOwnProfile && isMasterProfile,
+    enabled: !!user && !isOwnProfile && (masterTables?.length ?? 0) > 0,
   });
 
   const getAppStatus = (tableId: string) =>
@@ -117,8 +131,20 @@ const Perfil = () => {
     }
   }, [isOwnProfile, user]);
 
-  const userType = profile?.user_type;
-  const isMaster = userType === 'master';
+  // Derived capabilities — anyone can be both a master and a player.
+  const masterTablesCount = masterTables?.length ?? 0;
+  const hasMasterContent =
+    masterTablesCount > 0 ||
+    (profile?.master_systems?.length ?? 0) > 0 ||
+    (profile?.apps_used?.length ?? 0) > 0 ||
+    (profile?.experience_years ?? 0) > 0 ||
+    !!profile?.discord_link;
+  const playerCount = playerCampaignsCount ?? 0;
+  const hasPlayerContent = playerCount > 0;
+
+  const masterFeedback = receivedFeedback.filter((f) => f.reviewer_role === 'player');
+  const playerFeedback = receivedFeedback.filter((f) => f.reviewer_role === 'master');
+
   const displayName = profile?.display_name || (isOwnProfile ? user?.email?.split('@')[0] : 'Usuário') || 'Usuário';
   const initials = displayName?.substring(0, 2).toUpperCase();
 
@@ -164,11 +190,25 @@ const Perfil = () => {
                 </Avatar>
                 <div className="text-center">
                   <h3 className="text-xl font-bold">{displayName}</h3>
-                  <Badge variant={isMaster ? 'default' : 'secondary'} className="mt-2">
-                    {isMaster ? 'Mestre' : 'Jogador'}
-                  </Badge>
-                  {!isMaster && viewedUserId && (
-                    <div className="mt-2 flex justify-center">
+                  <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+                    {hasMasterContent && (
+                      <Badge variant="default">
+                        {masterTablesCount > 0
+                          ? `Mestre de ${masterTablesCount} ${masterTablesCount === 1 ? 'mesa' : 'mesas'}`
+                          : 'Mestre'}
+                      </Badge>
+                    )}
+                    {hasPlayerContent && (
+                      <Badge variant="secondary">
+                        Jogador em {playerCount} {playerCount === 1 ? 'campanha' : 'campanhas'}
+                      </Badge>
+                    )}
+                    {!hasMasterContent && !hasPlayerContent && (
+                      <Badge variant="outline">Aventureiro</Badge>
+                    )}
+                  </div>
+                  {viewedUserId && (
+                    <div className="mt-3 flex justify-center">
                       <ReliabilityBadge playerId={viewedUserId} />
                     </div>
                   )}
@@ -188,18 +228,22 @@ const Perfil = () => {
                   <span className="text-sm">Membro desde {new Date(viewedCreatedAt).getFullYear()}</span>
                 </div>
               )}
-              {isMaster && profile?.experience_years !== null && profile?.experience_years !== undefined && (
+              {hasMasterContent && profile?.experience_years !== null && profile?.experience_years !== undefined && profile.experience_years > 0 && (
                 <div className="flex items-center gap-2">
                   <Dice1 className="h-4 w-4 text-primary" />
                   <span className="text-sm">{profile.experience_years} anos mestrando</span>
                 </div>
               )}
-              <div className="flex items-center gap-2">
-                <Dice1 className="h-4 w-4 text-primary" />
-                <span className="text-sm">
-                  {isMaster ? `${profile?.active_tables_count || 0} mesas ativas` : '0 aventuras jogadas'}
-                </span>
-              </div>
+              {(hasMasterContent || hasPlayerContent) && (
+                <div className="flex items-center gap-2">
+                  <Dice1 className="h-4 w-4 text-primary" />
+                  <span className="text-sm">
+                    {hasMasterContent && `${profile?.active_tables_count || masterTablesCount} mesas ativas`}
+                    {hasMasterContent && hasPlayerContent && ' • '}
+                    {hasPlayerContent && `${playerCount} ${playerCount === 1 ? 'aventura' : 'aventuras'} jogadas`}
+                  </span>
+                </div>
+              )}
               {isOwnProfile && (
                 <Button className="w-full mt-4" onClick={() => setEditDialogOpen(true)}>
                   Editar Perfil
@@ -223,20 +267,12 @@ const Perfil = () => {
                   </div>
                 )}
                 <div>
-                  <label className="text-sm font-medium">Tipo de Usuário</label>
-                  <p className="text-muted-foreground capitalize">
-                    {isMaster ? 'Mestre' : 'Jogador'}
-                  </p>
-                </div>
-                <div>
                   <label className="text-sm font-medium">Bio</label>
                   <p className="text-muted-foreground whitespace-pre-wrap">
                     {profile?.bio || (
                       <span className="italic text-muted-foreground/60">
                         {isOwnProfile
-                          ? (isMaster
-                            ? 'Adicione uma bio para contar sobre sua experiência como mestre...'
-                            : 'Adicione uma bio para contar sobre você...')
+                          ? 'Adicione uma bio para contar sobre você, sua experiência como mestre ou como jogador...'
                           : 'Sem bio cadastrada.'}
                       </span>
                     )}
@@ -283,14 +319,8 @@ const Perfil = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>
-                  {isMaster ? 'Sistemas e Temas' : 'Preferências'}
-                </CardTitle>
-                <CardDescription>
-                  {isMaster
-                    ? 'Sistemas que domina e temas preferidos'
-                    : 'Sistemas e temas de interesse'}
-                </CardDescription>
+                <CardTitle>Sistemas e Temas</CardTitle>
+                <CardDescription>Sistemas e temas que joga ou mestra</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -324,7 +354,7 @@ const Perfil = () => {
               </CardContent>
             </Card>
 
-            {isMaster && (
+            {hasMasterContent && (
               <>
                 <Card>
                   <CardHeader>
@@ -459,12 +489,14 @@ const Perfil = () => {
                     )}
                   </CardContent>
                 </Card>
+              </>
+            )}
 
-                <Card>
+            <Card>
                   <CardHeader>
                     <CardTitle>Avaliações</CardTitle>
                     <CardDescription>
-                      Feedbacks reais recebidos após sessões
+                      Feedbacks reais recebidos após sessões — separados por papel
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -490,39 +522,41 @@ const Perfil = () => {
                         Nenhuma avaliação disponível para você visualizar ainda.
                       </p>
                     ) : (
-                      receivedFeedback.map((feedback) => {
-                        const score = (feedback.rating_1 + feedback.rating_2 + feedback.rating_3) / 3;
-                        return (
-                          <div key={feedback.id} className="rounded-lg border border-border bg-background/40 p-4">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <div className="flex items-center gap-2">
-                                <Star className="h-4 w-4 fill-current text-primary" />
-                                <span className="text-sm font-semibold">{score.toFixed(1)}/5</span>
-                              </div>
-                              <span className="text-xs text-muted-foreground">
-                                Sessão #{feedback.session_number} • {new Date(feedback.created_at).toLocaleDateString('pt-BR')}
-                              </span>
-                            </div>
-                            {feedback.compliments && feedback.compliments.length > 0 && (
-                              <div className="mt-3 flex flex-wrap gap-2">
-                                {feedback.compliments.map((compliment) => (
-                                  <Badge key={compliment} variant="outline" className="text-xs">
-                                    {compliment}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-                            {feedback.comment && (
-                              <p className="mt-3 text-sm text-muted-foreground">“{feedback.comment}”</p>
-                            )}
-                          </div>
-                        );
-                      })
+                      <Tabs defaultValue={masterFeedback.length >= playerFeedback.length ? 'master' : 'player'}>
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="master">
+                            Como Mestre ({masterFeedback.length})
+                          </TabsTrigger>
+                          <TabsTrigger value="player">
+                            Como Jogador ({playerFeedback.length})
+                          </TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="master" className="space-y-3 mt-4">
+                          {masterFeedback.length === 0 ? (
+                            <p className="text-sm text-muted-foreground italic">
+                              Nenhuma avaliação como mestre ainda.
+                            </p>
+                          ) : (
+                            masterFeedback.map((feedback) => (
+                              <FeedbackItem key={feedback.id} feedback={feedback} />
+                            ))
+                          )}
+                        </TabsContent>
+                        <TabsContent value="player" className="space-y-3 mt-4">
+                          {playerFeedback.length === 0 ? (
+                            <p className="text-sm text-muted-foreground italic">
+                              Nenhuma avaliação como jogador ainda.
+                            </p>
+                          ) : (
+                            playerFeedback.map((feedback) => (
+                              <FeedbackItem key={feedback.id} feedback={feedback} />
+                            ))
+                          )}
+                        </TabsContent>
+                      </Tabs>
                     )}
                   </CardContent>
                 </Card>
-              </>
-            )}
           </div>
         </div>
 
@@ -532,7 +566,7 @@ const Perfil = () => {
             onOpenChange={setEditDialogOpen}
             profile={profile}
             userId={user?.id || ''}
-            isMaster={isMaster}
+            isMaster={hasMasterContent}
           />
         )}
 
@@ -546,6 +580,35 @@ const Perfil = () => {
         )}
       </div>
     </DashboardLayout>
+  );
+};
+
+const FeedbackItem = ({ feedback }: { feedback: ReceivedFeedback }) => {
+  const score = (feedback.rating_1 + feedback.rating_2 + feedback.rating_3) / 3;
+  return (
+    <div className="rounded-lg border border-border bg-background/40 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Star className="h-4 w-4 fill-current text-primary" />
+          <span className="text-sm font-semibold">{score.toFixed(1)}/5</span>
+        </div>
+        <span className="text-xs text-muted-foreground">
+          Sessão #{feedback.session_number} • {new Date(feedback.created_at).toLocaleDateString('pt-BR')}
+        </span>
+      </div>
+      {feedback.compliments && feedback.compliments.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {feedback.compliments.map((compliment) => (
+            <Badge key={compliment} variant="outline" className="text-xs">
+              {compliment}
+            </Badge>
+          ))}
+        </div>
+      )}
+      {feedback.comment && (
+        <p className="mt-3 text-sm text-muted-foreground">“{feedback.comment}”</p>
+      )}
+    </div>
   );
 };
 
