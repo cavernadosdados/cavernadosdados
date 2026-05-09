@@ -1,4 +1,4 @@
-import { Home, Dice1, MessageCircle, User, Gem, Settings, Crown, Compass, ScrollText, Shield, Trophy, Calendar, Wallet, Heart } from "lucide-react";
+import { Home, Dice1, MessageCircle, Gem, Crown, Compass, ScrollText, Shield, Trophy, Calendar, Heart } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -30,10 +30,7 @@ export function AppSidebar() {
     { title: "Taverna", url: "/dashboard/mensagens", icon: MessageCircle },
     { title: "Calendário", url: "/dashboard/calendario", icon: Calendar },
     { title: "Conquistas", url: "/dashboard/conquistas", icon: Trophy },
-    { title: "Perfil", url: "/dashboard/perfil", icon: User },
     { title: "Loja de Tokens", url: "/dashboard/tokens", icon: Gem },
-    { title: "Financeiro", url: "/dashboard/financeiro", icon: Wallet },
-    { title: "Configurações", url: "/dashboard/configuracoes", icon: Settings },
   ];
 
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
