@@ -77,6 +77,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                     <DropdownMenuItem onClick={() => navigate('/dashboard/perfil')}>
                       Perfil
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/dashboard/financeiro')}>
+                      Financeiro
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/dashboard/configuracoes')}>
                       Configurações
                     </DropdownMenuItem>
