@@ -22,6 +22,7 @@ export function AppSidebar() {
   const { user } = useAuth();
   const { data: isAdmin } = useIsAdmin();
   const collapsed = state === "collapsed";
+  const location = useLocation();
 
   const groups: { label: string; items: { title: string; url: string; icon: any }[] }[] = [
     {
@@ -56,21 +57,35 @@ export function AppSidebar() {
     },
   ];
 
+  const isRouteInGroup = (items: { url: string }[]) =>
+    items.some((item) => location.pathname === item.url);
+
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    groups.forEach((group) => {
+      initial[group.label] = isRouteInGroup(group.items);
+    });
+    if (isAdmin) initial["Admin"] = location.pathname === "/dashboard/admin/moderacao";
+    return initial;
+  });
+
+  const toggleGroup = (label: string) => {
+    if (collapsed) return;
+    setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
+
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive 
-      ? "bg-sidebar-accent text-sidebar-primary font-medium border-l-2 border-sidebar-primary" 
+    isActive
+      ? "bg-sidebar-accent text-sidebar-primary font-medium border-l-2 border-sidebar-primary"
       : "hover:bg-sidebar-accent/50 hover:text-sidebar-primary";
 
   return (
-    <Sidebar
-      className={collapsed ? "w-14" : "w-60"}
-      collapsible="icon"
-    >
+    <Sidebar className={collapsed ? "w-14" : "w-60"} collapsible="icon">
       <SidebarContent className="bg-sidebar border-r border-sidebar-border">
         <div className="p-4 flex items-center justify-center border-b border-sidebar-border">
-          <img 
-            src={logoDragon} 
-            alt="Caverna dos Dados" 
+          <img
+            src={logoDragon}
+            alt="Caverna dos Dados"
             className={`transition-all ${collapsed ? "h-8" : "h-12"}`}
           />
         </div>
@@ -80,43 +95,79 @@ export function AppSidebar() {
             key={group.label}
             className={idx > 0 ? "border-t border-sidebar-border/50 mt-1 pt-2" : ""}
           >
-            <SidebarGroupLabel className="text-sidebar-foreground/60 uppercase text-[10px] tracking-wider">
-              {!collapsed && group.label}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink to={item.url} end={item.url === "/dashboard"} className={getNavCls}>
-                        <item.icon className="h-4 w-4" />
-                        {!collapsed && <span>{item.title}</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
+            <Collapsible
+              open={collapsed ? false : openGroups[group.label]}
+              onOpenChange={() => toggleGroup(group.label)}
+            >
+              <CollapsibleTrigger asChild>
+                <SidebarGroupLabel className="text-sidebar-foreground/60 uppercase text-[10px] tracking-wider flex items-center justify-between w-full cursor-pointer select-none hover:text-sidebar-foreground transition-colors">
+                  {!collapsed && (
+                    <>
+                      <span>{group.label}</span>
+                      <ChevronDown
+                        className={`h-3 w-3 transition-transform duration-200 ${
+                          openGroups[group.label] ? "rotate-180" : ""
+                        }`}
+                      />
+                    </>
+                  )}
+                </SidebarGroupLabel>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {group.items.map((item) => (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton asChild>
+                          <NavLink to={item.url} end={item.url === "/dashboard"} className={getNavCls}>
+                            <item.icon className="h-4 w-4" />
+                            {!collapsed && <span>{item.title}</span>}
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </Collapsible>
           </SidebarGroup>
         ))}
 
         {isAdmin && (
           <SidebarGroup className="border-t border-sidebar-border/50 mt-1 pt-2">
-            <SidebarGroupLabel className="text-sidebar-foreground/60 uppercase text-[10px] tracking-wider">
-              {!collapsed && "Admin"}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <NavLink to="/dashboard/admin/moderacao" className={getNavCls}>
-                      <Shield className="h-4 w-4" />
-                      {!collapsed && <span>Moderação</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
+            <Collapsible
+              open={collapsed ? false : openGroups["Admin"]}
+              onOpenChange={() => toggleGroup("Admin")}
+            >
+              <CollapsibleTrigger asChild>
+                <SidebarGroupLabel className="text-sidebar-foreground/60 uppercase text-[10px] tracking-wider flex items-center justify-between w-full cursor-pointer select-none hover:text-sidebar-foreground transition-colors">
+                  {!collapsed && (
+                    <>
+                      <span>Admin</span>
+                      <ChevronDown
+                        className={`h-3 w-3 transition-transform duration-200 ${
+                          openGroups["Admin"] ? "rotate-180" : ""
+                        }`}
+                      />
+                    </>
+                  )}
+                </SidebarGroupLabel>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <NavLink to="/dashboard/admin/moderacao" className={getNavCls}>
+                          <Shield className="h-4 w-4" />
+                          {!collapsed && <span>Moderação</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </Collapsible>
           </SidebarGroup>
         )}
       </SidebarContent>
