@@ -778,7 +778,10 @@ const AdventurePanel = () => {
           </TabsContent>
 
           {/* ===== REGRAS & LIMITES ===== */}
-          <TabsContent value="rules" className="space-y-6">
+          {/* ===== CONTRATO SOCIAL (Regras & Limites + Logística) ===== */}
+          <TabsContent value="social" className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-2 items-start">
+            <div className="space-y-6">
             <Card className="border-border bg-card/60">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -931,19 +934,8 @@ const AdventurePanel = () => {
               </CardContent>
             </Card>
 
-            {isMaster && (
-              <div className="flex justify-end">
-                <Button onClick={handleSave} disabled={saving} className="gap-2">
-                  <Save className="h-4 w-4" />
-                  {saving ? "Salvando..." : "Salvar Alterações"}
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* ===== LOGÍSTICA ===== */}
-          <TabsContent value="logistics" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
+            </div>
+            <div className="space-y-6">
               <Card className="border-border bg-card/60">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
@@ -1062,6 +1054,7 @@ const AdventurePanel = () => {
                   )}
                 </CardContent>
               </Card>
+            </div>
             </div>
 
             {isMaster && (
