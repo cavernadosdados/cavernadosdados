@@ -604,13 +604,9 @@ const AdventurePanel = () => {
                 <Target className="h-4 w-4" />
                 Visão Geral
               </TabsTrigger>
-              <TabsTrigger value="rules" className="gap-1 min-h-10">
+              <TabsTrigger value="social" className="gap-1 min-h-10">
                 <Gavel className="h-4 w-4" />
-                Regras & Limites
-              </TabsTrigger>
-              <TabsTrigger value="logistics" className="gap-1 min-h-10">
-                <UserX className="h-4 w-4" />
-                Logística
+                Contrato Social
               </TabsTrigger>
               <TabsTrigger value="diary" className="gap-1 min-h-10">
                 <BookOpen className="h-4 w-4" />
