@@ -24,6 +24,7 @@ import { useMarkMesaChatRead } from "@/hooks/useUnreadMesaChat";
 import { EditTableForm } from "@/components/EditTableForm";
 import { TableApplicationsList } from "@/components/TableApplicationsList";
 import { NextSessionCard } from "@/components/NextSessionCard";
+import { CampaignDashboard } from "@/components/CampaignDashboard";
 
 // Chip presets for quick-fill multi-select
 const CHIPS = {
@@ -132,6 +133,7 @@ const AdventurePanel = () => {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmEndOpen, setConfirmEndOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [feedbackTarget, setFeedbackTarget] = useState<string>("");
   const [feedbackTargetName, setFeedbackTargetName] = useState<string>("");
@@ -597,7 +599,7 @@ const AdventurePanel = () => {
 
       {/* Content */}
       <main className="flex-1 p-3 sm:p-6 max-w-screen-xl mx-auto w-full overflow-x-hidden">
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="overflow-x-auto scrollbar-hide -mx-3 sm:mx-0 mb-6">
             <TabsList className="w-max sm:w-full sm:justify-start bg-card border border-border mx-3 sm:mx-0">
               <TabsTrigger value="overview" className="gap-1 min-h-10">
@@ -639,6 +641,17 @@ const AdventurePanel = () => {
 
           {/* ===== VISÃO GERAL ===== */}
           <TabsContent value="overview" className="space-y-6">
+            {tableId && (
+              <CampaignDashboard
+                tableId={tableId}
+                isMaster={isMaster}
+                nextSessionDate={(campaign as any)?.next_session_date ?? null}
+                scheduleTime={form.schedule_time}
+                acceptedPlayers={acceptedPlayers as any}
+                maxPlayers={table.max_players}
+                onGoToTab={setActiveTab}
+              />
+            )}
             {/* Informações da Mesa (criadas no cadastro) */}
             <Card className="border-primary/20 bg-card/60">
               <CardHeader className="pb-3">
