@@ -365,8 +365,8 @@ function NpcDialog({
     setSaving(true);
     const payload = { ...form, table_id: tableId };
     const { error } = editing
-      ? await supabase.from("lore_npcs").update(payload).eq("id", editing.id)
-      : await supabase.from("lore_npcs").insert([payload]);
+      ? await supabase.from("lore_npcs").update(payload as any).eq("id", editing.id)
+      : await supabase.from("lore_npcs").insert([payload as any]);
     setSaving(false);
     if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
     toast({ title: "Salvo!" });
@@ -589,8 +589,8 @@ function LocationDialog({
     setSaving(true);
     const payload = { ...form, table_id: tableId };
     const { error } = editing
-      ? await supabase.from("lore_locations").update(payload).eq("id", editing.id)
-      : await supabase.from("lore_locations").insert([payload]);
+      ? await supabase.from("lore_locations").update(payload as any).eq("id", editing.id)
+      : await supabase.from("lore_locations").insert([payload as any]);
     setSaving(false);
     if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
     onSaved();
@@ -847,8 +847,8 @@ function FactionDialog({
       table_id: tableId,
     };
     const { error } = editing
-      ? await supabase.from("lore_factions").update(payload).eq("id", editing.id)
-      : await supabase.from("lore_factions").insert([payload]);
+      ? await supabase.from("lore_factions").update(payload as any).eq("id", editing.id)
+      : await supabase.from("lore_factions").insert([payload as any]);
     setSaving(false);
     if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
     onSaved();
@@ -1047,8 +1047,8 @@ function ItemDialog({
     setSaving(true);
     const payload = { ...form, table_id: tableId };
     const { error } = editing
-      ? await supabase.from("lore_items").update(payload).eq("id", editing.id)
-      : await supabase.from("lore_items").insert([payload]);
+      ? await supabase.from("lore_items").update(payload as any).eq("id", editing.id)
+      : await supabase.from("lore_items").insert([payload as any]);
     setSaving(false);
     if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
     onSaved();
@@ -1259,8 +1259,8 @@ function TimelineDialog({
       table_id: tableId,
     };
     const { error } = editing
-      ? await supabase.from("lore_timeline").update(payload).eq("id", editing.id)
-      : await supabase.from("lore_timeline").insert([payload]);
+      ? await supabase.from("lore_timeline").update(payload as any).eq("id", editing.id)
+      : await supabase.from("lore_timeline").insert([payload as any]);
     setSaving(false);
     if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
     onSaved();
@@ -1440,8 +1440,8 @@ function CodexDialog({
     setSaving(true);
     const payload = { ...form, table_id: tableId };
     const { error } = editing
-      ? await supabase.from("lore_codex").update(payload).eq("id", editing.id)
-      : await supabase.from("lore_codex").insert([payload]);
+      ? await supabase.from("lore_codex").update(payload as any).eq("id", editing.id)
+      : await supabase.from("lore_codex").insert([payload as any]);
     setSaving(false);
     if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
     onSaved();
