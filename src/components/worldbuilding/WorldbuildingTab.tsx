@@ -366,7 +366,7 @@ function NpcDialog({
     const payload = { ...form, table_id: tableId };
     const { error } = editing
       ? await supabase.from("lore_npcs").update(payload).eq("id", editing.id)
-      : await supabase.from("lore_npcs").insert(payload);
+      : await supabase.from("lore_npcs").insert([payload]);
     setSaving(false);
     if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
     toast({ title: "Salvo!" });
@@ -590,7 +590,7 @@ function LocationDialog({
     const payload = { ...form, table_id: tableId };
     const { error } = editing
       ? await supabase.from("lore_locations").update(payload).eq("id", editing.id)
-      : await supabase.from("lore_locations").insert(payload);
+      : await supabase.from("lore_locations").insert([payload]);
     setSaving(false);
     if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
     onSaved();
@@ -848,7 +848,7 @@ function FactionDialog({
     };
     const { error } = editing
       ? await supabase.from("lore_factions").update(payload).eq("id", editing.id)
-      : await supabase.from("lore_factions").insert(payload);
+      : await supabase.from("lore_factions").insert([payload]);
     setSaving(false);
     if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
     onSaved();
@@ -1048,7 +1048,7 @@ function ItemDialog({
     const payload = { ...form, table_id: tableId };
     const { error } = editing
       ? await supabase.from("lore_items").update(payload).eq("id", editing.id)
-      : await supabase.from("lore_items").insert(payload);
+      : await supabase.from("lore_items").insert([payload]);
     setSaving(false);
     if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
     onSaved();
@@ -1260,7 +1260,7 @@ function TimelineDialog({
     };
     const { error } = editing
       ? await supabase.from("lore_timeline").update(payload).eq("id", editing.id)
-      : await supabase.from("lore_timeline").insert(payload);
+      : await supabase.from("lore_timeline").insert([payload]);
     setSaving(false);
     if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
     onSaved();
@@ -1441,7 +1441,7 @@ function CodexDialog({
     const payload = { ...form, table_id: tableId };
     const { error } = editing
       ? await supabase.from("lore_codex").update(payload).eq("id", editing.id)
-      : await supabase.from("lore_codex").insert(payload);
+      : await supabase.from("lore_codex").insert([payload]);
     setSaving(false);
     if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
     onSaved();
