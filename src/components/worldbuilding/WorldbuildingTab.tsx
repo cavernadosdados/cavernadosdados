@@ -1,0 +1,1482 @@
+import { useState, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Users,
+  MapPin,
+  Flag,
+  Gem,
+  Clock3,
+  BookMarked,
+  Plus,
+  Pencil,
+  Trash2,
+  Search,
+  ArrowUp,
+  ArrowDown,
+  Skull,
+  HeartPulse,
+  HelpCircle,
+} from "lucide-react";
+
+type AnyRow = Record<string, any>;
+
+interface Props {
+  tableId: string;
+  isMaster: boolean;
+}
+
+const NPC_STATUSES = [
+  { value: "alive", label: "Vivo", icon: HeartPulse, className: "text-emerald-500" },
+  { value: "dead", label: "Morto", icon: Skull, className: "text-destructive" },
+  { value: "missing", label: "Desaparecido", icon: HelpCircle, className: "text-amber-500" },
+];
+
+const LOCATION_KINDS = [
+  { value: "city", label: "Cidade" },
+  { value: "dungeon", label: "Masmorra" },
+  { value: "region", label: "Região" },
+  { value: "landmark", label: "Marco" },
+  { value: "other", label: "Outro" },
+];
+
+const ITEM_STATUSES = [
+  { value: "unknown", label: "Desconhecido" },
+  { value: "found", label: "Encontrado" },
+  { value: "lost", label: "Perdido" },
+  { value: "destroyed", label: "Destruído" },
+];
+
+function useLore<T = AnyRow>(table: string, tableId: string, orderBy = "created_at", asc = false) {
+  return useQuery({
+    queryKey: [table, tableId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from(table as any)
+        .select("*")
+        .eq("table_id", tableId)
+        .order(orderBy, { ascending: asc });
+      if (error) throw error;
+      return (data ?? []) as T[];
+    },
+    enabled: !!tableId,
+  });
+}
+
+export function WorldbuildingTab({ tableId, isMaster }: Props) {
+  return (
+    <div className="space-y-4">
+      <Tabs defaultValue="npcs" className="w-full">
+        <div className="overflow-x-auto scrollbar-hide -mx-3 sm:mx-0">
+          <TabsList className="w-max sm:w-full sm:justify-start bg-card border border-border mx-3 sm:mx-0">
+            <TabsTrigger value="npcs" className="gap-1 min-h-10">
+              <Users className="h-4 w-4" /> NPCs
+            </TabsTrigger>
+            <TabsTrigger value="locations" className="gap-1 min-h-10">
+              <MapPin className="h-4 w-4" /> Locais
+            </TabsTrigger>
+            <TabsTrigger value="factions" className="gap-1 min-h-10">
+              <Flag className="h-4 w-4" /> Facções
+            </TabsTrigger>
+            <TabsTrigger value="items" className="gap-1 min-h-10">
+              <Gem className="h-4 w-4" /> Itens
+            </TabsTrigger>
+            <TabsTrigger value="timeline" className="gap-1 min-h-10">
+              <Clock3 className="h-4 w-4" /> Linha do Tempo
+            </TabsTrigger>
+            <TabsTrigger value="codex" className="gap-1 min-h-10">
+              <BookMarked className="h-4 w-4" /> Códex
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="npcs" className="mt-6">
+          <NpcsSection tableId={tableId} isMaster={isMaster} />
+        </TabsContent>
+        <TabsContent value="locations" className="mt-6">
+          <LocationsSection tableId={tableId} isMaster={isMaster} />
+        </TabsContent>
+        <TabsContent value="factions" className="mt-6">
+          <FactionsSection tableId={tableId} isMaster={isMaster} />
+        </TabsContent>
+        <TabsContent value="items" className="mt-6">
+          <ItemsSection tableId={tableId} isMaster={isMaster} />
+        </TabsContent>
+        <TabsContent value="timeline" className="mt-6">
+          <TimelineSection tableId={tableId} isMaster={isMaster} />
+        </TabsContent>
+        <TabsContent value="codex" className="mt-6">
+          <CodexSection tableId={tableId} isMaster={isMaster} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+/* ===========================================================
+ * Shared helpers
+ * =========================================================== */
+
+function SectionHeader({
+  title,
+  description,
+  count,
+  onAdd,
+  isMaster,
+  search,
+  setSearch,
+}: {
+  title: string;
+  description: string;
+  count: number;
+  onAdd?: () => void;
+  isMaster: boolean;
+  search: string;
+  setSearch: (s: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-4">
+      <div>
+        <h3 className="text-lg font-bold glow-gold">
+          {title} <span className="text-muted-foreground font-normal text-sm">({count})</span>
+        </h3>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+      <div className="flex gap-2 items-center">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar..."
+            className="pl-8 h-9 w-44 sm:w-56 bg-background/50"
+          />
+        </div>
+        {isMaster && onAdd && (
+          <Button size="sm" onClick={onAdd} className="gap-1">
+            <Plus className="h-4 w-4" /> Adicionar
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EmptyState({ children }: { children: React.ReactNode }) {
+  return (
+    <Card className="border-dashed border-border bg-card/40">
+      <CardContent className="py-10 text-center text-sm text-muted-foreground">
+        {children}
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ===========================================================
+ * NPCs
+ * =========================================================== */
+
+function NpcsSection({ tableId, isMaster }: Props) {
+  const qc = useQueryClient();
+  const { data = [] } = useLore("lore_npcs", tableId);
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState<AnyRow | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    const s = search.toLowerCase();
+    return data.filter(
+      (n: AnyRow) =>
+        !s ||
+        n.name?.toLowerCase().includes(s) ||
+        n.faction?.toLowerCase().includes(s) ||
+        n.description?.toLowerCase().includes(s),
+    );
+  }, [data, search]);
+
+  const remove = async (id: string) => {
+    if (!confirm("Remover este NPC?")) return;
+    const { error } = await supabase.from("lore_npcs").delete().eq("id", id);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["lore_npcs", tableId] });
+  };
+
+  return (
+    <div>
+      <SectionHeader
+        title="NPCs"
+        description="Personagens importantes do mundo, suas facções e relações."
+        count={data.length}
+        isMaster={isMaster}
+        search={search}
+        setSearch={setSearch}
+        onAdd={() => {
+          setEditing(null);
+          setOpen(true);
+        }}
+      />
+
+      {filtered.length === 0 ? (
+        <EmptyState>
+          Nenhum NPC ainda. {isMaster && "Adicione o primeiro com o botão acima."}
+        </EmptyState>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((n: AnyRow) => {
+            const status = NPC_STATUSES.find((s) => s.value === n.status) ?? NPC_STATUSES[0];
+            const StatusIcon = status.icon;
+            return (
+              <Card key={n.id} className="border-border bg-card/60 group">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-14 w-14 border border-primary/30">
+                      <AvatarImage src={n.portrait_url || undefined} alt={n.name} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                        {n.name?.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold truncate">{n.name}</div>
+                      <div className="flex items-center gap-1 text-xs">
+                        <StatusIcon className={`h-3 w-3 ${status.className}`} />
+                        <span className={status.className}>{status.label}</span>
+                      </div>
+                      {n.faction && (
+                        <Badge variant="outline" className="mt-1 text-xs">
+                          {n.faction}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  {n.relationship && (
+                    <div className="text-xs">
+                      <span className="text-muted-foreground">Relação: </span>
+                      <span className="text-foreground">{n.relationship}</span>
+                    </div>
+                  )}
+                  {n.description && (
+                    <p className="text-xs text-muted-foreground line-clamp-3 whitespace-pre-wrap">
+                      {n.description}
+                    </p>
+                  )}
+                  {isMaster && (
+                    <div className="flex gap-2 pt-2 border-t border-border">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => {
+                          setEditing(n);
+                          setOpen(true);
+                        }}
+                      >
+                        <Pencil className="h-3 w-3 mr-1" /> Editar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                        onClick={() => remove(n.id)}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" /> Remover
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      <NpcDialog
+        open={open}
+        onOpenChange={setOpen}
+        tableId={tableId}
+        editing={editing}
+        onSaved={() => qc.invalidateQueries({ queryKey: ["lore_npcs", tableId] })}
+      />
+    </div>
+  );
+}
+
+function NpcDialog({
+  open,
+  onOpenChange,
+  tableId,
+  editing,
+  onSaved,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  tableId: string;
+  editing: AnyRow | null;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState<AnyRow>({
+    name: "",
+    faction: "",
+    status: "alive",
+    relationship: "",
+    description: "",
+    portrait_url: "",
+  });
+  const [saving, setSaving] = useState(false);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useMemo(() => {
+    setForm(
+      editing ?? {
+        name: "",
+        faction: "",
+        status: "alive",
+        relationship: "",
+        description: "",
+        portrait_url: "",
+      },
+    );
+  }, [editing, open]);
+
+  const save = async () => {
+    if (!form.name?.trim()) return toast({ title: "Nome obrigatório", variant: "destructive" });
+    setSaving(true);
+    const payload = { ...form, table_id: tableId };
+    const { error } = editing
+      ? await supabase.from("lore_npcs").update(payload).eq("id", editing.id)
+      : await supabase.from("lore_npcs").insert(payload);
+    setSaving(false);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    toast({ title: "Salvo!" });
+    onSaved();
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{editing ? "Editar NPC" : "Novo NPC"}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>Nome *</Label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Facção</Label>
+              <Input
+                value={form.faction}
+                onChange={(e) => setForm({ ...form, faction: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Status</Label>
+              <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {NPC_STATUSES.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label>Relação com o grupo</Label>
+            <Input
+              value={form.relationship}
+              placeholder="Ex: Aliado, Rival, Mentor..."
+              onChange={(e) => setForm({ ...form, relationship: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label>URL do retrato</Label>
+            <Input
+              value={form.portrait_url}
+              placeholder="https://..."
+              onChange={(e) => setForm({ ...form, portrait_url: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label>Descrição</Label>
+            <Textarea
+              rows={4}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={save} disabled={saving}>
+            {saving ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ===========================================================
+ * Locations
+ * =========================================================== */
+
+function LocationsSection({ tableId, isMaster }: Props) {
+  const qc = useQueryClient();
+  const { data = [] } = useLore("lore_locations", tableId);
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState<AnyRow | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    const s = search.toLowerCase();
+    return data.filter(
+      (l: AnyRow) =>
+        !s || l.name?.toLowerCase().includes(s) || l.description?.toLowerCase().includes(s),
+    );
+  }, [data, search]);
+
+  const remove = async (id: string) => {
+    if (!confirm("Remover este local?")) return;
+    const { error } = await supabase.from("lore_locations").delete().eq("id", id);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["lore_locations", tableId] });
+  };
+
+  return (
+    <div>
+      <SectionHeader
+        title="Locais"
+        description="Cidades, masmorras, regiões e marcos do mundo."
+        count={data.length}
+        isMaster={isMaster}
+        search={search}
+        setSearch={setSearch}
+        onAdd={() => {
+          setEditing(null);
+          setOpen(true);
+        }}
+      />
+      {filtered.length === 0 ? (
+        <EmptyState>Nenhum local cadastrado.</EmptyState>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {filtered.map((l: AnyRow) => {
+            const kind = LOCATION_KINDS.find((k) => k.value === l.kind) ?? LOCATION_KINDS[0];
+            return (
+              <Card key={l.id} className="border-border bg-card/60">
+                <CardContent className="p-4 space-y-3">
+                  {l.map_url && (
+                    <img
+                      src={l.map_url}
+                      alt={l.name}
+                      className="rounded-md w-full max-h-48 object-cover border border-border"
+                    />
+                  )}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-semibold truncate flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-primary" /> {l.name}
+                      </div>
+                      <Badge variant="outline" className="mt-1 text-xs">
+                        {kind.label}
+                      </Badge>
+                    </div>
+                  </div>
+                  {l.description && (
+                    <p className="text-xs text-muted-foreground whitespace-pre-wrap">
+                      {l.description}
+                    </p>
+                  )}
+                  {isMaster && (
+                    <div className="flex gap-2 pt-2 border-t border-border">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => {
+                          setEditing(l);
+                          setOpen(true);
+                        }}
+                      >
+                        <Pencil className="h-3 w-3 mr-1" /> Editar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                        onClick={() => remove(l.id)}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" /> Remover
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+      <LocationDialog
+        open={open}
+        onOpenChange={setOpen}
+        tableId={tableId}
+        editing={editing}
+        onSaved={() => qc.invalidateQueries({ queryKey: ["lore_locations", tableId] })}
+      />
+    </div>
+  );
+}
+
+function LocationDialog({
+  open,
+  onOpenChange,
+  tableId,
+  editing,
+  onSaved,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  tableId: string;
+  editing: AnyRow | null;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState<AnyRow>({
+    name: "",
+    kind: "city",
+    description: "",
+    map_url: "",
+  });
+  const [saving, setSaving] = useState(false);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useMemo(() => {
+    setForm(editing ?? { name: "", kind: "city", description: "", map_url: "" });
+  }, [editing, open]);
+
+  const save = async () => {
+    if (!form.name?.trim()) return toast({ title: "Nome obrigatório", variant: "destructive" });
+    setSaving(true);
+    const payload = { ...form, table_id: tableId };
+    const { error } = editing
+      ? await supabase.from("lore_locations").update(payload).eq("id", editing.id)
+      : await supabase.from("lore_locations").insert(payload);
+    setSaving(false);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    onSaved();
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{editing ? "Editar Local" : "Novo Local"}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Nome *</Label>
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div>
+              <Label>Tipo</Label>
+              <Select value={form.kind} onValueChange={(v) => setForm({ ...form, kind: v })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LOCATION_KINDS.map((k) => (
+                    <SelectItem key={k.value} value={k.value}>
+                      {k.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label>URL do mapa/imagem</Label>
+            <Input
+              value={form.map_url}
+              placeholder="https://..."
+              onChange={(e) => setForm({ ...form, map_url: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label>Descrição</Label>
+            <Textarea
+              rows={5}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={save} disabled={saving}>
+            {saving ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ===========================================================
+ * Factions (with reputation meter)
+ * =========================================================== */
+
+function reputationLabel(rep: number) {
+  if (rep >= 75) return { label: "Aliado leal", className: "text-emerald-500" };
+  if (rep >= 25) return { label: "Amistoso", className: "text-emerald-400" };
+  if (rep >= -24) return { label: "Neutro", className: "text-muted-foreground" };
+  if (rep >= -74) return { label: "Hostil", className: "text-amber-500" };
+  return { label: "Inimigo jurado", className: "text-destructive" };
+}
+
+function FactionsSection({ tableId, isMaster }: Props) {
+  const qc = useQueryClient();
+  const { data = [] } = useLore("lore_factions", tableId);
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState<AnyRow | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    const s = search.toLowerCase();
+    return data.filter((f: AnyRow) => !s || f.name?.toLowerCase().includes(s));
+  }, [data, search]);
+
+  const updateRep = async (id: string, delta: number, current: number) => {
+    const next = Math.max(-100, Math.min(100, current + delta));
+    const { error } = await supabase.from("lore_factions").update({ reputation: next }).eq("id", id);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["lore_factions", tableId] });
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm("Remover esta facção?")) return;
+    const { error } = await supabase.from("lore_factions").delete().eq("id", id);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["lore_factions", tableId] });
+  };
+
+  return (
+    <div>
+      <SectionHeader
+        title="Facções"
+        description="Grupos do mundo e o nível de reputação do grupo com cada um."
+        count={data.length}
+        isMaster={isMaster}
+        search={search}
+        setSearch={setSearch}
+        onAdd={() => {
+          setEditing(null);
+          setOpen(true);
+        }}
+      />
+      {filtered.length === 0 ? (
+        <EmptyState>Nenhuma facção cadastrada.</EmptyState>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {filtered.map((f: AnyRow) => {
+            const rep = f.reputation ?? 0;
+            const tier = reputationLabel(rep);
+            const pct = ((rep + 100) / 200) * 100;
+            return (
+              <Card key={f.id} className="border-border bg-card/60">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-12 w-12 border border-primary/30">
+                      <AvatarImage src={f.symbol_url || undefined} alt={f.name} />
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        <Flag className="h-5 w-5" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold truncate">{f.name}</div>
+                      <div className={`text-xs font-medium ${tier.className}`}>{tier.label}</div>
+                    </div>
+                  </div>
+                  {f.description && (
+                    <p className="text-xs text-muted-foreground whitespace-pre-wrap line-clamp-3">
+                      {f.description}
+                    </p>
+                  )}
+                  <div>
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-muted-foreground">Reputação</span>
+                      <span className="font-mono font-semibold">{rep > 0 ? `+${rep}` : rep}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-background/60 border border-border overflow-hidden relative">
+                      <div
+                        className="absolute top-0 bottom-0 left-1/2 w-px bg-border z-10"
+                        aria-hidden
+                      />
+                      <div
+                        className={`h-full transition-all ${
+                          rep >= 0 ? "bg-emerald-500/70" : "bg-destructive/70"
+                        }`}
+                        style={{
+                          marginLeft: rep >= 0 ? "50%" : `${pct}%`,
+                          width: `${Math.abs(rep) / 2}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {isMaster && (
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => updateRep(f.id, -10, rep)}
+                      >
+                        <ArrowDown className="h-3 w-3 mr-1" /> -10
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => updateRep(f.id, 10, rep)}
+                      >
+                        <ArrowUp className="h-3 w-3 mr-1" /> +10
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs ml-auto"
+                        onClick={() => {
+                          setEditing(f);
+                          setOpen(true);
+                        }}
+                      >
+                        <Pencil className="h-3 w-3 mr-1" /> Editar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                        onClick={() => remove(f.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+      <FactionDialog
+        open={open}
+        onOpenChange={setOpen}
+        tableId={tableId}
+        editing={editing}
+        onSaved={() => qc.invalidateQueries({ queryKey: ["lore_factions", tableId] })}
+      />
+    </div>
+  );
+}
+
+function FactionDialog({
+  open,
+  onOpenChange,
+  tableId,
+  editing,
+  onSaved,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  tableId: string;
+  editing: AnyRow | null;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState<AnyRow>({
+    name: "",
+    description: "",
+    symbol_url: "",
+    reputation: 0,
+  });
+  const [saving, setSaving] = useState(false);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useMemo(() => {
+    setForm(editing ?? { name: "", description: "", symbol_url: "", reputation: 0 });
+  }, [editing, open]);
+
+  const save = async () => {
+    if (!form.name?.trim()) return toast({ title: "Nome obrigatório", variant: "destructive" });
+    setSaving(true);
+    const payload = {
+      ...form,
+      reputation: Number(form.reputation) || 0,
+      table_id: tableId,
+    };
+    const { error } = editing
+      ? await supabase.from("lore_factions").update(payload).eq("id", editing.id)
+      : await supabase.from("lore_factions").insert(payload);
+    setSaving(false);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    onSaved();
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{editing ? "Editar Facção" : "Nova Facção"}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>Nome *</Label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          </div>
+          <div>
+            <Label>URL do símbolo</Label>
+            <Input
+              value={form.symbol_url}
+              placeholder="https://..."
+              onChange={(e) => setForm({ ...form, symbol_url: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label>Reputação inicial (-100 a 100)</Label>
+            <Input
+              type="number"
+              min={-100}
+              max={100}
+              value={form.reputation}
+              onChange={(e) => setForm({ ...form, reputation: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label>Descrição</Label>
+            <Textarea
+              rows={4}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={save} disabled={saving}>
+            {saving ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ===========================================================
+ * Items
+ * =========================================================== */
+
+function ItemsSection({ tableId, isMaster }: Props) {
+  const qc = useQueryClient();
+  const { data = [] } = useLore("lore_items", tableId);
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState<AnyRow | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    const s = search.toLowerCase();
+    return data.filter(
+      (i: AnyRow) =>
+        !s || i.name?.toLowerCase().includes(s) || i.holder?.toLowerCase().includes(s),
+    );
+  }, [data, search]);
+
+  const remove = async (id: string) => {
+    if (!confirm("Remover este item?")) return;
+    const { error } = await supabase.from("lore_items").delete().eq("id", id);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["lore_items", tableId] });
+  };
+
+  return (
+    <div>
+      <SectionHeader
+        title="Itens lendários"
+        description="Artefatos e objetos importantes rastreados pela campanha."
+        count={data.length}
+        isMaster={isMaster}
+        search={search}
+        setSearch={setSearch}
+        onAdd={() => {
+          setEditing(null);
+          setOpen(true);
+        }}
+      />
+      {filtered.length === 0 ? (
+        <EmptyState>Nenhum item cadastrado.</EmptyState>
+      ) : (
+        <div className="grid gap-3">
+          {filtered.map((i: AnyRow) => {
+            const status = ITEM_STATUSES.find((s) => s.value === i.status) ?? ITEM_STATUSES[0];
+            return (
+              <Card key={i.id} className="border-border bg-card/60">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Gem className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold">{i.name}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {status.label}
+                        </Badge>
+                        {i.holder && (
+                          <span className="text-xs text-muted-foreground">
+                            • Em poder de <strong>{i.holder}</strong>
+                          </span>
+                        )}
+                      </div>
+                      {i.description && (
+                        <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">
+                          {i.description}
+                        </p>
+                      )}
+                    </div>
+                    {isMaster && (
+                      <div className="flex gap-1 shrink-0">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0"
+                          onClick={() => {
+                            setEditing(i);
+                            setOpen(true);
+                          }}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                          onClick={() => remove(i.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+      <ItemDialog
+        open={open}
+        onOpenChange={setOpen}
+        tableId={tableId}
+        editing={editing}
+        onSaved={() => qc.invalidateQueries({ queryKey: ["lore_items", tableId] })}
+      />
+    </div>
+  );
+}
+
+function ItemDialog({
+  open,
+  onOpenChange,
+  tableId,
+  editing,
+  onSaved,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  tableId: string;
+  editing: AnyRow | null;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState<AnyRow>({
+    name: "",
+    description: "",
+    status: "unknown",
+    holder: "",
+  });
+  const [saving, setSaving] = useState(false);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useMemo(() => {
+    setForm(editing ?? { name: "", description: "", status: "unknown", holder: "" });
+  }, [editing, open]);
+
+  const save = async () => {
+    if (!form.name?.trim()) return toast({ title: "Nome obrigatório", variant: "destructive" });
+    setSaving(true);
+    const payload = { ...form, table_id: tableId };
+    const { error } = editing
+      ? await supabase.from("lore_items").update(payload).eq("id", editing.id)
+      : await supabase.from("lore_items").insert(payload);
+    setSaving(false);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    onSaved();
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{editing ? "Editar Item" : "Novo Item"}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Nome *</Label>
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div>
+              <Label>Status</Label>
+              <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ITEM_STATUSES.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label>Em poder de</Label>
+            <Input
+              value={form.holder}
+              placeholder="Personagem, NPC ou local..."
+              onChange={(e) => setForm({ ...form, holder: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label>Descrição</Label>
+            <Textarea
+              rows={4}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={save} disabled={saving}>
+            {saving ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ===========================================================
+ * Timeline
+ * =========================================================== */
+
+function TimelineSection({ tableId, isMaster }: Props) {
+  const qc = useQueryClient();
+  const { data = [] } = useLore("lore_timeline", tableId, "event_order", true);
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState<AnyRow | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    const s = search.toLowerCase();
+    return data.filter(
+      (e: AnyRow) =>
+        !s || e.title?.toLowerCase().includes(s) || e.description?.toLowerCase().includes(s),
+    );
+  }, [data, search]);
+
+  const remove = async (id: string) => {
+    if (!confirm("Remover este evento?")) return;
+    const { error } = await supabase.from("lore_timeline").delete().eq("id", id);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["lore_timeline", tableId] });
+  };
+
+  return (
+    <div>
+      <SectionHeader
+        title="Linha do tempo"
+        description="Eventos importantes da campanha em ordem cronológica."
+        count={data.length}
+        isMaster={isMaster}
+        search={search}
+        setSearch={setSearch}
+        onAdd={() => {
+          setEditing(null);
+          setOpen(true);
+        }}
+      />
+      {filtered.length === 0 ? (
+        <EmptyState>Nenhum evento registrado.</EmptyState>
+      ) : (
+        <div className="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-border">
+          {filtered.map((e: AnyRow) => (
+            <div key={e.id} className="relative">
+              <div className="absolute -left-[18px] top-2 h-3 w-3 rounded-full bg-primary border-2 border-background shadow-[0_0_8px_hsl(var(--cavern-gold)/0.6)]" />
+              <Card className="border-border bg-card/60">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {e.event_date && (
+                          <Badge variant="outline" className="text-xs font-mono">
+                            {e.event_date}
+                          </Badge>
+                        )}
+                        <span className="font-semibold">{e.title}</span>
+                      </div>
+                      {e.description && (
+                        <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">
+                          {e.description}
+                        </p>
+                      )}
+                    </div>
+                    {isMaster && (
+                      <div className="flex gap-1 shrink-0">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0"
+                          onClick={() => {
+                            setEditing(e);
+                            setOpen(true);
+                          }}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                          onClick={() => remove(e.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ))}
+        </div>
+      )}
+      <TimelineDialog
+        open={open}
+        onOpenChange={setOpen}
+        tableId={tableId}
+        editing={editing}
+        nextOrder={(data[data.length - 1]?.event_order ?? 0) + 10}
+        onSaved={() => qc.invalidateQueries({ queryKey: ["lore_timeline", tableId] })}
+      />
+    </div>
+  );
+}
+
+function TimelineDialog({
+  open,
+  onOpenChange,
+  tableId,
+  editing,
+  nextOrder,
+  onSaved,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  tableId: string;
+  editing: AnyRow | null;
+  nextOrder: number;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState<AnyRow>({
+    title: "",
+    description: "",
+    event_date: "",
+    event_order: nextOrder,
+  });
+  const [saving, setSaving] = useState(false);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useMemo(() => {
+    setForm(
+      editing ?? { title: "", description: "", event_date: "", event_order: nextOrder },
+    );
+  }, [editing, open]);
+
+  const save = async () => {
+    if (!form.title?.trim()) return toast({ title: "Título obrigatório", variant: "destructive" });
+    setSaving(true);
+    const payload = {
+      ...form,
+      event_order: Number(form.event_order) || 0,
+      table_id: tableId,
+    };
+    const { error } = editing
+      ? await supabase.from("lore_timeline").update(payload).eq("id", editing.id)
+      : await supabase.from("lore_timeline").insert(payload);
+    setSaving(false);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    onSaved();
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{editing ? "Editar Evento" : "Novo Evento"}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>Título *</Label>
+            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Data (livre)</Label>
+              <Input
+                value={form.event_date}
+                placeholder="Ex: Era 3, ano 412"
+                onChange={(e) => setForm({ ...form, event_date: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Ordem</Label>
+              <Input
+                type="number"
+                value={form.event_order}
+                onChange={(e) => setForm({ ...form, event_order: e.target.value })}
+              />
+            </div>
+          </div>
+          <div>
+            <Label>Descrição</Label>
+            <Textarea
+              rows={4}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={save} disabled={saving}>
+            {saving ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ===========================================================
+ * Codex
+ * =========================================================== */
+
+function CodexSection({ tableId, isMaster }: Props) {
+  const qc = useQueryClient();
+  const { data = [] } = useLore("lore_codex", tableId, "term", true);
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState<AnyRow | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    const s = search.toLowerCase();
+    return data.filter(
+      (c: AnyRow) =>
+        !s || c.term?.toLowerCase().includes(s) || c.definition?.toLowerCase().includes(s),
+    );
+  }, [data, search]);
+
+  const remove = async (id: string) => {
+    if (!confirm("Remover esta entrada?")) return;
+    const { error } = await supabase.from("lore_codex").delete().eq("id", id);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["lore_codex", tableId] });
+  };
+
+  return (
+    <div>
+      <SectionHeader
+        title="Códex"
+        description="Glossário pesquisável de termos, conceitos e nomes próprios do mundo."
+        count={data.length}
+        isMaster={isMaster}
+        search={search}
+        setSearch={setSearch}
+        onAdd={() => {
+          setEditing(null);
+          setOpen(true);
+        }}
+      />
+      {filtered.length === 0 ? (
+        <EmptyState>Códex vazio.</EmptyState>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {filtered.map((c: AnyRow) => (
+            <Card key={c.id} className="border-border bg-card/60">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold flex items-center gap-2">
+                      <BookMarked className="h-4 w-4 text-primary" /> {c.term}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">
+                      {c.definition}
+                    </p>
+                  </div>
+                  {isMaster && (
+                    <div className="flex gap-1 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0"
+                        onClick={() => {
+                          setEditing(c);
+                          setOpen(true);
+                        }}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                        onClick={() => remove(c.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+      <CodexDialog
+        open={open}
+        onOpenChange={setOpen}
+        tableId={tableId}
+        editing={editing}
+        onSaved={() => qc.invalidateQueries({ queryKey: ["lore_codex", tableId] })}
+      />
+    </div>
+  );
+}
+
+function CodexDialog({
+  open,
+  onOpenChange,
+  tableId,
+  editing,
+  onSaved,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  tableId: string;
+  editing: AnyRow | null;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState<AnyRow>({ term: "", definition: "" });
+  const [saving, setSaving] = useState(false);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useMemo(() => {
+    setForm(editing ?? { term: "", definition: "" });
+  }, [editing, open]);
+
+  const save = async () => {
+    if (!form.term?.trim()) return toast({ title: "Termo obrigatório", variant: "destructive" });
+    setSaving(true);
+    const payload = { ...form, table_id: tableId };
+    const { error } = editing
+      ? await supabase.from("lore_codex").update(payload).eq("id", editing.id)
+      : await supabase.from("lore_codex").insert(payload);
+    setSaving(false);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    onSaved();
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{editing ? "Editar entrada" : "Nova entrada"}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>Termo *</Label>
+            <Input value={form.term} onChange={(e) => setForm({ ...form, term: e.target.value })} />
+          </div>
+          <div>
+            <Label>Definição</Label>
+            <Textarea
+              rows={5}
+              value={form.definition}
+              onChange={(e) => setForm({ ...form, definition: e.target.value })}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={save} disabled={saving}>
+            {saving ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
