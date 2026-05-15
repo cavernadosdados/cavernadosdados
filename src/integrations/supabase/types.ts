@@ -213,6 +213,204 @@ export type Database = {
         }
         Relationships: []
       }
+      lore_codex: {
+        Row: {
+          created_at: string
+          definition: string
+          id: string
+          table_id: string
+          term: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          definition?: string
+          id?: string
+          table_id: string
+          term: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          definition?: string
+          id?: string
+          table_id?: string
+          term?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lore_factions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          reputation: number
+          symbol_url: string | null
+          table_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          reputation?: number
+          symbol_url?: string | null
+          table_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          reputation?: number
+          symbol_url?: string | null
+          table_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lore_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          holder: string | null
+          id: string
+          name: string
+          status: string
+          table_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          holder?: string | null
+          id?: string
+          name: string
+          status?: string
+          table_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          holder?: string | null
+          id?: string
+          name?: string
+          status?: string
+          table_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lore_locations: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          kind: string | null
+          map_url: string | null
+          name: string
+          table_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: string | null
+          map_url?: string | null
+          name: string
+          table_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: string | null
+          map_url?: string | null
+          name?: string
+          table_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lore_npcs: {
+        Row: {
+          created_at: string
+          description: string | null
+          faction: string | null
+          id: string
+          name: string
+          portrait_url: string | null
+          relationship: string | null
+          status: string
+          table_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          faction?: string | null
+          id?: string
+          name: string
+          portrait_url?: string | null
+          relationship?: string | null
+          status?: string
+          table_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          faction?: string | null
+          id?: string
+          name?: string
+          portrait_url?: string | null
+          relationship?: string | null
+          status?: string
+          table_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lore_timeline: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_date: string | null
+          event_order: number
+          id: string
+          table_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          event_order?: number
+          id?: string
+          table_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          event_order?: number
+          id?: string
+          table_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mesa_chat_messages: {
         Row: {
           content: string
