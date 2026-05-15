@@ -25,6 +25,7 @@ import { EditTableForm } from "@/components/EditTableForm";
 import { TableApplicationsList } from "@/components/TableApplicationsList";
 import { NextSessionCard } from "@/components/NextSessionCard";
 import { CampaignDashboard } from "@/components/CampaignDashboard";
+import { WorldbuildingTab } from "@/components/worldbuilding/WorldbuildingTab";
 
 // Chip presets for quick-fill multi-select
 const CHIPS = {
@@ -82,6 +83,7 @@ import {
   MessageSquare,
   Pencil,
   Inbox,
+  Globe2,
 } from "lucide-react";
 import {
   Tooltip,
