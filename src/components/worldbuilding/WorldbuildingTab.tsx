@@ -1149,7 +1149,7 @@ function TimelineSection({ tableId, isMaster }: Props) {
   const [items, setItems] = useState<AnyRow[]>([]);
 
   // Sync local DnD items with query data
-  useMemo(() => {
+  useEffect(() => {
     setItems(data as AnyRow[]);
   }, [data]);
 
