@@ -31,6 +31,7 @@ import {
   Gem,
   Clock3,
   BookMarked,
+  Sparkles,
   Plus,
   Pencil,
   Trash2,
@@ -121,6 +122,9 @@ export function WorldbuildingTab({ tableId, isMaster }: Props) {
             <TabsTrigger value="factions" className="gap-1 min-h-10">
               <Flag className="h-4 w-4" /> Facções
             </TabsTrigger>
+            <TabsTrigger value="deities" className="gap-1 min-h-10">
+              <Sparkles className="h-4 w-4" /> Panteão
+            </TabsTrigger>
             <TabsTrigger value="items" className="gap-1 min-h-10">
               <Gem className="h-4 w-4" /> Itens
             </TabsTrigger>
@@ -141,6 +145,9 @@ export function WorldbuildingTab({ tableId, isMaster }: Props) {
         </TabsContent>
         <TabsContent value="factions" className="mt-6">
           <FactionsSection tableId={tableId} isMaster={isMaster} />
+        </TabsContent>
+        <TabsContent value="deities" className="mt-6">
+          <DeitiesSection tableId={tableId} isMaster={isMaster} />
         </TabsContent>
         <TabsContent value="items" className="mt-6">
           <ItemsSection tableId={tableId} isMaster={isMaster} />
@@ -461,6 +468,211 @@ function NpcDialog({
           <Button onClick={save} disabled={saving}>
             {saving ? "Salvando..." : "Salvar"}
           </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ===========================================================
+ * Deities (Panteão)
+ * =========================================================== */
+
+const ALIGNMENTS = [
+  "Leal e Bom", "Neutro e Bom", "Caótico e Bom",
+  "Leal e Neutro", "Neutro", "Caótico e Neutro",
+  "Leal e Mau", "Neutro e Mau", "Caótico e Mau",
+];
+
+function DeitiesSection({ tableId, isMaster }: Props) {
+  const qc = useQueryClient();
+  const { data = [] } = useLore("lore_deities", tableId, "name", true);
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState<AnyRow | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    const s = search.toLowerCase();
+    return data.filter(
+      (d: AnyRow) =>
+        !s ||
+        d.name?.toLowerCase().includes(s) ||
+        d.domain?.toLowerCase().includes(s) ||
+        d.alignment?.toLowerCase().includes(s),
+    );
+  }, [data, search]);
+
+  const remove = async (id: string) => {
+    if (!confirm("Remover este deus?")) return;
+    const { error } = await supabase.from("lore_deities" as any).delete().eq("id", id);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["lore_deities", tableId] });
+  };
+
+  return (
+    <div>
+      <SectionHeader
+        title="Panteão"
+        description="Deuses, divindades e entidades veneradas no mundo."
+        count={data.length}
+        isMaster={isMaster}
+        search={search}
+        setSearch={setSearch}
+        onAdd={() => {
+          setEditing(null);
+          setOpen(true);
+        }}
+      />
+      {filtered.length === 0 ? (
+        <EmptyState>Nenhum deus no panteão ainda.</EmptyState>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((d: AnyRow) => (
+            <Card key={d.id} className="border-border bg-card/60">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <Avatar className="h-14 w-14 border border-primary/30">
+                    <AvatarImage src={d.symbol_url || undefined} alt={d.name} />
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      <Sparkles className="h-6 w-6" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold truncate">{d.name}</div>
+                    {d.alignment && (
+                      <div className="text-xs text-muted-foreground">{d.alignment}</div>
+                    )}
+                    {d.domain && (
+                      <Badge variant="outline" className="mt-1 text-xs">{d.domain}</Badge>
+                    )}
+                  </div>
+                </div>
+                {d.description && (
+                  <p className="text-xs text-muted-foreground whitespace-pre-wrap line-clamp-4">
+                    {d.description}
+                  </p>
+                )}
+                {isMaster && (
+                  <div className="flex gap-2 pt-2 border-t border-border">
+                    <Button
+                      size="sm" variant="ghost" className="h-7 px-2 text-xs"
+                      onClick={() => { setEditing(d); setOpen(true); }}
+                    >
+                      <Pencil className="h-3 w-3 mr-1" /> Editar
+                    </Button>
+                    <Button
+                      size="sm" variant="ghost"
+                      className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                      onClick={() => remove(d.id)}
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" /> Remover
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+      <DeityDialog
+        open={open}
+        onOpenChange={setOpen}
+        tableId={tableId}
+        editing={editing}
+        onSaved={() => qc.invalidateQueries({ queryKey: ["lore_deities", tableId] })}
+      />
+    </div>
+  );
+}
+
+function DeityDialog({
+  open, onOpenChange, tableId, editing, onSaved,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  tableId: string;
+  editing: AnyRow | null;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState<AnyRow>({
+    name: "", alignment: "", domain: "", symbol_url: "", description: "",
+  });
+  const [saving, setSaving] = useState(false);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useMemo(() => {
+    setForm(editing ?? { name: "", alignment: "", domain: "", symbol_url: "", description: "" });
+  }, [editing, open]);
+
+  const save = async () => {
+    if (!form.name?.trim()) return toast({ title: "Nome obrigatório", variant: "destructive" });
+    setSaving(true);
+    const payload = { ...form, table_id: tableId };
+    const { error } = editing
+      ? await supabase.from("lore_deities" as any).update(payload as any).eq("id", editing.id)
+      : await supabase.from("lore_deities" as any).insert([payload as any]);
+    setSaving(false);
+    if (error) return toast({ title: "Erro", description: error.message, variant: "destructive" });
+    toast({ title: "Salvo!" });
+    onSaved();
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{editing ? "Editar Deus" : "Novo Deus"}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>Nome *</Label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Tendência</Label>
+              <Select
+                value={form.alignment || undefined}
+                onValueChange={(v) => setForm({ ...form, alignment: v })}
+              >
+                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                <SelectContent>
+                  {ALIGNMENTS.map((a) => (
+                    <SelectItem key={a} value={a}>{a}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Domínio</Label>
+              <Input
+                value={form.domain}
+                placeholder="Ex: Guerra, Conhecimento..."
+                onChange={(e) => setForm({ ...form, domain: e.target.value })}
+              />
+            </div>
+          </div>
+          <div>
+            <Label>URL do símbolo</Label>
+            <Input
+              value={form.symbol_url}
+              placeholder="https://..."
+              onChange={(e) => setForm({ ...form, symbol_url: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label>Descrição</Label>
+            <Textarea
+              rows={4}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          <Button onClick={save} disabled={saving}>{saving ? "Salvando..." : "Salvar"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
