@@ -31,6 +31,7 @@ import {
   Gem,
   Clock3,
   BookMarked,
+  Sparkles,
   Plus,
   Pencil,
   Trash2,
@@ -121,6 +122,9 @@ export function WorldbuildingTab({ tableId, isMaster }: Props) {
             <TabsTrigger value="factions" className="gap-1 min-h-10">
               <Flag className="h-4 w-4" /> Facções
             </TabsTrigger>
+            <TabsTrigger value="deities" className="gap-1 min-h-10">
+              <Sparkles className="h-4 w-4" /> Panteão
+            </TabsTrigger>
             <TabsTrigger value="items" className="gap-1 min-h-10">
               <Gem className="h-4 w-4" /> Itens
             </TabsTrigger>
@@ -141,6 +145,9 @@ export function WorldbuildingTab({ tableId, isMaster }: Props) {
         </TabsContent>
         <TabsContent value="factions" className="mt-6">
           <FactionsSection tableId={tableId} isMaster={isMaster} />
+        </TabsContent>
+        <TabsContent value="deities" className="mt-6">
+          <DeitiesSection tableId={tableId} isMaster={isMaster} />
         </TabsContent>
         <TabsContent value="items" className="mt-6">
           <ItemsSection tableId={tableId} isMaster={isMaster} />
