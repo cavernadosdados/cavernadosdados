@@ -40,7 +40,27 @@ import {
   Skull,
   HeartPulse,
   HelpCircle,
+  GripVertical,
+  X,
 } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 type AnyRow = Record<string, any>;
 
@@ -1123,14 +1143,64 @@ function TimelineSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [dateFilter, setDateFilter] = useState("");
+  const [orderMin, setOrderMin] = useState<string>("");
+  const [orderMax, setOrderMax] = useState<string>("");
+  const [items, setItems] = useState<AnyRow[]>([]);
+
+  // Sync local DnD items with query data
+  useMemo(() => {
+    setItems(data as AnyRow[]);
+  }, [data]);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
-    return data.filter(
-      (e: AnyRow) =>
-        !s || e.title?.toLowerCase().includes(s) || e.description?.toLowerCase().includes(s),
+    const d = dateFilter.toLowerCase();
+    const min = orderMin === "" ? -Infinity : Number(orderMin);
+    const max = orderMax === "" ? Infinity : Number(orderMax);
+    return items.filter((e: AnyRow) => {
+      if (s && !(e.title?.toLowerCase().includes(s) || e.description?.toLowerCase().includes(s)))
+        return false;
+      if (d && !(e.event_date ?? "").toLowerCase().includes(d)) return false;
+      const ord = Number(e.event_order ?? 0);
+      if (ord < min || ord > max) return false;
+      return true;
+    });
+  }, [items, search, dateFilter, orderMin, orderMax]);
+
+  const hasFilters =
+    !!search || !!dateFilter || orderMin !== "" || orderMax !== "";
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const onDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = items.findIndex((i) => i.id === active.id);
+    const newIndex = items.findIndex((i) => i.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const reordered: AnyRow[] = arrayMove(items, oldIndex, newIndex).map((it, idx) => ({
+      ...(it as AnyRow),
+      event_order: (idx + 1) * 10,
+    }));
+    setItems(reordered); // optimistic
+    const updates = reordered.map((it) =>
+      supabase
+        .from("lore_timeline")
+        .update({ event_order: it.event_order })
+        .eq("id", it.id),
     );
-  }, [data, search]);
+    const results = await Promise.all(updates);
+    const firstError = results.find((r) => r.error)?.error;
+    if (firstError) {
+      toast({ title: "Erro ao reordenar", description: firstError.message, variant: "destructive" });
+    }
+    qc.invalidateQueries({ queryKey: ["lore_timeline", tableId] });
+  };
 
   const remove = async (id: string) => {
     if (!confirm("Remover este evento?")) return;
@@ -1143,8 +1213,8 @@ function TimelineSection({ tableId, isMaster }: Props) {
     <div>
       <SectionHeader
         title="Linha do tempo"
-        description="Eventos importantes da campanha em ordem cronológica."
-        count={data.length}
+        description="Eventos importantes da campanha. Mestre pode arrastar para reordenar."
+        count={items.length}
         isMaster={isMaster}
         search={search}
         setSearch={setSearch}
@@ -1153,69 +1223,176 @@ function TimelineSection({ tableId, isMaster }: Props) {
           setOpen(true);
         }}
       />
+
+      {/* Filtros */}
+      <Card className="border-border bg-card/40 mb-4">
+        <CardContent className="p-3 grid gap-3 sm:grid-cols-[1fr_auto_auto_auto] sm:items-end">
+          <div>
+            <Label className="text-xs text-muted-foreground">Filtrar por data (texto)</Label>
+            <Input
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              placeholder="Ex: Era 3, ano 412"
+              className="h-9 bg-background/50"
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Ordem mín</Label>
+            <Input
+              type="number"
+              value={orderMin}
+              onChange={(e) => setOrderMin(e.target.value)}
+              placeholder="0"
+              className="h-9 w-24 bg-background/50"
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Ordem máx</Label>
+            <Input
+              type="number"
+              value={orderMax}
+              onChange={(e) => setOrderMax(e.target.value)}
+              placeholder="∞"
+              className="h-9 w-24 bg-background/50"
+            />
+          </div>
+          {hasFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 gap-1"
+              onClick={() => {
+                setDateFilter("");
+                setOrderMin("");
+                setOrderMax("");
+              }}
+            >
+              <X className="h-3.5 w-3.5" /> Limpar
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
       {filtered.length === 0 ? (
-        <EmptyState>Nenhum evento registrado.</EmptyState>
+        <EmptyState>
+          {hasFilters ? "Nenhum evento corresponde aos filtros." : "Nenhum evento registrado."}
+        </EmptyState>
       ) : (
-        <div className="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-border">
-          {filtered.map((e: AnyRow) => (
-            <div key={e.id} className="relative">
-              <div className="absolute -left-[18px] top-2 h-3 w-3 rounded-full bg-primary border-2 border-background shadow-[0_0_8px_hsl(var(--cavern-gold)/0.6)]" />
-              <Card className="border-border bg-card/60">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-2 flex-wrap">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {e.event_date && (
-                          <Badge variant="outline" className="text-xs font-mono">
-                            {e.event_date}
-                          </Badge>
-                        )}
-                        <span className="font-semibold">{e.title}</span>
-                      </div>
-                      {e.description && (
-                        <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">
-                          {e.description}
-                        </p>
-                      )}
-                    </div>
-                    {isMaster && (
-                      <div className="flex gap-1 shrink-0">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0"
-                          onClick={() => {
-                            setEditing(e);
-                            setOpen(true);
-                          }}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                          onClick={() => remove(e.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext
+            items={filtered.map((e) => e.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-border">
+              {filtered.map((e: AnyRow) => (
+                <SortableTimelineItem
+                  key={e.id}
+                  event={e}
+                  isMaster={isMaster && !hasFilters}
+                  onEdit={() => {
+                    setEditing(e);
+                    setOpen(true);
+                  }}
+                  onRemove={() => remove(e.id)}
+                  showEditActions={isMaster}
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
+      )}
+      {isMaster && hasFilters && (
+        <p className="text-[11px] text-muted-foreground mt-2 pl-6">
+          Limpe os filtros para arrastar e reordenar os eventos.
+        </p>
       )}
       <TimelineDialog
         open={open}
         onOpenChange={setOpen}
         tableId={tableId}
         editing={editing}
-        nextOrder={(data[data.length - 1]?.event_order ?? 0) + 10}
+        nextOrder={(items[items.length - 1]?.event_order ?? 0) + 10}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_timeline", tableId] })}
       />
+    </div>
+  );
+}
+
+function SortableTimelineItem({
+  event: e,
+  isMaster,
+  showEditActions,
+  onEdit,
+  onRemove,
+}: {
+  event: AnyRow;
+  isMaster: boolean;
+  showEditActions: boolean;
+  onEdit: () => void;
+  onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: e.id,
+    disabled: !isMaster,
+  });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+    zIndex: isDragging ? 10 : "auto",
+  };
+  return (
+    <div ref={setNodeRef} style={style} className="relative">
+      <div className="absolute -left-[18px] top-2 h-3 w-3 rounded-full bg-primary border-2 border-background shadow-[0_0_8px_hsl(var(--cavern-gold)/0.6)]" />
+      <Card className={`border-border bg-card/60 ${isDragging ? "ring-2 ring-primary/50" : ""}`}>
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between gap-2 flex-wrap">
+            <div className="flex items-start gap-2 min-w-0 flex-1">
+              {isMaster && (
+                <button
+                  type="button"
+                  {...attributes}
+                  {...listeners}
+                  className="touch-none cursor-grab active:cursor-grabbing text-muted-foreground hover:text-primary p-1 -ml-1 mt-0.5"
+                  aria-label="Arrastar para reordenar"
+                >
+                  <GripVertical className="h-4 w-4" />
+                </button>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {e.event_date && (
+                    <Badge variant="outline" className="text-xs font-mono">
+                      {e.event_date}
+                    </Badge>
+                  )}
+                  <span className="font-semibold">{e.title}</span>
+                </div>
+                {e.description && (
+                  <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">
+                    {e.description}
+                  </p>
+                )}
+              </div>
+            </div>
+            {showEditActions && (
+              <div className="flex gap-1 shrink-0">
+                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={onEdit}>
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                  onClick={onRemove}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
