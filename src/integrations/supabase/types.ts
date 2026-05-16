@@ -240,6 +240,42 @@ export type Database = {
         }
         Relationships: []
       }
+      lore_deities: {
+        Row: {
+          alignment: string | null
+          created_at: string
+          description: string | null
+          domain: string | null
+          id: string
+          name: string
+          symbol_url: string | null
+          table_id: string
+          updated_at: string
+        }
+        Insert: {
+          alignment?: string | null
+          created_at?: string
+          description?: string | null
+          domain?: string | null
+          id?: string
+          name: string
+          symbol_url?: string | null
+          table_id: string
+          updated_at?: string
+        }
+        Update: {
+          alignment?: string | null
+          created_at?: string
+          description?: string | null
+          domain?: string | null
+          id?: string
+          name?: string
+          symbol_url?: string | null
+          table_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lore_factions: {
         Row: {
           created_at: string
