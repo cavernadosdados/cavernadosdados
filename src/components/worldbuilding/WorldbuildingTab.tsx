@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -1149,7 +1149,7 @@ function TimelineSection({ tableId, isMaster }: Props) {
   const [items, setItems] = useState<AnyRow[]>([]);
 
   // Sync local DnD items with query data
-  useMemo(() => {
+  useEffect(() => {
     setItems(data as AnyRow[]);
   }, [data]);
 
