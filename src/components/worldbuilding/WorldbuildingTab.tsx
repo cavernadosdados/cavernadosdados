@@ -1183,8 +1183,8 @@ function TimelineSection({ tableId, isMaster }: Props) {
     const oldIndex = items.findIndex((i) => i.id === active.id);
     const newIndex = items.findIndex((i) => i.id === over.id);
     if (oldIndex < 0 || newIndex < 0) return;
-    const reordered = arrayMove(items, oldIndex, newIndex).map((it, idx) => ({
-      ...it,
+    const reordered: AnyRow[] = arrayMove(items, oldIndex, newIndex).map((it, idx) => ({
+      ...(it as AnyRow),
       event_order: (idx + 1) * 10,
     }));
     setItems(reordered); // optimistic
