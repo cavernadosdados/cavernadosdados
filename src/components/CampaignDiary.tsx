@@ -340,6 +340,20 @@ export const CampaignDiary = ({ tableId, tableTitle, tableSystem, isMaster, webh
     toast({ title: newPin ? "📌 Relato fixado!" : "Relato desfixado", description: newPin ? "Este será o relato oficial enviado ao Discord." : "" });
   };
 
+  const handleDeleteSession = async () => {
+    if (!sessionToDelete) return;
+    const { error } = await supabase.from("session_logs").delete().eq("id", sessionToDelete);
+    setDeleteOpen(false);
+    setSessionToDelete(null);
+    if (error) {
+      toast({ title: "Erro ao excluir sessão", description: error.message, variant: "destructive" });
+      return;
+    }
+    if (selectedLogId === sessionToDelete) setSelectedLogId(null);
+    qc.invalidateQueries({ queryKey: ["session_logs", tableId] });
+    toast({ title: "Sessão excluída", description: "O registro foi removido do diário." });
+  };
+
   const groupReactions = (reportId: string) => {
     const grouped = new Map<string, { count: number; mine: boolean }>();
     reactions
