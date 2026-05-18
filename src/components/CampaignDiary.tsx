@@ -74,6 +74,8 @@ export const CampaignDiary = ({ tableId, tableTitle, tableSystem, isMaster, webh
   const [hookLoading, setHookLoading] = useState(false);
   const [hookHint, setHookHint] = useState("");
   const [hookResult, setHookResult] = useState<{ title?: string; hook?: string } | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
   const [newReport, setNewReport] = useState("");
   const [characterName, setCharacterName] = useState("");
