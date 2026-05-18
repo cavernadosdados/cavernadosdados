@@ -391,24 +391,42 @@ export const CampaignDiary = ({ tableId, tableTitle, tableSystem, isMaster, webh
                 </p>
               )}
               {logs.map((log) => (
-                <button
+                <div
                   key={log.id}
-                  onClick={() => setSelectedLogId(log.id)}
-                  className={`w-full text-left px-3 py-2 rounded-md transition-mystical text-sm ${
+                  className={`group w-full text-left px-3 py-2 rounded-md transition-mystical text-sm flex items-center justify-between gap-2 ${
                     selectedLogId === log.id
                       ? "bg-[hsl(var(--cavern-gold))]/15 border border-[hsl(var(--cavern-gold))]/30 glow-gold"
                       : "hover:bg-muted/50 border border-transparent"
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <Hash className="h-3 w-3 text-muted-foreground shrink-0" />
-                    <span className="font-medium truncate">{log.title}</span>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-0.5 ml-5">
-                    {new Date(log.session_date).toLocaleDateString("pt-BR")}
-                    {log.sent_to_discord && " • 📜 enviado"}
-                  </p>
-                </button>
+                  <button
+                    onClick={() => setSelectedLogId(log.id)}
+                    className="flex-1 text-left min-w-0"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Hash className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <span className="font-medium truncate">{log.title}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 ml-5">
+                      {new Date(log.session_date).toLocaleDateString("pt-BR")}
+                      {log.sent_to_discord && " • 📜 enviado"}
+                    </p>
+                  </button>
+                  {isMaster && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-muted-foreground hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSessionToDelete(log.id);
+                        setDeleteOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
               ))}
             </div>
           </ScrollArea>
