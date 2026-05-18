@@ -424,6 +424,15 @@ export const CampaignDiary = ({ tableId, tableTitle, tableSystem, isMaster, webh
                           {savingLog ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                           Salvar
                         </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => { setHookResult(null); setHookHint(""); setHookOpen(true); }}
+                          className="gap-2 border-[hsl(var(--cavern-gold))]/40 text-[hsl(var(--cavern-gold))] hover:bg-[hsl(var(--cavern-gold))]/10"
+                        >
+                          <Wand2 className="h-4 w-4" />
+                          Sugerir gancho
+                        </Button>
                       </>
                     )}
                   </div>
