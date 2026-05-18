@@ -855,26 +855,6 @@ const DiscordPreview = ({ tableTitle, sessionTitle, sessionNumber, summary, pinn
           </div>
         </div>
       </div>
-      {/* Delete confirmation */}
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir sessão?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Todos os relatos de jogadores, reações e presenças vinculados a esta sessão serão removidos. Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setSessionToDelete(null)}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteSession}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Sim, excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };
