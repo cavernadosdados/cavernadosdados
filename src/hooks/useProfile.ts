@@ -66,7 +66,9 @@ export const useProfile = (userId?: string) => {
         .from('profiles')
         .update(updateData)
         .eq('id', userId)
-        .select()
+        .select(
+          'id, display_name, avatar_url, bio, experience_years, master_systems, preferred_themes, plays_in_person, apps_used, discord_link, active_tables_count, user_type, availability_days, availability_periods, created_at, updated_at'
+        )
         .single();
 
       if (error) throw error;
