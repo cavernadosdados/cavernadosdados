@@ -654,14 +654,13 @@ function DeityDialog({
               />
             </div>
           </div>
-          <div>
-            <Label>URL do símbolo</Label>
-            <Input
-              value={form.symbol_url}
-              placeholder="https://..."
-              onChange={(e) => setForm({ ...form, symbol_url: e.target.value })}
-            />
-          </div>
+          <ImageCropUpload
+            value={form.symbol_url || ""}
+            onChange={(v) => setForm({ ...form, symbol_url: v })}
+            label="Símbolo do deus"
+            placeholder="https://..."
+            aspectRatio={1}
+          />
           <div>
             <Label>Descrição</Label>
             <Textarea
