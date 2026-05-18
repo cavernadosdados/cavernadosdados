@@ -4,7 +4,7 @@ const corsHeaders = {
 };
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"]);
 
 function isPrivateIp(hostname: string) {
   if (hostname === "localhost" || hostname.endsWith(".localhost")) return true;
@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     if (!response.ok) throw new Error("Não foi possível baixar a imagem");
 
     const mimeType = response.headers.get("content-type")?.split(";")[0]?.toLowerCase() || "";
-    if (!ALLOWED_TYPES.has(mimeType)) throw new Error("Formato de imagem não suportado. Use JPG, PNG, WebP ou GIF.");
+    if (!ALLOWED_TYPES.has(mimeType)) throw new Error("Formato de imagem não suportado. Use JPG, PNG, WebP, GIF ou SVG.");
 
     const contentLength = Number(response.headers.get("content-length") || 0);
     if (contentLength > MAX_IMAGE_BYTES) throw new Error("A imagem é muito grande. Use uma imagem de até 8MB.");
