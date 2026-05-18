@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ImageCropUpload } from "@/components/ImageCropUpload";
 import {
   Select,
   SelectContent,
@@ -444,14 +445,13 @@ function NpcDialog({
               onChange={(e) => setForm({ ...form, relationship: e.target.value })}
             />
           </div>
-          <div>
-            <Label>URL do retrato</Label>
-            <Input
-              value={form.portrait_url}
-              placeholder="https://..."
-              onChange={(e) => setForm({ ...form, portrait_url: e.target.value })}
-            />
-          </div>
+          <ImageCropUpload
+            value={form.portrait_url || ""}
+            onChange={(v) => setForm({ ...form, portrait_url: v })}
+            label="Retrato do NPC"
+            placeholder="https://..."
+            aspectRatio={1}
+          />
           <div>
             <Label>Descrição</Label>
             <Textarea
@@ -653,14 +653,13 @@ function DeityDialog({
               />
             </div>
           </div>
-          <div>
-            <Label>URL do símbolo</Label>
-            <Input
-              value={form.symbol_url}
-              placeholder="https://..."
-              onChange={(e) => setForm({ ...form, symbol_url: e.target.value })}
-            />
-          </div>
+          <ImageCropUpload
+            value={form.symbol_url || ""}
+            onChange={(v) => setForm({ ...form, symbol_url: v })}
+            label="Símbolo do deus"
+            placeholder="https://..."
+            aspectRatio={1}
+          />
           <div>
             <Label>Descrição</Label>
             <Textarea
@@ -857,14 +856,13 @@ function LocationDialog({
               </Select>
             </div>
           </div>
-          <div>
-            <Label>URL do mapa/imagem</Label>
-            <Input
-              value={form.map_url}
-              placeholder="https://..."
-              onChange={(e) => setForm({ ...form, map_url: e.target.value })}
-            />
-          </div>
+          <ImageCropUpload
+            value={form.map_url || ""}
+            onChange={(v) => setForm({ ...form, map_url: v })}
+            label="Mapa / Imagem do local"
+            placeholder="https://..."
+            aspectRatio={16 / 9}
+          />
           <div>
             <Label>Descrição</Label>
             <Textarea
