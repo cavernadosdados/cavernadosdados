@@ -46,6 +46,8 @@ import {
   GripVertical,
   X,
   ClipboardList,
+  Loader2,
+  Wand2,
 } from "lucide-react";
 import {
   DndContext,
@@ -67,6 +69,87 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 type AnyRow = Record<string, any>;
+
+/* ===========================================================
+ * AI Generator (shared)
+ * =========================================================== */
+
+type LoreAiType = "npc" | "location" | "faction" | "deity" | "item";
+
+async function fetchTableContext(tableId: string) {
+  const { data } = await supabase
+    .from("tables")
+    .select("title,description,system,theme")
+    .eq("id", tableId)
+    .maybeSingle();
+  return data || {};
+}
+
+function AiGenerateBar({
+  type,
+  tableId,
+  onApply,
+}: {
+  type: LoreAiType;
+  tableId: string;
+  onApply: (result: Record<string, any>) => void;
+}) {
+  const [hint, setHint] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const generate = async () => {
+    setLoading(true);
+    try {
+      const ctx = await fetchTableContext(tableId);
+      const res = await supabase.functions.invoke("generate-lore-suggestion", {
+        body: {
+          type,
+          table_title: (ctx as any).title,
+          table_description: (ctx as any).description,
+          system: (ctx as any).system,
+          theme: (ctx as any).theme,
+          hint: hint.trim() || undefined,
+        },
+      });
+      if (res.error) throw res.error;
+      if ((res.data as any)?.error) throw new Error((res.data as any).error);
+      const result = (res.data as any)?.result;
+      if (!result || typeof result !== "object") throw new Error("Resposta inválida da IA");
+      onApply(result);
+      toast({ title: "✨ Sugestão gerada!", description: "Revise antes de salvar." });
+    } catch (err: any) {
+      toast({ title: "Erro na IA", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="rounded-md border border-[hsl(var(--cavern-gold))]/30 bg-[hsl(var(--cavern-gold))]/5 p-3 space-y-2">
+      <div className="flex items-center gap-2 text-xs font-semibold text-[hsl(var(--cavern-gold))]">
+        <Wand2 className="h-3.5 w-3.5" /> Gerar com IA (opcional)
+      </div>
+      <div className="flex gap-2">
+        <Input
+          value={hint}
+          onChange={(e) => setHint(e.target.value)}
+          placeholder="Tema/dica curta (opcional)"
+          className="h-9 bg-background/60 text-xs"
+        />
+        <Button
+          type="button"
+          size="sm"
+          onClick={generate}
+          disabled={loading}
+          className="gap-1 bg-gradient-to-r from-[hsl(var(--cavern-gold))] to-[hsl(var(--cavern-copper))] text-background hover:opacity-90 border-0 shrink-0"
+        >
+          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          Gerar
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 interface Props {
   tableId: string;
@@ -421,6 +504,22 @@ function NpcDialog({
           <DialogTitle>{editing ? "Editar NPC" : "Novo NPC"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          {!editing && (
+            <AiGenerateBar
+              type="npc"
+              tableId={tableId}
+              onApply={(r) =>
+                setForm((f) => ({
+                  ...f,
+                  name: r.name ?? f.name,
+                  faction: r.faction ?? f.faction,
+                  status: ["alive", "dead", "missing"].includes(r.status) ? r.status : f.status,
+                  relationship: r.relationship ?? f.relationship,
+                  description: r.description ?? f.description,
+                }))
+              }
+            />
+          )}
           <div>
             <Label>Nome *</Label>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
@@ -637,6 +736,21 @@ function DeityDialog({
           <DialogTitle>{editing ? "Editar Deus" : "Novo Deus"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          {!editing && (
+            <AiGenerateBar
+              type="deity"
+              tableId={tableId}
+              onApply={(r) =>
+                setForm((f) => ({
+                  ...f,
+                  name: r.name ?? f.name,
+                  alignment: ALIGNMENTS.includes(r.alignment) ? r.alignment : f.alignment,
+                  domain: r.domain ?? f.domain,
+                  description: r.description ?? f.description,
+                }))
+              }
+            />
+          )}
           <div>
             <Label>Nome *</Label>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
@@ -847,6 +961,22 @@ function LocationDialog({
           <DialogTitle>{editing ? "Editar Local" : "Novo Local"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          {!editing && (
+            <AiGenerateBar
+              type="location"
+              tableId={tableId}
+              onApply={(r) =>
+                setForm((f) => ({
+                  ...f,
+                  name: r.name ?? f.name,
+                  kind: ["city", "dungeon", "region", "landmark", "other"].includes(r.kind)
+                    ? r.kind
+                    : f.kind,
+                  description: r.description ?? f.description,
+                }))
+              }
+            />
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Nome *</Label>
@@ -1104,6 +1234,23 @@ function FactionDialog({
           <DialogTitle>{editing ? "Editar Facção" : "Nova Facção"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          {!editing && (
+            <AiGenerateBar
+              type="faction"
+              tableId={tableId}
+              onApply={(r) =>
+                setForm((f) => ({
+                  ...f,
+                  name: r.name ?? f.name,
+                  description: r.description ?? f.description,
+                  reputation:
+                    typeof r.reputation === "number"
+                      ? Math.max(-100, Math.min(100, r.reputation))
+                      : f.reputation,
+                }))
+              }
+            />
+          )}
           <div>
             <Label>Nome *</Label>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
@@ -1304,6 +1451,23 @@ function ItemDialog({
           <DialogTitle>{editing ? "Editar Item" : "Novo Item"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          {!editing && (
+            <AiGenerateBar
+              type="item"
+              tableId={tableId}
+              onApply={(r) =>
+                setForm((f) => ({
+                  ...f,
+                  name: r.name ?? f.name,
+                  status: ["unknown", "found", "lost", "destroyed"].includes(r.status)
+                    ? r.status
+                    : f.status,
+                  holder: r.holder ?? f.holder,
+                  description: r.description ?? f.description,
+                }))
+              }
+            />
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Nome *</Label>
