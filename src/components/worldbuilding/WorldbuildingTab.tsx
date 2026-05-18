@@ -857,14 +857,13 @@ function LocationDialog({
               </Select>
             </div>
           </div>
-          <div>
-            <Label>URL do mapa/imagem</Label>
-            <Input
-              value={form.map_url}
-              placeholder="https://..."
-              onChange={(e) => setForm({ ...form, map_url: e.target.value })}
-            />
-          </div>
+          <ImageCropUpload
+            value={form.map_url || ""}
+            onChange={(v) => setForm({ ...form, map_url: v })}
+            label="Mapa / Imagem do local"
+            placeholder="https://..."
+            aspectRatio={16 / 9}
+          />
           <div>
             <Label>Descrição</Label>
             <Textarea
