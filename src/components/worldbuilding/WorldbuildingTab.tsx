@@ -504,6 +504,22 @@ function NpcDialog({
           <DialogTitle>{editing ? "Editar NPC" : "Novo NPC"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          {!editing && (
+            <AiGenerateBar
+              type="npc"
+              tableId={tableId}
+              onApply={(r) =>
+                setForm((f) => ({
+                  ...f,
+                  name: r.name ?? f.name,
+                  faction: r.faction ?? f.faction,
+                  status: ["alive", "dead", "missing"].includes(r.status) ? r.status : f.status,
+                  relationship: r.relationship ?? f.relationship,
+                  description: r.description ?? f.description,
+                }))
+              }
+            />
+          )}
           <div>
             <Label>Nome *</Label>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
@@ -720,6 +736,21 @@ function DeityDialog({
           <DialogTitle>{editing ? "Editar Deus" : "Novo Deus"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          {!editing && (
+            <AiGenerateBar
+              type="deity"
+              tableId={tableId}
+              onApply={(r) =>
+                setForm((f) => ({
+                  ...f,
+                  name: r.name ?? f.name,
+                  alignment: ALIGNMENTS.includes(r.alignment) ? r.alignment : f.alignment,
+                  domain: r.domain ?? f.domain,
+                  description: r.description ?? f.description,
+                }))
+              }
+            />
+          )}
           <div>
             <Label>Nome *</Label>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
@@ -930,6 +961,22 @@ function LocationDialog({
           <DialogTitle>{editing ? "Editar Local" : "Novo Local"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          {!editing && (
+            <AiGenerateBar
+              type="location"
+              tableId={tableId}
+              onApply={(r) =>
+                setForm((f) => ({
+                  ...f,
+                  name: r.name ?? f.name,
+                  kind: ["city", "dungeon", "region", "landmark", "other"].includes(r.kind)
+                    ? r.kind
+                    : f.kind,
+                  description: r.description ?? f.description,
+                }))
+              }
+            />
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Nome *</Label>
