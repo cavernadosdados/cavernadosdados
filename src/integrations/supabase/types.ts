@@ -1428,6 +1428,13 @@ export type Database = {
         }[]
       }
       get_my_onboarding_status: { Args: never; Returns: boolean }
+      get_my_profile_contact: {
+        Args: never
+        Returns: {
+          apps_used: string[]
+          discord_link: string
+        }[]
+      }
       get_my_profile_private: {
         Args: never
         Returns: {
