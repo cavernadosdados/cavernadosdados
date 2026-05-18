@@ -26,8 +26,17 @@ import {
   Loader2,
   Trash2,
   MessageCircle,
+  Wand2,
+  Copy,
 } from "lucide-react";
 import { SessionPresencePanel } from "@/components/SessionPresencePanel";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const REACTION_EMOJIS = ["⚔️", "🎲", "🔥", "💀", "✨", "🛡️"];
 
@@ -50,6 +59,10 @@ export const CampaignDiary = ({ tableId, tableTitle, tableSystem, isMaster, webh
   const [generating, setGenerating] = useState(false);
   const [savingLog, setSavingLog] = useState(false);
   const [sendingDiscord, setSendingDiscord] = useState(false);
+  const [hookOpen, setHookOpen] = useState(false);
+  const [hookLoading, setHookLoading] = useState(false);
+  const [hookHint, setHookHint] = useState("");
+  const [hookResult, setHookResult] = useState<{ title?: string; hook?: string } | null>(null);
 
   const [newReport, setNewReport] = useState("");
   const [characterName, setCharacterName] = useState("");
@@ -190,6 +203,42 @@ export const CampaignDiary = ({ tableId, tableTitle, tableSystem, isMaster, webh
       toast({ title: "Erro na IA", description: err.message, variant: "destructive" });
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleSuggestNextHook = async () => {
+    setHookLoading(true);
+    setHookResult(null);
+    try {
+      const narratives = logs
+        .slice()
+        .reverse()
+        .map((l: any) => (l.ai_epic_summary || l.master_narrative || "").trim())
+        .filter((s) => s.length > 0);
+      if (narratives.length === 0) {
+        toast({
+          title: "Diário vazio",
+          description: "Escreva pelo menos uma sessão antes de pedir um gancho.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const res = await supabase.functions.invoke("generate-lore-suggestion", {
+        body: {
+          type: "next_hook",
+          table_title: tableTitle,
+          system: tableSystem,
+          narratives,
+          hint: hookHint.trim() || undefined,
+        },
+      });
+      if (res.error) throw res.error;
+      if ((res.data as any)?.error) throw new Error((res.data as any).error);
+      setHookResult((res.data as any)?.result || {});
+    } catch (err: any) {
+      toast({ title: "Erro na IA", description: err.message, variant: "destructive" });
+    } finally {
+      setHookLoading(false);
     }
   };
 
