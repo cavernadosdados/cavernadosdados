@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ImageCropUpload } from "@/components/ImageCropUpload";
+import { MasterPrepSection } from "@/components/worldbuilding/MasterPrepSection";
 import {
   Select,
   SelectContent,
@@ -44,6 +45,7 @@ import {
   HelpCircle,
   GripVertical,
   X,
+  ClipboardList,
 } from "lucide-react";
 import {
   DndContext,
@@ -135,6 +137,11 @@ export function WorldbuildingTab({ tableId, isMaster }: Props) {
             <TabsTrigger value="codex" className="gap-1 min-h-10">
               <BookMarked className="h-4 w-4" /> Códex
             </TabsTrigger>
+            {isMaster && (
+              <TabsTrigger value="prep" className="gap-1 min-h-10">
+                <ClipboardList className="h-4 w-4" /> Prep
+              </TabsTrigger>
+            )}
           </TabsList>
         </div>
 
@@ -159,6 +166,11 @@ export function WorldbuildingTab({ tableId, isMaster }: Props) {
         <TabsContent value="codex" className="mt-6">
           <CodexSection tableId={tableId} isMaster={isMaster} />
         </TabsContent>
+        {isMaster && (
+          <TabsContent value="prep" className="mt-6">
+            <MasterPrepSection tableId={tableId} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
