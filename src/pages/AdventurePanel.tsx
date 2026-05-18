@@ -168,13 +168,30 @@ const AdventurePanel = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("campaign_details")
-        .select("*")
+        .select(
+          "id, table_id, campaign_objectives, progression_expectation, house_rules, combat_rules, pvp_rules, safety_lines, safety_veils, restricted_races, restricted_classes, restricted_spells, absence_policy, lateness_policy, frequency, schedule_time, timezone, next_session_date, created_at, updated_at"
+        )
         .eq("table_id", tableId!)
         .maybeSingle();
       if (error) throw error;
       return data;
     },
     enabled: !!tableId,
+  });
+
+  // Master-only: fetch Discord webhook URL via a SECURITY DEFINER RPC so it
+  // is never exposed to other authenticated users (e.g. accepted players).
+  const { data: discordWebhookUrl, refetch: refetchDiscordWebhook } = useQuery({
+    queryKey: ["campaign_discord_webhook", tableId, user?.id],
+    enabled: !!tableId && isMaster,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc(
+        "get_my_campaign_discord_webhook",
+        { _table_id: tableId! }
+      );
+      if (error) throw error;
+      return (data as string | null) ?? "";
+    },
   });
 
   // Fetch accepted players
@@ -252,7 +269,7 @@ const AdventurePanel = () => {
         lateness_policy: campaign.lateness_policy || "",
         frequency: campaign.frequency || "",
         schedule_time: campaign.schedule_time || "",
-        discord_webhook_url: (campaign as any).discord_webhook_url || "",
+        discord_webhook_url: discordWebhookUrl || "",
         next_session_date: cleanedDate,
       });
 
@@ -268,7 +285,7 @@ const AdventurePanel = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaign, isMaster]);
+  }, [campaign, isMaster, discordWebhookUrl]);
 
   // Realtime: listen for table status changes (players detect "evaluation")
   useEffect(() => {
@@ -370,6 +387,7 @@ const AdventurePanel = () => {
       }
       toast({ title: "Salvo!", description: "Detalhes da campanha atualizados." });
       refetchCampaign();
+      refetchDiscordWebhook();
     } catch (err: any) {
       toast({ title: "Erro ao salvar", description: err.message, variant: "destructive" });
     } finally {

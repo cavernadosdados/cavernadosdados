@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Lore images are publicly accessible" ON storage.objects;

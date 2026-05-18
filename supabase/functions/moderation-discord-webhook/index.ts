@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -17,6 +19,27 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // ----- AUTH: must be signed in -----
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: { user }, error: authErr } = await userClient.auth.getUser();
+    if (authErr || !user) {
+      return new Response(JSON.stringify({ error: "unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const webhookUrl = Deno.env.get("MODERATION_DISCORD_WEBHOOK");
     if (!webhookUrl) {
       console.warn("MODERATION_DISCORD_WEBHOOK não configurado.");
@@ -37,6 +60,23 @@ Deno.serve(async (req) => {
     if (!table_id || !reason) {
       return new Response(JSON.stringify({ error: "Parâmetros inválidos" }), {
         status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ----- AUTHZ: the caller must actually have filed a report for this table.
+    // Prevents arbitrary spamming of the moderation Discord channel.
+    const { data: reportRow, error: reportErr } = await userClient
+      .from("reports")
+      .select("id")
+      .eq("table_id", table_id)
+      .eq("reporter_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (reportErr || !reportRow) {
+      return new Response(JSON.stringify({ error: "forbidden" }), {
+        status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

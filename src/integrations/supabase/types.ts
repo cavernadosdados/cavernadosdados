@@ -1427,6 +1427,22 @@ export type Database = {
           title: string
         }[]
       }
+      get_my_campaign_discord_webhook: {
+        Args: { _table_id: string }
+        Returns: string
+      }
+      get_my_master_finance_tables: {
+        Args: never
+        Returns: {
+          commission_pct: number
+          created_at: string
+          id: string
+          max_players: number
+          price_cents: number
+          status: string
+          title: string
+        }[]
+      }
       get_my_onboarding_status: { Args: never; Returns: boolean }
       get_my_profile_contact: {
         Args: never
