@@ -855,3 +855,5 @@ const DiscordPreview = ({ tableTitle, sessionTitle, sessionNumber, summary, pinn
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+};
