@@ -155,8 +155,9 @@ export function ImageCropUpload({
       setDebouncedUrl(publicUrl);
       setCropOpen(false);
       toast({ title: "Imagem cortada e salva!" });
-    } catch (err: any) {
-      toast({ title: "Erro ao salvar imagem", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Não foi possível salvar a imagem";
+      toast({ title: "Erro ao salvar imagem", description: message, variant: "destructive" });
     } finally {
       setUploading(false);
     }
