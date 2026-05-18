@@ -447,6 +447,45 @@ export type Database = {
         }
         Relationships: []
       }
+      master_prep_notes: {
+        Row: {
+          checklist: Json
+          created_at: string
+          id: string
+          master_id: string
+          notes: string
+          session_date: string | null
+          table_id: string
+          template: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          checklist?: Json
+          created_at?: string
+          id?: string
+          master_id: string
+          notes?: string
+          session_date?: string | null
+          table_id: string
+          template?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          checklist?: Json
+          created_at?: string
+          id?: string
+          master_id?: string
+          notes?: string
+          session_date?: string | null
+          table_id?: string
+          template?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mesa_chat_messages: {
         Row: {
           content: string
