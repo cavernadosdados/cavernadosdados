@@ -665,6 +665,69 @@ export const CampaignDiary = ({ tableId, tableTitle, tableSystem, isMaster, webh
           </>
         )}
       </div>
+
+      {/* Dialog: Sugerir gancho de próxima sessão */}
+      <Dialog open={hookOpen} onOpenChange={setHookOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-[hsl(var(--cavern-gold))]" />
+              Sugerir gancho da próxima sessão
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              A IA lê os relatos/resumos do diário e sugere um gancho para abrir a próxima sessão.
+            </p>
+            <div>
+              <Label className="text-xs">Direção desejada (opcional)</Label>
+              <Input
+                value={hookHint}
+                onChange={(e) => setHookHint(e.target.value)}
+                placeholder="Ex: foco em traição política, voltar à masmorra..."
+                className="mt-1 bg-background/50"
+              />
+            </div>
+            <Button
+              onClick={handleSuggestNextHook}
+              disabled={hookLoading}
+              className="w-full gap-2 bg-gradient-to-r from-[hsl(var(--cavern-gold))] to-[hsl(var(--cavern-copper))] text-background hover:opacity-90 border-0"
+            >
+              {hookLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {hookResult ? "Gerar outro" : "Gerar gancho"}
+            </Button>
+            {hookResult && (
+              <div className="rounded-md border border-[hsl(var(--cavern-gold))]/30 bg-[hsl(var(--cavern-gold))]/5 p-4 space-y-2">
+                {hookResult.title && (
+                  <div className="font-bold text-[hsl(var(--cavern-gold))]">{hookResult.title}</div>
+                )}
+                <p className="text-sm whitespace-pre-wrap italic leading-relaxed">{hookResult.hook}</p>
+                <div className="flex justify-end pt-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1"
+                    onClick={async () => {
+                      const text = [hookResult.title, hookResult.hook].filter(Boolean).join("\n\n");
+                      try {
+                        await navigator.clipboard.writeText(text);
+                        toast({ title: "Copiado!" });
+                      } catch {
+                        toast({ title: "Falha ao copiar", variant: "destructive" });
+                      }
+                    }}
+                  >
+                    <Copy className="h-3 w-3" /> Copiar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setHookOpen(false)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
