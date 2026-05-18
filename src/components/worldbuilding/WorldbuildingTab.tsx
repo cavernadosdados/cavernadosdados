@@ -445,14 +445,13 @@ function NpcDialog({
               onChange={(e) => setForm({ ...form, relationship: e.target.value })}
             />
           </div>
-          <div>
-            <Label>URL do retrato</Label>
-            <Input
-              value={form.portrait_url}
-              placeholder="https://..."
-              onChange={(e) => setForm({ ...form, portrait_url: e.target.value })}
-            />
-          </div>
+          <ImageCropUpload
+            value={form.portrait_url || ""}
+            onChange={(v) => setForm({ ...form, portrait_url: v })}
+            label="Retrato do NPC"
+            placeholder="https://..."
+            aspectRatio={1}
+          />
           <div>
             <Label>Descrição</Label>
             <Textarea
