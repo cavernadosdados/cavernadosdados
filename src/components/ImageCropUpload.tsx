@@ -23,35 +23,58 @@ type Point = { x: number; y: number };
 type Area = { x: number; y: number; width: number; height: number };
 
 async function createCroppedImage(imageSrc: string, croppedAreaPixels: Area): Promise<Blob | null> {
-  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = imageSrc;
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-  });
+  // Try to fetch as blob first so the canvas isn't tainted by cross-origin images.
+  // Falls back to loading the URL directly with crossOrigin="anonymous".
+  let objectUrl: string | null = null;
+  let srcToLoad = imageSrc;
+  try {
+    const res = await fetch(imageSrc, { mode: "cors", credentials: "omit" });
+    if (res.ok) {
+      const blob = await res.blob();
+      objectUrl = URL.createObjectURL(blob);
+      srcToLoad = objectUrl;
+    }
+  } catch {
+    /* fallback to direct load */
+  }
 
-  const canvas = document.createElement("canvas");
-  canvas.width = croppedAreaPixels.width;
-  canvas.height = croppedAreaPixels.height;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      if (!objectUrl) img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Não foi possível carregar a imagem (CORS ou URL inválida)"));
+      img.src = srcToLoad;
+    });
 
-  ctx.drawImage(
-    image,
-    croppedAreaPixels.x,
-    croppedAreaPixels.y,
-    croppedAreaPixels.width,
-    croppedAreaPixels.height,
-    0,
-    0,
-    croppedAreaPixels.width,
-    croppedAreaPixels.height
-  );
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(croppedAreaPixels.width));
+    canvas.height = Math.max(1, Math.round(croppedAreaPixels.height));
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
 
-  return new Promise((resolve) => {
-    canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.92);
-  });
+    ctx.drawImage(
+      image,
+      croppedAreaPixels.x,
+      croppedAreaPixels.y,
+      croppedAreaPixels.width,
+      croppedAreaPixels.height,
+      0,
+      0,
+      canvas.width,
+      canvas.height,
+    );
+
+    return await new Promise<Blob | null>((resolve, reject) => {
+      try {
+        canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.92);
+      } catch (e) {
+        reject(new Error("Canvas bloqueado por CORS. Tente outra URL de imagem."));
+      }
+    });
+  } finally {
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+  }
 }
 
 function isValidUrl(str: string) {
@@ -104,7 +127,9 @@ export function ImageCropUpload({
       if (!blob) throw new Error("Não foi possível processar a imagem");
 
       const fileName = `cropped-${Date.now()}.jpg`;
-      const filePath = `${fileName}`;
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("Você precisa estar autenticado");
+      const filePath = `${userData.user.id}/${fileName}`;
       const { data, error } = await supabase.storage
         .from("lore-images")
         .upload(filePath, blob, { contentType: "image/jpeg" });
