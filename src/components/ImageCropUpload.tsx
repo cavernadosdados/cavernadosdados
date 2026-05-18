@@ -22,29 +22,40 @@ interface ImageCropUploadProps {
 type Point = { x: number; y: number };
 type Area = { x: number; y: number; width: number; height: number };
 
-async function createCroppedImage(imageSrc: string, croppedAreaPixels: Area): Promise<Blob | null> {
-  // Try to fetch as blob first so the canvas isn't tainted by cross-origin images.
-  // Falls back to loading the URL directly with crossOrigin="anonymous".
-  let objectUrl: string | null = null;
-  let srcToLoad = imageSrc;
+function base64ToBlob(base64: string, mimeType: string) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: mimeType });
+}
+
+async function getCanvasSafeObjectUrl(imageSrc: string) {
   try {
     const res = await fetch(imageSrc, { mode: "cors", credentials: "omit" });
-    if (res.ok) {
-      const blob = await res.blob();
-      objectUrl = URL.createObjectURL(blob);
-      srcToLoad = objectUrl;
-    }
+    if (res.ok) return URL.createObjectURL(await res.blob());
   } catch {
-    /* fallback to direct load */
+    // Many image hosts allow <img> preview but block browser fetch/canvas via CORS.
   }
 
+  const { data, error } = await supabase.functions.invoke("fetch-image-proxy", {
+    body: { url: imageSrc },
+  });
+
+  if (error) throw new Error(error.message || "Não foi possível carregar a imagem");
+  if (!data?.base64 || !data?.mimeType) throw new Error("Resposta inválida ao carregar a imagem");
+
+  return URL.createObjectURL(base64ToBlob(data.base64, data.mimeType));
+}
+
+async function createCroppedImage(imageSrc: string, croppedAreaPixels: Area): Promise<Blob | null> {
+  let objectUrl: string | null = null;
   try {
+    objectUrl = await getCanvasSafeObjectUrl(imageSrc);
     const image = await new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new Image();
-      if (!objectUrl) img.crossOrigin = "anonymous";
       img.onload = () => resolve(img);
       img.onerror = () => reject(new Error("Não foi possível carregar a imagem (CORS ou URL inválida)"));
-      img.src = srcToLoad;
+      img.src = objectUrl;
     });
 
     const canvas = document.createElement("canvas");

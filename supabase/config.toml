@@ -2,3 +2,6 @@ project_id = "eadntfolimxkswgwyzkk"
 
 [functions.discord-webhook]
 verify_jwt = true
+
+[functions.fetch-image-proxy]
+verify_jwt = true
