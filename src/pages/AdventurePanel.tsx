@@ -387,6 +387,7 @@ const AdventurePanel = () => {
       }
       toast({ title: "Salvo!", description: "Detalhes da campanha atualizados." });
       refetchCampaign();
+      refetchDiscordWebhook();
     } catch (err: any) {
       toast({ title: "Erro ao salvar", description: err.message, variant: "destructive" });
     } finally {
