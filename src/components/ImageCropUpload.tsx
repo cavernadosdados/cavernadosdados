@@ -127,7 +127,9 @@ export function ImageCropUpload({
       if (!blob) throw new Error("Não foi possível processar a imagem");
 
       const fileName = `cropped-${Date.now()}.jpg`;
-      const filePath = `${fileName}`;
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("Você precisa estar autenticado");
+      const filePath = `${userData.user.id}/${fileName}`;
       const { data, error } = await supabase.storage
         .from("lore-images")
         .upload(filePath, blob, { contentType: "image/jpeg" });
