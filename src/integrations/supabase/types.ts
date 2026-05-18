@@ -1428,6 +1428,19 @@ export type Database = {
         }[]
       }
       get_my_onboarding_status: { Args: never; Returns: boolean }
+      get_my_profile_private: {
+        Args: never
+        Returns: {
+          onboarding_completed: boolean
+          privacy_accepted_at: string
+          privacy_version: string
+          signup_bonus_claimed: boolean
+          terms_accepted_at: string
+          terms_version: string
+          tokens_balance: number
+          xp: number
+        }[]
+      }
       get_my_tokens_balance: { Args: never; Returns: number }
       get_my_xp: { Args: never; Returns: number }
       get_player_reliability: {
