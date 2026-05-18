@@ -62,13 +62,11 @@ const Financeiro = () => {
     queryKey: ["finance-tables", user?.id],
     enabled: !!user,
     queryFn: async (): Promise<MasterTableRow[]> => {
-      const { data, error } = await supabase
-        .from("tables")
-        .select("id,title,price_cents,commission_pct,max_players,status,created_at")
-        .eq("master_id", user!.id)
-        .order("created_at", { ascending: false });
+      // commission_pct is column-revoked on public.tables; fetch via RPC
+      // that returns finance data only for the calling master's own tables.
+      const { data, error } = await supabase.rpc("get_my_master_finance_tables");
       if (error) throw error;
-      return (data ?? []) as MasterTableRow[];
+      return (data ?? []) as unknown as MasterTableRow[];
     },
   });
 
