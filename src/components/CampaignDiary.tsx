@@ -37,6 +37,17 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const REACTION_EMOJIS = ["⚔️", "🎲", "🔥", "💀", "✨", "🛡️"];
 
@@ -63,6 +74,8 @@ export const CampaignDiary = ({ tableId, tableTitle, tableSystem, isMaster, webh
   const [hookLoading, setHookLoading] = useState(false);
   const [hookHint, setHookHint] = useState("");
   const [hookResult, setHookResult] = useState<{ title?: string; hook?: string } | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
   const [newReport, setNewReport] = useState("");
   const [characterName, setCharacterName] = useState("");
@@ -327,6 +340,20 @@ export const CampaignDiary = ({ tableId, tableTitle, tableSystem, isMaster, webh
     toast({ title: newPin ? "📌 Relato fixado!" : "Relato desfixado", description: newPin ? "Este será o relato oficial enviado ao Discord." : "" });
   };
 
+  const handleDeleteSession = async () => {
+    if (!sessionToDelete) return;
+    const { error } = await supabase.from("session_logs").delete().eq("id", sessionToDelete);
+    setDeleteOpen(false);
+    setSessionToDelete(null);
+    if (error) {
+      toast({ title: "Erro ao excluir sessão", description: error.message, variant: "destructive" });
+      return;
+    }
+    if (selectedLogId === sessionToDelete) setSelectedLogId(null);
+    qc.invalidateQueries({ queryKey: ["session_logs", tableId] });
+    toast({ title: "Sessão excluída", description: "O registro foi removido do diário." });
+  };
+
   const groupReactions = (reportId: string) => {
     const grouped = new Map<string, { count: number; mine: boolean }>();
     reactions
@@ -364,24 +391,42 @@ export const CampaignDiary = ({ tableId, tableTitle, tableSystem, isMaster, webh
                 </p>
               )}
               {logs.map((log) => (
-                <button
+                <div
                   key={log.id}
-                  onClick={() => setSelectedLogId(log.id)}
-                  className={`w-full text-left px-3 py-2 rounded-md transition-mystical text-sm ${
+                  className={`group w-full text-left px-3 py-2 rounded-md transition-mystical text-sm flex items-center justify-between gap-2 ${
                     selectedLogId === log.id
                       ? "bg-[hsl(var(--cavern-gold))]/15 border border-[hsl(var(--cavern-gold))]/30 glow-gold"
                       : "hover:bg-muted/50 border border-transparent"
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <Hash className="h-3 w-3 text-muted-foreground shrink-0" />
-                    <span className="font-medium truncate">{log.title}</span>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-0.5 ml-5">
-                    {new Date(log.session_date).toLocaleDateString("pt-BR")}
-                    {log.sent_to_discord && " • 📜 enviado"}
-                  </p>
-                </button>
+                  <button
+                    onClick={() => setSelectedLogId(log.id)}
+                    className="flex-1 text-left min-w-0"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Hash className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <span className="font-medium truncate">{log.title}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 ml-5">
+                      {new Date(log.session_date).toLocaleDateString("pt-BR")}
+                      {log.sent_to_discord && " • 📜 enviado"}
+                    </p>
+                  </button>
+                  {isMaster && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-muted-foreground hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSessionToDelete(log.id);
+                        setDeleteOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
               ))}
             </div>
           </ScrollArea>
@@ -728,6 +773,27 @@ export const CampaignDiary = ({ tableId, tableTitle, tableSystem, isMaster, webh
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir sessão?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Todos os relatos de jogadores, reações e presenças vinculados a esta sessão serão removidos. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSessionToDelete(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSession}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sim, excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
