@@ -1234,6 +1234,23 @@ function FactionDialog({
           <DialogTitle>{editing ? "Editar Facção" : "Nova Facção"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          {!editing && (
+            <AiGenerateBar
+              type="faction"
+              tableId={tableId}
+              onApply={(r) =>
+                setForm((f) => ({
+                  ...f,
+                  name: r.name ?? f.name,
+                  description: r.description ?? f.description,
+                  reputation:
+                    typeof r.reputation === "number"
+                      ? Math.max(-100, Math.min(100, r.reputation))
+                      : f.reputation,
+                }))
+              }
+            />
+          )}
           <div>
             <Label>Nome *</Label>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
@@ -1434,6 +1451,23 @@ function ItemDialog({
           <DialogTitle>{editing ? "Editar Item" : "Novo Item"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          {!editing && (
+            <AiGenerateBar
+              type="item"
+              tableId={tableId}
+              onApply={(r) =>
+                setForm((f) => ({
+                  ...f,
+                  name: r.name ?? f.name,
+                  status: ["unknown", "found", "lost", "destroyed"].includes(r.status)
+                    ? r.status
+                    : f.status,
+                  holder: r.holder ?? f.holder,
+                  description: r.description ?? f.description,
+                }))
+              }
+            />
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Nome *</Label>
