@@ -192,6 +192,66 @@ export type Database = {
         }
         Relationships: []
       }
+      cosmetic_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          kind: Database["public"]["Enums"]["cosmetic_kind"]
+          linked_theme_slug: string | null
+          name: string
+          preview_url: string | null
+          price_tokens: number | null
+          rarity: Database["public"]["Enums"]["cosmetic_rarity"]
+          season: string | null
+          slug: string
+          sort_order: number
+          theme_tokens: Json | null
+          unlock_rule: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          kind: Database["public"]["Enums"]["cosmetic_kind"]
+          linked_theme_slug?: string | null
+          name: string
+          preview_url?: string | null
+          price_tokens?: number | null
+          rarity?: Database["public"]["Enums"]["cosmetic_rarity"]
+          season?: string | null
+          slug: string
+          sort_order?: number
+          theme_tokens?: Json | null
+          unlock_rule?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          kind?: Database["public"]["Enums"]["cosmetic_kind"]
+          linked_theme_slug?: string | null
+          name?: string
+          preview_url?: string | null
+          price_tokens?: number | null
+          rarity?: Database["public"]["Enums"]["cosmetic_rarity"]
+          season?: string | null
+          slug?: string
+          sort_order?: number
+          theme_tokens?: Json | null
+          unlock_rule?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       global_chat: {
         Row: {
           content: string
@@ -1314,6 +1374,94 @@ export type Database = {
         }
         Relationships: []
       }
+      user_cosmetic_equipped: {
+        Row: {
+          cover_id: string | null
+          frame_id: string | null
+          glimer_id: string | null
+          theme_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_id?: string | null
+          frame_id?: string | null
+          glimer_id?: string | null
+          theme_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_id?: string | null
+          frame_id?: string | null
+          glimer_id?: string | null
+          theme_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cosmetic_equipped_cover_id_fkey"
+            columns: ["cover_id"]
+            isOneToOne: false
+            referencedRelation: "cosmetic_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_cosmetic_equipped_frame_id_fkey"
+            columns: ["frame_id"]
+            isOneToOne: false
+            referencedRelation: "cosmetic_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_cosmetic_equipped_glimer_id_fkey"
+            columns: ["glimer_id"]
+            isOneToOne: false
+            referencedRelation: "cosmetic_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_cosmetic_equipped_theme_id_fkey"
+            columns: ["theme_id"]
+            isOneToOne: false
+            referencedRelation: "cosmetic_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_cosmetics: {
+        Row: {
+          acquired_at: string
+          acquired_via: Database["public"]["Enums"]["cosmetic_acquisition"]
+          id: string
+          item_id: string
+          user_id: string
+        }
+        Insert: {
+          acquired_at?: string
+          acquired_via?: Database["public"]["Enums"]["cosmetic_acquisition"]
+          id?: string
+          item_id: string
+          user_id: string
+        }
+        Update: {
+          acquired_at?: string
+          acquired_via?: Database["public"]["Enums"]["cosmetic_acquisition"]
+          id?: string
+          item_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cosmetics_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "cosmetic_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1398,6 +1546,7 @@ export type Database = {
         Returns: number
       }
       current_pending_slots: { Args: { _user_id: string }; Returns: number }
+      equip_cosmetic: { Args: { _item_id: string }; Returns: boolean }
       get_achievements_progress: {
         Args: never
         Returns: {
@@ -1501,6 +1650,27 @@ export type Database = {
           title: string
         }[]
       }
+      get_user_equipped_cosmetics: {
+        Args: { _user_id: string }
+        Returns: {
+          cover_image_url: string
+          cover_slug: string
+          frame_image_url: string
+          frame_slug: string
+          glimer_image_url: string
+          glimer_slug: string
+          theme_slug: string
+          theme_tokens: Json
+        }[]
+      }
+      grant_cosmetic_internal: {
+        Args: {
+          _item_id: string
+          _user_id: string
+          _via: Database["public"]["Enums"]["cosmetic_acquisition"]
+        }
+        Returns: boolean
+      }
       grant_tokens: {
         Args: {
           _amount: number
@@ -1526,13 +1696,27 @@ export type Database = {
         Returns: boolean
       }
       public_accepted_count: { Args: { _table_id: string }; Returns: number }
+      purchase_cosmetic: { Args: { _item_id: string }; Returns: Json }
       spend_tokens: {
         Args: { _amount: number; _reason: string; _related_table_id?: string }
         Returns: number
       }
+      unequip_cosmetic: {
+        Args: { _kind: Database["public"]["Enums"]["cosmetic_kind"] }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      cosmetic_acquisition:
+        | "signup"
+        | "xp"
+        | "achievement"
+        | "purchase"
+        | "admin"
+        | "season"
+      cosmetic_kind: "glimer" | "frame" | "cover" | "theme"
+      cosmetic_rarity: "common" | "rare" | "epic" | "legendary"
       user_type: "player" | "master"
     }
     CompositeTypes: {
@@ -1662,6 +1846,16 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      cosmetic_acquisition: [
+        "signup",
+        "xp",
+        "achievement",
+        "purchase",
+        "admin",
+        "season",
+      ],
+      cosmetic_kind: ["glimer", "frame", "cover", "theme"],
+      cosmetic_rarity: ["common", "rare", "epic", "legendary"],
       user_type: ["player", "master"],
     },
   },
