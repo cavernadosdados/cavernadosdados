@@ -13,7 +13,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import logoDragon from "@/assets/logo-dragon.png";
+import logoGlimer from "@/assets/glimer-logo.png";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
@@ -84,9 +84,9 @@ export function AppSidebar() {
       <SidebarContent className="bg-sidebar border-r border-sidebar-border">
         <div className="p-4 flex items-center justify-center border-b border-sidebar-border">
           <img
-            src={logoDragon}
+            src={logoGlimer}
             alt="Glimer"
-            className={`transition-all ${collapsed ? "h-8" : "h-12"}`}
+            className={`transition-all object-contain ${collapsed ? "h-8" : "h-10"}`}
           />
         </div>
 
