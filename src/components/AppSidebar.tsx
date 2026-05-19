@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Home, Dice1, MessageCircle, Gem, Crown, Compass, ScrollText, Shield, Trophy, Calendar, Heart, ChevronDown } from "lucide-react";
+import { Home, Dice1, MessageCircle, Gem, Crown, Compass, ScrollText, Shield, Trophy, Calendar, Heart, ChevronDown, Sparkles } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -51,6 +51,7 @@ export function AppSidebar() {
     {
       label: "Loja & Extras",
       items: [
+        { title: "Loja Glimer", url: "/dashboard/loja", icon: Sparkles },
         { title: "Loja de Tokens", url: "/dashboard/tokens", icon: Gem },
         { title: "Área PRO", url: "/dashboard/pro", icon: Crown },
       ],
