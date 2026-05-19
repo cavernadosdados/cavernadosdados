@@ -2,76 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Glimer — Eclipse Esmeralda
+ * Tokens are HSL. Themes override via [data-theme="<slug>"] selectors
+ * (see src/lib/themes.ts).
+ * Legacy `--cavern-*`, `--gold-accent`, `--copper-accent`, `--parchment`,
+ * `--torch-glow` are kept as aliases so existing components keep working.
+ */
 
 @layer base {
   :root {
-    /* Caverna dos Dados - Dark cavern theme with gold and copper accents */
-    --background: 0 0% 5%; /* #0C0C0D */
-    --foreground: 45 20% 92%; /* #EAE0C8 */
+    /* Base — Eclipse Esmeralda */
+    --background: 150 15% 6%;        /* #0A0F0D */
+    --foreground: 45 30% 94%;
 
-    --card: 0 0% 10%; /* #1A1A1D */
-    --card-foreground: 45 20% 92%;
+    --card: 155 22% 9%;              /* #0F1F1A */
+    --card-foreground: 45 30% 94%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 45 20% 92%;
+    --popover: 155 22% 8%;
+    --popover-foreground: 45 30% 94%;
 
-    /* Golden accent - primary highlight */
-    --primary: 40 48% 58%; /* #CBA35C */
-    --primary-foreground: 0 0% 5%;
+    /* Primary — Emerald */
+    --primary: 158 84% 39%;          /* #10B981 */
+    --primary-foreground: 150 30% 6%;
 
-    /* Copper accent - secondary highlight */
-    --secondary: 15 73% 42%; /* #B84E1F */
-    --secondary-foreground: 45 20% 92%;
+    /* Secondary — Warm Gold */
+    --secondary: 43 96% 56%;         /* #FBBF24 */
+    --secondary-foreground: 150 30% 6%;
 
-    /* Muted tones */
-    --muted: 0 0% 15%;
-    --muted-foreground: 45 10% 70%;
+    --muted: 155 18% 14%;
+    --muted-foreground: 150 10% 68%;
 
-    --accent: 40 48% 58%;
-    --accent-foreground: 0 0% 5%;
+    --accent: 158 84% 39%;
+    --accent-foreground: 150 30% 6%;
 
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 45 20% 92%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 45 30% 94%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 12%;
-    --ring: 40 48% 58%;
+    --border: 155 18% 18%;
+    --input: 155 22% 11%;
+    --ring: 158 84% 39%;
 
     --radius: 0.75rem;
-    
-    /* Custom cavern tokens */
-    --cavern-dark: 0 0% 5%;
-    --cavern-secondary: 0 0% 10%;
-    --gold-accent: 40 48% 58%;
-    --copper-accent: 15 73% 42%;
-    --parchment: 45 20% 92%;
-    --torch-glow: 40 100% 70%;
-    
+
+    /* Legacy aliases (do not remove — used by existing class names) */
+    --cavern-dark: 150 15% 6%;
+    --cavern-secondary: 155 22% 9%;
+    --gold-accent: 43 96% 56%;
+    --copper-accent: 158 84% 39%;
+    --parchment: 45 30% 94%;
+    --torch-glow: 158 84% 55%;
+
     /* Gradients */
-    --gradient-gold: linear-gradient(135deg, hsl(40 48% 48%), hsl(40 48% 68%));
-    --gradient-cavern: linear-gradient(180deg, hsl(0 0% 3%), hsl(0 0% 8%));
-    --gradient-mystical: linear-gradient(135deg, hsl(40 48% 58% / 0.2), hsl(15 73% 42% / 0.2));
-    
+    --gradient-gold: linear-gradient(135deg, hsl(43 96% 50%), hsl(43 96% 65%));
+    --gradient-cavern: linear-gradient(180deg, hsl(150 15% 4%), hsl(155 22% 10%));
+    --gradient-mystical: linear-gradient(135deg, hsl(158 84% 39% / 0.25), hsl(43 96% 56% / 0.18));
+
     /* Shadows */
-    --shadow-gold: 0 4px 20px hsl(40 48% 58% / 0.4);
-    --shadow-copper: 0 4px 16px hsl(15 73% 42% / 0.3);
-    --shadow-deep: 0 8px 32px hsl(0 0% 0% / 0.9);
-    
-    /* Animations */
+    --shadow-gold: 0 4px 20px hsl(158 84% 39% / 0.35);
+    --shadow-copper: 0 4px 16px hsl(43 96% 56% / 0.25);
+    --shadow-deep: 0 8px 32px hsl(150 30% 2% / 0.9);
+
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Sidebar tokens - dark cavern theme */
-    --sidebar-background: 0 0% 5%;
-    --sidebar-foreground: 45 20% 92%;
-    --sidebar-primary: 40 48% 58%;
-    --sidebar-primary-foreground: 0 0% 5%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 45 20% 92%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 40 48% 58%;
+    /* Sidebar */
+    --sidebar-background: 150 18% 5%;
+    --sidebar-foreground: 45 30% 94%;
+    --sidebar-primary: 158 84% 39%;
+    --sidebar-primary-foreground: 150 30% 6%;
+    --sidebar-accent: 155 22% 11%;
+    --sidebar-accent-foreground: 45 30% 94%;
+    --sidebar-border: 155 18% 14%;
+    --sidebar-ring: 158 84% 39%;
   }
 
   .dark {

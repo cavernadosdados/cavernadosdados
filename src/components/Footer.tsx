@@ -1,5 +1,4 @@
-import logoText from "@/assets/logo-text.png";
-import logoDragon from "@/assets/logo-dragon.png";
+import logoGlimer from "@/assets/glimer-logo.png";
 import { Github, Twitter, Instagram, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -10,9 +9,8 @@ export const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <img src={logoDragon} alt="Dragon" className="h-10 w-auto" />
-              <img src={logoText} alt="Glimer" className="h-6 w-auto" />
+            <div className="flex items-center">
+              <img src={logoGlimer} alt="Glimer" className="h-10 w-auto object-contain" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               A plataforma que conecta mestres e jogadores para aventuras inesquecíveis.
@@ -116,9 +114,9 @@ export const Footer = () => {
         </div>
 
         <div className="mt-12 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>© 2025 Glimer. Todos os direitos reservados.</p>
-          <p className="mt-2 text-xs">
-            "Na escuridão da Caverna, dados rolam e destinos se cruzam."
+          <p>© 2026 Glimer. Todos os direitos reservados.</p>
+          <p className="mt-2 text-xs italic">
+            "Cada Glimer brilha à sua própria luz."
           </p>
         </div>
       </div>
