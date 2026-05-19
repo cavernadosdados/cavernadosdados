@@ -7,8 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
-import logoDragon from '@/assets/logo-dragon.png';
-import logoText from '@/assets/logo-text.png';
+import logoGlimer from '@/assets/glimer-logo.png';
 import { ArrowLeft, MailCheck } from 'lucide-react';
 import { issuePasswordResetNonce } from '@/lib/passwordResetNonce';
 
@@ -74,8 +73,8 @@ const EsqueciSenha = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-4 mb-4">
-            <img src={logoDragon} alt="Dragon Logo" className="h-16 w-auto animate-float" />
-            <img src={logoText} alt="Glimer" className="h-10 w-auto" />
+            <img src={logoGlimer} alt="Glimer" className="h-16 w-auto object-contain animate-float" />
+            
           </div>
           <p className="text-muted-foreground">Recupere o acesso à sua conta</p>
         </div>

@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { CoverImage } from "@/components/CoverImage";
 import { formatPriceBRL, isFreeTable } from "@/lib/price";
-import logoDragon from "@/assets/logo-dragon.png";
+import logoGlimer from '@/assets/glimer-logo.png';
 
 const MesaPublica = () => {
   const { tableId } = useParams<{ tableId: string }>();
@@ -105,7 +105,7 @@ const MesaPublica = () => {
       <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-30">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logoDragon} alt="Glimer" className="h-8" />
+            <img src={logoGlimer} alt="Glimer" className="h-8 object-contain" />
             <span className="font-bold text-sm sm:text-base hidden sm:inline">Glimer</span>
           </Link>
           <Button asChild size="sm" variant="outline" className="gap-2">
