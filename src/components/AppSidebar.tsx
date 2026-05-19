@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Home, Dice1, MessageCircle, Gem, Crown, Compass, ScrollText, Shield, Trophy, Calendar, Heart, ChevronDown } from "lucide-react";
+import { Home, Dice1, MessageCircle, Gem, Crown, Compass, ScrollText, Shield, Trophy, Calendar, Heart, ChevronDown, Sparkles } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -13,7 +13,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import logoDragon from "@/assets/logo-dragon.png";
+import logoGlimer from "@/assets/glimer-logo.png";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
@@ -51,6 +51,7 @@ export function AppSidebar() {
     {
       label: "Loja & Extras",
       items: [
+        { title: "Loja Glimer", url: "/dashboard/loja", icon: Sparkles },
         { title: "Loja de Tokens", url: "/dashboard/tokens", icon: Gem },
         { title: "Área PRO", url: "/dashboard/pro", icon: Crown },
       ],
@@ -84,9 +85,9 @@ export function AppSidebar() {
       <SidebarContent className="bg-sidebar border-r border-sidebar-border">
         <div className="p-4 flex items-center justify-center border-b border-sidebar-border">
           <img
-            src={logoDragon}
-            alt="Caverna dos Dados"
-            className={`transition-all ${collapsed ? "h-8" : "h-12"}`}
+            src={logoGlimer}
+            alt="Glimer"
+            className={`transition-all object-contain ${collapsed ? "h-8" : "h-10"}`}
           />
         </div>
 

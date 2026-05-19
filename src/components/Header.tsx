@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import logoText from "@/assets/logo-text.png";
-import logoDragon from "@/assets/logo-dragon.png";
+import logoGlimer from '@/assets/glimer-logo.png';
 
 export const Header = () => {
   const { user, signOut } = useAuth();
@@ -23,8 +22,7 @@ export const Header = () => {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="max-w-screen-xl mx-auto w-full px-3 sm:px-4 h-16 sm:h-20 flex items-center justify-between gap-2">
         <Link to="/" className="flex items-center gap-2 sm:gap-4 min-w-0" onClick={closeMenu}>
-          <img src={logoDragon} alt="Dragon Logo" className="h-10 sm:h-12 w-auto animate-float shrink-0" />
-          <img src={logoText} alt="Caverna dos Dados" className="h-7 sm:h-8 w-auto hidden sm:block" />
+          <img src={logoGlimer} alt="Glimer" className="h-10 sm:h-12 w-auto object-contain animate-float shrink-0" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">

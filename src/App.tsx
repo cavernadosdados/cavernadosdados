@@ -13,6 +13,7 @@ import MinhasAventuras from "./pages/MinhasAventuras";
 import Mensagens from "./pages/Mensagens";
 import Perfil from "./pages/Perfil";
 import Tokens from "./pages/Tokens";
+import Loja from "./pages/Loja";
 import AreaPro from "./pages/AreaPro";
 import Configuracoes from "./pages/Configuracoes";
 import AdventurePanel from "./pages/AdventurePanel";
@@ -30,6 +31,7 @@ import Termos from "./pages/Termos";
 import EsqueciSenha from "./pages/EsqueciSenha";
 import RedefinirSenha from "./pages/RedefinirSenha";
 import { useAuth } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +66,7 @@ const AppRoutes = () => (
     <Route path="/dashboard/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
     <Route path="/dashboard/perfil/:userId" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
     <Route path="/dashboard/tokens" element={<ProtectedRoute><Tokens /></ProtectedRoute>} />
+    <Route path="/dashboard/loja" element={<ProtectedRoute><Loja /></ProtectedRoute>} />
     <Route path="/dashboard/pro" element={<ProtectedRoute><AreaPro /></ProtectedRoute>} />
     <Route path="/dashboard/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
     <Route path="/dashboard/mesa/:tableId" element={<ProtectedRoute><AdventurePanel /></ProtectedRoute>} />
@@ -85,7 +88,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <ThemeProvider>
+            <AppRoutes />
+          </ThemeProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

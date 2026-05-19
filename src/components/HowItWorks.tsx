@@ -60,7 +60,7 @@ export const HowItWorks = () => {
           </div>
           <h2 className="text-4xl md:text-5xl font-bold">Como Funciona</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Seja você um mestre veterano ou um jogador iniciante, a Caverna dos Dados 
+            Seja você um mestre veterano ou um jogador iniciante, a Glimer 
             torna fácil encontrar sua próxima aventura.
           </p>
         </div>

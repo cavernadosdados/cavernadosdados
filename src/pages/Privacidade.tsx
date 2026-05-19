@@ -35,7 +35,7 @@ export default function Privacidade() {
           <section>
             <h2 className="mb-2 text-xl font-semibold text-foreground">3. Crianças e adolescentes</h2>
             <p>
-              A Caverna dos Dados não é destinada a menores de 13 anos. Para cumprir a LGPD e normas brasileiras de
+              A Glimer não é destinada a menores de 13 anos. Para cumprir a LGPD e normas brasileiras de
               proteção de crianças e adolescentes, poderemos solicitar confirmação de idade, limitar recursos sensíveis
               e restringir acesso a conteúdos marcados como adultos.
             </p>

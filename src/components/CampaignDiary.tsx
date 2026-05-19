@@ -820,7 +820,7 @@ const DiscordPreview = ({ tableTitle, sessionTitle, sessionNumber, summary, pinn
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
-            <span className="font-semibold" style={{ color: "#f2f3f5" }}>Caverna dos Dados</span>
+            <span className="font-semibold" style={{ color: "#f2f3f5" }}>Glimer</span>
             <span className="px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: "#5865F2", color: "white" }}>BOT</span>
             <span className="text-[11px]" style={{ color: "#949ba4" }}>hoje às {new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
           </div>
@@ -850,7 +850,7 @@ const DiscordPreview = ({ tableTitle, sessionTitle, sessionNumber, summary, pinn
             )}
 
             <div className="mt-3 text-[10px]" style={{ color: "#949ba4" }}>
-              Caverna dos Dados • Diário da Campanha
+              Glimer • Diário da Campanha
             </div>
           </div>
         </div>

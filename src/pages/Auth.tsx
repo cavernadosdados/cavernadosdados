@@ -8,8 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
-import logoDragon from '@/assets/logo-dragon.png';
-import logoText from '@/assets/logo-text.png';
+import logoGlimer from '@/assets/glimer-logo.png';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
@@ -169,8 +168,8 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-4 mb-4">
-            <img src={logoDragon} alt="Dragon Logo" className="h-16 w-auto animate-float" />
-            <img src={logoText} alt="Caverna dos Dados" className="h-10 w-auto" />
+            <img src={logoGlimer} alt="Glimer" className="h-16 w-auto object-contain animate-float" />
+            
           </div>
           <p className="text-muted-foreground">Entre na caverna e comece sua aventura</p>
         </div>
@@ -183,7 +182,7 @@ const Auth = () => {
             <CardDescription className="text-center">
               {isSignUp 
                 ? 'Junte-se à comunidade — você poderá mestrar e jogar'
-                : 'Acesse sua conta na Caverna dos Dados'
+                : 'Acesse sua conta na Glimer'
               }
             </CardDescription>
           </CardHeader>

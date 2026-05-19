@@ -7,8 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
-import logoDragon from '@/assets/logo-dragon.png';
-import logoText from '@/assets/logo-text.png';
+import logoGlimer from '@/assets/glimer-logo.png';
 import { Eye, EyeOff } from 'lucide-react';
 import {
   clearPasswordResetNonce,
@@ -136,8 +135,8 @@ const RedefinirSenha = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-4 mb-4">
-            <img src={logoDragon} alt="Dragon Logo" className="h-16 w-auto animate-float" />
-            <img src={logoText} alt="Caverna dos Dados" className="h-10 w-auto" />
+            <img src={logoGlimer} alt="Glimer" className="h-16 w-auto object-contain animate-float" />
+            
           </div>
           <p className="text-muted-foreground">Defina uma nova senha</p>
         </div>
