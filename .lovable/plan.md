@@ -1,83 +1,111 @@
-# Estudo: Perfil Unificado (Mestre + Jogador)
+# Plano: Caverna dos Dados → Glimer
 
-Hoje cada usuário escolhe ser `master` OU `player` no cadastro (`profiles.user_type`), e isso define dashboard, sidebar, onboarding, edição de perfil, fluxo de candidatura, tokens, etc. A proposta é eliminar essa dicotomia: **todo usuário pode mestrar e jogar**, alternando contextos sem trocar de conta.
+Rebrand completo + sistema de personalização (Glimers, temas, molduras, capas).
 
-## O que muda no banco
+## Fase 0 — Rebrand de identidade
 
-1. `**profiles.user_type` deixa de ser fonte de verdade de papel.**
-  - Manter coluna por compatibilidade temporária, mas tratar como "preferência inicial" (ou remover em migração futura).
-  - Toda checagem de "é mestre desta mesa?" passa a ser **contextual**: `tables.master_id = auth.uid()`. Já é assim em `AdventurePanel`.
-2. **RLS / funções que leem `user_type`:**
-  - `handle_new_user` (default `'player'`) → manter, mas irrelevante.
-  - `admin_list_users` retorna `user_type` → trocar por flags derivadas (`has_created_tables`, `has_played`).
-  - `get_admin_metrics` conta masters/players → trocar por "usuários que criaram mesa" vs "usuários com candidatura aceita".
-3. **Novo conceito: "modo ativo"** (apenas UI, não no banco). Persistido em `localStorage` ou em coluna nova `profiles.active_mode` ('master'|'player') só para lembrar a última visão.
-4. **Campos hoje exclusivos de mestre** (`master_systems`, `experience_years`, `preferred_themes`, `apps_used`, `plays_in_person`, `availability_*`) passam a ser **todos opcionais para qualquer usuário**. Sem migração de schema — só de UX.
+**Marca**
+- Renomear em `index.html` (title, meta, og), `README`, `package.json`, sidebar, footer, emails transacionais, copy de boas-vindas/onboarding.
+- Novo logo + favicon (precisa que você envie a arte, ou geramos uma proposta).
+- Atualizar `mem://index.md` Core: nome, paleta, tom.
 
-## O que muda no código
+**Design tokens (`index.css` + `tailwind.config.ts`)**
+- Substituir paleta cavern (gold/copper/parchment) por nova identidade Glimer. Manter sistema HSL + tokens semânticos (`--primary`, `--accent`, `--background`, sidebar tokens).
+- Remover `torch-cursor`, `glow-gold`, `glow-copper` ou renomear para tokens neutros (`--accent-glow`, etc.) para que temas futuros reaproveitem.
+- Introduzir a noção de **tema** como um conjunto de overrides desses tokens (ver Fase 3).
 
+**Reorganização leve de UX (escopo cirúrgico, sem refazer telas)**
+- Header/sidebar: novo logo, novo nome, slot para avatar Glimer com moldura.
+- Página Perfil: adicionar área de capa (banner) acima do avatar.
+- Loja: nova aba/página `/loja` (ou expandir `Tokens.tsx`) com 3 categorias.
 
-| Área                  | Mudança                                                                                                                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `useUserType`         | Substituir por `useUserCapabilities` → retorna `{ hasMasteredTables, hasPlayedTables, activeMode, setActiveMode }`.                                                                        |
-| `AppSidebar`          | Mostrar **todos** os itens (Mesas que mestro, Minhas candidaturas, Financeiro, etc.) ou agrupar por modo ativo com toggle no topo.                                                         |
-| `Dashboard`           | Renderizar **ambas** as visões (MasterView + PlayerView) condicionadas a ter dados, ou alternar pelo modo ativo.                                                                           |
-| `Perfil`              | Unificar — sempre mostrar bio + avaliações recebidas; seções "Como mestre" (mesas, sistemas que domina) e "Como jogador" (sistemas de interesse, disponibilidade) aparecem se preenchidas. |
-| `EditProfileDialog`   | Remover branch `isMaster`; mostrar todas as seções, marcando opcionais.                                                                                                                    |
-| `Auth` (cadastro)     | Remover seleção obrigatória de tipo. Pode pedir "qual seu interesse principal?" só para personalizar onboarding.                                                                           |
-| `OnboardingChecklist` | Unificar passos: criar 1 mesa **ou** se candidatar a 1 mesa concedem recompensas independentes.                                                                                            |
-| `ApplyTableDialog`    | Remover bloqueio "mestres não podem se candidatar".                                                                                                                                        |
-| `Tokens`/`Financeiro` | Mostrar abas de gasto (impulsionar mesa) e ganho (recebimento) sempre — ocultar widget só se zero atividade.                                                                               |
-| `Mesas`               | Já é "minhas mesas como mestre" — manter, mas acessível a qualquer um que tenha criado.                                                                                                    |
-| `AdminModeracao`      | Trocar gráficos master/player por "criadores ativos" / "jogadores ativos" (não mutuamente exclusivos).                                                                                     |
+## Fase 1 — Banco de dados
 
+Novas tabelas (todas com RLS):
 
-## Vantagens
+- **`cosmetic_items`** — catálogo único de itens cosméticos.
+  - Campos: `kind` ('glimer' | 'frame' | 'cover' | 'theme'), `name`, `description`, `image_url`/`preview_url`, `rarity` ('common'|'rare'|'epic'|'legendary'), `price_tokens` (nullable), `unlock_rule` (jsonb: `{type:'free'|'xp'|'achievement'|'tokens'|'season', value:...}`), `theme_slug` (FK lógico p/ glimer ligado a tema), `season`, `is_active`.
+  - SELECT público (authenticated). Sem INSERT/UPDATE/DELETE de usuário (admin via service role).
 
-- **Menos fricção no cadastro** — usuário não precisa decidir "quem é" antes de explorar.
-- **Mais liquidez** — qualquer mestre vira jogador em outra mesa (e vice-versa), aumentando matchmaking.
-- **Reputação unificada** — feedback de mestre e de jogador convivem no mesmo perfil, dando visão completa de confiabilidade.
-- **Código mais simples a longo prazo** — autoridade vira "é dono desta mesa?" em vez de papel global.
+- **`user_cosmetics`** — itens que cada usuário possui.
+  - Campos: `user_id`, `item_id`, `acquired_via` ('signup'|'xp'|'achievement'|'purchase'|'admin'), `acquired_at`.
+  - SELECT/INSERT próprios; INSERT validado por trigger `grant_cosmetic` (verifica regra de desbloqueio ou desconta tokens).
 
-## Desvantagens / Riscos
+- **`user_cosmetic_equipped`** — o que está em uso (1 por slot).
+  - Campos: `user_id` (PK), `glimer_id`, `frame_id`, `cover_id`, `theme_id`.
+  - SELECT público (para mostrar perfis), UPDATE próprio.
 
-1. **Identidade de marca diluída** — perfis hoje "se vendem" como mestres. Solução: destacar **badges contextuais** ("Mestre de 3 mesas", "Jogador em 5 campanhas").
-2. **UI mais densa** — sidebar/dashboard com mais itens. Solução: **toggle de modo ativo** no topo (Mestre ↔ Jogador) que filtra a visão.
-3. **Onboarding pode parecer vago** — sem escolha inicial, o checklist precisa cobrir os dois caminhos. Solução: pergunta opcional "por onde quer começar?" no primeiro acesso.
-4. **Migração de usuários atuais** — todos já têm `user_type` definido. Solução: usar como `active_mode` inicial; nada quebra.
-5. **Métricas de admin perdem granularidade** — não dá mais para falar "X masters / Y players". Solução: novas métricas baseadas em comportamento (criou mesa, foi aceito em mesa).
-6. **Conflito de interesse em avaliação** — mestre que também joga pode trocar reviews. Já mitigado pela função `can_create_session_feedback` (só participantes da mesa avaliam).
-7. **RLS revisitada** — qualquer policy que use `profiles.user_type` precisa virar checagem por participação. Hoje a maioria já é por `master_id`/`table_applications` — auditar uma vez é suficiente.
+- **Triggers**
+  - `grant_cosmetic(item_id)` SECURITY DEFINER: valida regra, debita tokens (reusa lógica existente), insere em `user_cosmetics`.
+  - `auto_grant_cosmetics_on_xp/achievement`: ao subir XP ou desbloquear conquista, libera glimers com `unlock_rule.type='xp'`/`'achievement'`.
 
-## Possíveis problemas e soluções
+- **Migração de avatares atuais**
+  - `profiles.avatar_url` continua existindo (upload livre permanece como opção). Quando o usuário equipar um Glimer, o `avatar_url` derivado vem da view ou do client (sem perder upload custom).
 
-- **Quebra de telas legadas que assumem `isMaster` global**: substituir por `useUserCapabilities` num único PR coordenado.
-- **Sessões antigas com `user_metadata.user_type**`: já não usamos mais (refator anterior). OK.
-- **Perfis "vazios" em ambos os lados**: card de perfil mostra CTA "Crie sua primeira mesa" / "Encontre uma mesa" baseado no que falta.
-- **Filtros de busca por papel**: trocar "buscar mestres" por "buscar pessoas que mestram &nbsp;".
+## Fase 2 — Glimers (avatares)
 
-## Plano de execução sugerido (3 fases)
+**Catálogo inicial**
+- ~12 Glimers free + ~12 desbloqueáveis (XP/conquista) + ~8 premium (tokens).
+- Você envia as imagens iniciais; cadastramos via seed SQL ou painel admin (a definir — recomendo seed no migration).
 
-**Fase 1 — Backend leve (sem breaking)**
+**UI**
+- Novo componente `<GlimerPicker>` no `EditProfileDialog` (aba "Aparência"): grid com filtros (Possuídos / Bloqueados), badge de raridade, CTA "Equipar" / "Desbloquear por X tokens" / "Bloqueado: alcance nível N".
+- `<GlimerAvatar>` wrapper de `Avatar` que aplica moldura equipada por cima.
 
-- Adicionar `profiles.active_mode` (text, default 'player').
-- Atualizar `admin_list_users` e `get_admin_metrics` para flags derivadas.
-- Manter `user_type` por compatibilidade.
+## Fase 3 — Temas (atrelados a Glimer/temporada)
 
-**Fase 2 — UI unificada**
+- Cada `theme` é um JSON de overrides de tokens HSL (`--background`, `--primary`, etc.).
+- Hook `useTheme` aplica `data-theme="<slug>"` no `<html>` e injeta CSS vars correspondentes.
+- 3 temas grátis no lançamento (`glimer-default`, `glimer-light`, `glimer-noir`) + temas atrelados: cada Glimer "épico/lendário" libera o tema combinando (ex: Glimer Floresta → tema Verdejante).
+- Seletor de tema em `Configuracoes.tsx` mostrando só temas desbloqueados.
 
-- Criar `useUserCapabilities` + toggle de modo no `AppSidebar`.
-- Refatorar `Dashboard`, `Perfil`, `EditProfileDialog`, `OnboardingChecklist`, `Tokens`, `Financeiro`, `ApplyTableDialog`.
-- Remover seleção de papel no `Auth` (manter como pergunta opcional pós-cadastro).
+## Fase 4 — Loja de tokens
 
-**Fase 3 — Limpeza**
+Nova página `/loja` (ou refactor de `Tokens.tsx`) com tabs:
+1. **Glimers premium** — grid com preço em tokens.
+2. **Molduras** — overlay PNG/SVG ao redor do avatar (estáticas no v1; animadas em v2).
+3. **Capas de perfil** — banner exibido em `Perfil.tsx` e `MesaPublica` do mestre.
 
-- Remover `useUserType` e leituras de `profiles.user_type` no client.
-- Eventualmente remover a coluna (migração futura).
+Fluxo de compra: clica → confirma → chama RPC `purchase_cosmetic(item_id)` → trigger debita tokens (reusa `token_transactions`) e insere em `user_cosmetics`.
 
-## Decisões que preciso de você
+## Fase 5 — Integração nos pontos de exibição
 
-1. **Toggle Mestre/Jogador no header** ou **visão unificada sempre** (tudo junto)?
-2. No cadastro: **remover totalmente** a escolha de papel, ou manter como **preferência opcional** para personalizar onboarding?
-3. Manter coluna `user_type` para compatibilidade ou **remover já** na fase 1?
-4. Avaliações no perfil: separar em **abas "Como mestre" / "Como jogador"** ou misturar tudo com tag de papel?
+- `AppSidebar`, `Header`, `NotificationsBell`, comentários do chat, cards de mestre, listagem de candidaturas → todos usam `<GlimerAvatar>` (avatar + moldura equipada).
+- `Perfil.tsx` → mostra capa equipada no topo + avatar com moldura.
+- Admin: nada (gestão de catálogo via migration por ora).
+
+## Fase 6 — Limpeza / memory
+
+- Atualizar `mem://index.md` com novo nome, paleta, e novas memórias (`cosmetics-schema`, `themes-system`).
+- Remover referências a "caverna", "torch", "cavern-*" tokens não usados.
+
+---
+
+## Detalhes técnicos (resumo)
+
+```text
+profiles ──┐
+           ├── user_cosmetics ──► cosmetic_items
+           ├── user_cosmetic_equipped (1:1)
+           └── token_transactions (reutilizado p/ compras)
+```
+
+- RLS: `cosmetic_items` leitura pública autenticada; `user_cosmetics` e `equipped` restritos ao dono (equipped tem SELECT público para renderizar perfis alheios).
+- Edge function não necessária — toda a lógica de compra/desbloqueio cabe em triggers SECURITY DEFINER.
+- Temas: pura camada client (CSS vars). Sem backend pesado.
+- Compatibilidade: usuários atuais mantêm `avatar_url`; ganham automaticamente 3 Glimers free + tema padrão via backfill no migration.
+
+## Ordem sugerida de execução
+
+1. Migration: tabelas + RLS + triggers + seed catálogo inicial.
+2. Rebrand visual (tokens + logo + textos) — sem mexer ainda em Glimers.
+3. `<GlimerAvatar>` + `useTheme` + página/loja base.
+4. Substituir avatares pelo `<GlimerAvatar>` em todos os pontos.
+5. Polimento (animações de moldura, badges de raridade, capa no perfil).
+
+## Pontos a decidir antes de implementar
+
+1. **Imagens iniciais dos Glimers**: você manda agora ou geramos propostas com IA para você aprovar?
+2. **Preço-base em tokens**: ex. Glimer premium 200, Moldura 100, Capa 150, Tema 300 — confirma ou ajusta?
+3. **Backfill**: novos usuários ganham 3 Glimers gratuitos (quais slugs?) e usuários antigos ganham os mesmos retroativos?
+4. **Nome/logo Glimer**: já tem arte ou quer que eu gere uma proposta?
