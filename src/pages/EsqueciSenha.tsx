@@ -75,7 +75,7 @@ const EsqueciSenha = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-4 mb-4">
             <img src={logoDragon} alt="Dragon Logo" className="h-16 w-auto animate-float" />
-            <img src={logoText} alt="Caverna dos Dados" className="h-10 w-auto" />
+            <img src={logoText} alt="Glimer" className="h-10 w-auto" />
           </div>
           <p className="text-muted-foreground">Recupere o acesso à sua conta</p>
         </div>

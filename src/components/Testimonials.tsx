@@ -38,7 +38,7 @@ export const Testimonials = () => {
           </div>
           <h2 className="text-3xl font-bold sm:text-4xl">Quem joga sente a diferença</h2>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Mestres e jogadores usam a Caverna dos Dados para transformar mesas soltas em campanhas mais organizadas, seguras e memoráveis.
+            Mestres e jogadores usam a Glimer para transformar mesas soltas em campanhas mais organizadas, seguras e memoráveis.
           </p>
         </div>
 

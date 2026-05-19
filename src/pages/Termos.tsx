@@ -18,7 +18,7 @@ export default function Termos() {
           <section>
             <h2 className="mb-2 text-xl font-semibold text-foreground">1. Aceite</h2>
             <p>
-              Ao criar uma conta ou usar a Caverna dos Dados, você declara que leu e aceitou estes Termos de Uso e a
+              Ao criar uma conta ou usar a Glimer, você declara que leu e aceitou estes Termos de Uso e a
               Política de Privacidade. Se não concordar, não utilize a plataforma.
             </p>
           </section>

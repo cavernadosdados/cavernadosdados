@@ -24,7 +24,7 @@ export const Header = () => {
       <div className="max-w-screen-xl mx-auto w-full px-3 sm:px-4 h-16 sm:h-20 flex items-center justify-between gap-2">
         <Link to="/" className="flex items-center gap-2 sm:gap-4 min-w-0" onClick={closeMenu}>
           <img src={logoDragon} alt="Dragon Logo" className="h-10 sm:h-12 w-auto animate-float shrink-0" />
-          <img src={logoText} alt="Caverna dos Dados" className="h-7 sm:h-8 w-auto hidden sm:block" />
+          <img src={logoText} alt="Glimer" className="h-7 sm:h-8 w-auto hidden sm:block" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">

@@ -54,7 +54,7 @@ const MesaPublica = () => {
   // SEO: title, meta description, OpenGraph
   useEffect(() => {
     if (!table) return;
-    const title = `${table.title} · Mesa de RPG · Caverna dos Dados`;
+    const title = `${table.title} · Mesa de RPG · Glimer`;
     document.title = title.slice(0, 60);
 
     const desc = (table.description ?? `Participe de "${table.title}", uma mesa de ${table.system}.`).slice(0, 158);
@@ -105,8 +105,8 @@ const MesaPublica = () => {
       <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-30">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logoDragon} alt="Caverna dos Dados" className="h-8" />
-            <span className="font-bold text-sm sm:text-base hidden sm:inline">Caverna dos Dados</span>
+            <img src={logoDragon} alt="Glimer" className="h-8" />
+            <span className="font-bold text-sm sm:text-base hidden sm:inline">Glimer</span>
           </Link>
           <Button asChild size="sm" variant="outline" className="gap-2">
             <Link to={loginHref}>
@@ -296,7 +296,7 @@ const MesaPublica = () => {
 
       <footer className="border-t border-border mt-10">
         <div className="max-w-5xl mx-auto px-4 py-6 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Caverna dos Dados — plataforma de RPG
+          © {new Date().getFullYear()} Glimer — plataforma de RPG
         </div>
       </footer>
     </div>

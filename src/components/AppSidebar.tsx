@@ -85,7 +85,7 @@ export function AppSidebar() {
         <div className="p-4 flex items-center justify-center border-b border-sidebar-border">
           <img
             src={logoDragon}
-            alt="Caverna dos Dados"
+            alt="Glimer"
             className={`transition-all ${collapsed ? "h-8" : "h-12"}`}
           />
         </div>

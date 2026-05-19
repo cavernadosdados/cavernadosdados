@@ -170,7 +170,7 @@ const Auth = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-4 mb-4">
             <img src={logoDragon} alt="Dragon Logo" className="h-16 w-auto animate-float" />
-            <img src={logoText} alt="Caverna dos Dados" className="h-10 w-auto" />
+            <img src={logoText} alt="Glimer" className="h-10 w-auto" />
           </div>
           <p className="text-muted-foreground">Entre na caverna e comece sua aventura</p>
         </div>
@@ -183,7 +183,7 @@ const Auth = () => {
             <CardDescription className="text-center">
               {isSignUp 
                 ? 'Junte-se à comunidade — você poderá mestrar e jogar'
-                : 'Acesse sua conta na Caverna dos Dados'
+                : 'Acesse sua conta na Glimer'
               }
             </CardDescription>
           </CardHeader>

@@ -17,7 +17,7 @@ interface OnboardingStep {
 const unifiedSteps: OnboardingStep[] = [
   {
     icon: <Sparkles className="h-10 w-10 text-primary" />,
-    title: "Bem-vindo à Caverna dos Dados!",
+    title: "Bem-vindo à Glimer!",
     description:
       "Aqui você pode ser mestre, jogador, ou os dois. Tudo no mesmo perfil, sem precisar escolher um caminho. Vamos te mostrar como começar.",
   },

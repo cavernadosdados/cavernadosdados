@@ -30,7 +30,7 @@ export const Hero = () => {
           </h1>
 
           <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            A Caverna dos Dados conecta mestres e jogadores, mas vai além do encontro: ajuda a gerir mesas,
+            A Glimer conecta mestres e jogadores, mas vai além do encontro: ajuda a gerir mesas,
             criar um ambiente mais seguro e transformar cada sessão em uma jornada viva.
           </p>
 
