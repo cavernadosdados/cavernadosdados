@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTokens } from "@/hooks/useTokens";
 import { toast } from "sonner";
 import { resolveCosmeticImage, RARITY_STYLES } from "@/lib/glimers";
+import { getThemeBySlug } from "@/lib/themes";
 import { useEquippedCosmetics } from "@/hooks/useEquippedCosmetics";
 import { cn } from "@/lib/utils";
 
@@ -225,9 +226,6 @@ const Loja = () => {
 };
 
 function ThemePreview({ slug }: { slug: string }) {
-  // Tiny visual chip preview based on theme registry
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { getThemeBySlug } = require("@/lib/themes");
   const theme = getThemeBySlug(slug);
   if (!theme) return <Sparkles className="h-12 w-12 text-muted-foreground" />;
   return (

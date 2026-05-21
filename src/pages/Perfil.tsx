@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlimerAvatar } from "@/components/GlimerAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -182,12 +182,12 @@ const Perfil = () => {
           <Card className="md:col-span-1 bg-gradient-to-br from-card to-card/50 border-primary/50">
             <CardHeader>
               <div className="flex flex-col items-center space-y-4">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={profile?.avatar_url ?? undefined} alt={displayName} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
+                <GlimerAvatar
+                  userId={viewedUserId}
+                  fallbackUrl={profile?.avatar_url}
+                  fallbackText={initials}
+                  className="h-24 w-24"
+                />
                 <div className="text-center">
                   <h3 className="text-xl font-bold">{displayName}</h3>
                   <div className="mt-2 flex flex-wrap justify-center gap-1.5">
