@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { GlimerAvatar } from "@/components/GlimerAvatar";
 import { useNavigate } from "react-router-dom";
 import { NotificationsBell } from "@/components/NotificationsBell";
 import { TokenBalance } from "@/components/TokenBalance";
@@ -59,11 +59,11 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
-                      <Avatar>
-                        <AvatarFallback className="bg-primary text-primary-foreground">
-                          {initials}
-                        </AvatarFallback>
-                      </Avatar>
+                      <GlimerAvatar
+                        userId={user?.id}
+                        fallbackText={initials}
+                        className="h-10 w-10"
+                      />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">

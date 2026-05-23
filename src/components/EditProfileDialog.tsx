@@ -25,6 +25,8 @@ import { Switch } from '@/components/ui/switch';
 import { useProfile, Profile } from '@/hooks/useProfile';
 import { SearchableMultiAdd } from '@/components/SearchableMultiAdd';
 import { WeekdaySelector } from '@/components/WeekdaySelector';
+import { GlimerPicker } from '@/components/GlimerPicker';
+import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 
@@ -169,6 +171,17 @@ export const EditProfileDialog = ({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-sm font-medium">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Seu Glimer
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Clique em um Glimer para defini-lo como seu avatar.
+              </p>
+              <GlimerPicker />
+            </div>
+
             <FormField
               control={form.control}
               name="display_name"

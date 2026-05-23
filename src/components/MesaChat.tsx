@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlimerAvatar } from "@/components/GlimerAvatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Send, MessageSquare, Lock } from "lucide-react";
@@ -92,12 +92,12 @@ export const MesaChat = ({ tableId, tableTitle }: MesaChatProps) => {
                       className="shrink-0"
                       title={m.author?.display_name ?? "Usuário"}
                     >
-                      <Avatar className="h-8 w-8 border border-primary/30">
-                        <AvatarImage src={m.author?.avatar_url ?? undefined} />
-                        <AvatarFallback className="text-[10px] bg-primary/20">
-                          {initials}
-                        </AvatarFallback>
-                      </Avatar>
+                      <GlimerAvatar
+                        userId={m.user_id}
+                        fallbackUrl={m.author?.avatar_url ?? undefined}
+                        fallbackText={initials}
+                        className="h-8 w-8"
+                      />
                     </Link>
                     <div className={cn("flex flex-col max-w-[75%]", mine && "items-end")}>
                       <div
