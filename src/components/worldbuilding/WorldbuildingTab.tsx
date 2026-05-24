@@ -2084,6 +2084,7 @@ function CodexSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -2119,7 +2120,11 @@ function CodexSection({ tableId, isMaster }: Props) {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {filtered.map((c: AnyRow) => (
-            <Card key={c.id} className="border-border bg-card/60">
+            <Card
+              key={c.id}
+              onClick={() => setViewing(c)}
+              className="border-border bg-card/60 cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80"
+            >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
@@ -2136,7 +2141,8 @@ function CodexSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 w-7 p-0"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setEditing(c);
                           setOpen(true);
                         }}
@@ -2147,7 +2153,7 @@ function CodexSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                        onClick={() => remove(c.id)}
+                        onClick={(e) => { e.stopPropagation(); remove(c.id); }}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
@@ -2166,6 +2172,19 @@ function CodexSection({ tableId, isMaster }: Props) {
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_codex", tableId] })}
       />
+      {viewing && (
+        <LoreDetailsDialog
+          open={!!viewing}
+          onOpenChange={(v) => !v && setViewing(null)}
+          title={viewing.term}
+          subtitle="Verbete do códex"
+          icon={<BookMarked className="h-5 w-5 text-primary" />}
+          description={viewing.definition}
+          isMaster={isMaster}
+          onEdit={() => { setEditing(viewing); setOpen(true); }}
+          onDelete={() => remove(viewing.id)}
+        />
+      )}
     </div>
   );
 }
