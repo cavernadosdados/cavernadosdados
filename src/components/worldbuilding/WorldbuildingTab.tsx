@@ -1688,6 +1688,7 @@ function TimelineSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
   const [dateFilter, setDateFilter] = useState("");
   const [orderMin, setOrderMin] = useState<string>("");
   const [orderMax, setOrderMax] = useState<string>("");
@@ -1839,6 +1840,7 @@ function TimelineSection({ tableId, isMaster }: Props) {
                     setOpen(true);
                   }}
                   onRemove={() => remove(e.id)}
+                  onView={() => setViewing(e)}
                   showEditActions={isMaster}
                 />
               ))}
@@ -1859,6 +1861,27 @@ function TimelineSection({ tableId, isMaster }: Props) {
         nextOrder={(items[items.length - 1]?.event_order ?? 0) + 10}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_timeline", tableId] })}
       />
+      {viewing && (
+        <LoreDetailsDialog
+          open={!!viewing}
+          onOpenChange={(v) => !v && setViewing(null)}
+          title={viewing.title}
+          subtitle="Evento da linha do tempo"
+          icon={<Clock3 className="h-5 w-5 text-primary" />}
+          badges={[
+            ...(viewing.event_date ? [{ label: viewing.event_date }] : []),
+            { label: `Ordem ${viewing.event_order ?? 0}` },
+          ]}
+          fields={[
+            { label: "Data", value: viewing.event_date },
+            { label: "Ordem", value: viewing.event_order, mono: true },
+          ]}
+          description={viewing.description}
+          isMaster={isMaster}
+          onEdit={() => { setEditing(viewing); setOpen(true); }}
+          onDelete={() => remove(viewing.id)}
+        />
+      )}
     </div>
   );
 }
@@ -1869,12 +1892,14 @@ function SortableTimelineItem({
   showEditActions,
   onEdit,
   onRemove,
+  onView,
 }: {
   event: AnyRow;
   isMaster: boolean;
   showEditActions: boolean;
   onEdit: () => void;
   onRemove: () => void;
+  onView: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: e.id,
@@ -1889,7 +1914,10 @@ function SortableTimelineItem({
   return (
     <div ref={setNodeRef} style={style} className="relative">
       <div className="absolute -left-[18px] top-2 h-3 w-3 rounded-full bg-primary border-2 border-background shadow-[0_0_8px_hsl(var(--cavern-gold)/0.6)]" />
-      <Card className={`border-border bg-card/60 ${isDragging ? "ring-2 ring-primary/50" : ""}`}>
+      <Card
+        onClick={onView}
+        className={`border-border bg-card/60 cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80 ${isDragging ? "ring-2 ring-primary/50" : ""}`}
+      >
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-2 flex-wrap">
             <div className="flex items-start gap-2 min-w-0 flex-1">
@@ -1898,6 +1926,7 @@ function SortableTimelineItem({
                   type="button"
                   {...attributes}
                   {...listeners}
+                  onClick={(ev) => ev.stopPropagation()}
                   className="touch-none cursor-grab active:cursor-grabbing text-muted-foreground hover:text-primary p-1 -ml-1 mt-0.5"
                   aria-label="Arrastar para reordenar"
                 >
@@ -1922,14 +1951,19 @@ function SortableTimelineItem({
             </div>
             {showEditActions && (
               <div className="flex gap-1 shrink-0">
-                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={onEdit}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0"
+                  onClick={(ev) => { ev.stopPropagation(); onEdit(); }}
+                >
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
                   className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                  onClick={onRemove}
+                  onClick={(ev) => { ev.stopPropagation(); onRemove(); }}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
