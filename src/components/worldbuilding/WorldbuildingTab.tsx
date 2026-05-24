@@ -336,6 +336,7 @@ function NpcsSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -380,7 +381,11 @@ function NpcsSection({ tableId, isMaster }: Props) {
             const status = NPC_STATUSES.find((s) => s.value === n.status) ?? NPC_STATUSES[0];
             const StatusIcon = status.icon;
             return (
-              <Card key={n.id} className="border-border bg-card/60 group">
+              <Card
+                key={n.id}
+                onClick={() => setViewing(n)}
+                className="border-border bg-card/60 group cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80"
+              >
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start gap-3">
                     <Avatar className="h-14 w-14 border border-primary/30">
@@ -419,7 +424,8 @@ function NpcsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setEditing(n);
                           setOpen(true);
                         }}
@@ -430,7 +436,10 @@ function NpcsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                        onClick={() => remove(n.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          remove(n.id);
+                        }}
                       >
                         <Trash2 className="h-3 w-3 mr-1" /> Remover
                       </Button>
@@ -450,6 +459,33 @@ function NpcsSection({ tableId, isMaster }: Props) {
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_npcs", tableId] })}
       />
+      {viewing && (
+        <LoreDetailsDialog
+          open={!!viewing}
+          onOpenChange={(v) => !v && setViewing(null)}
+          title={viewing.name}
+          subtitle="NPC"
+          imageUrl={viewing.portrait_url}
+          badges={[
+            ...(viewing.faction ? [{ label: viewing.faction }] : []),
+            (() => {
+              const s = NPC_STATUSES.find((x) => x.value === viewing.status) ?? NPC_STATUSES[0];
+              return { label: s.label, className: s.className };
+            })(),
+          ]}
+          fields={[
+            { label: "Facção", value: viewing.faction },
+            { label: "Relação com o grupo", value: viewing.relationship },
+          ]}
+          description={viewing.description}
+          isMaster={isMaster}
+          onEdit={() => {
+            setEditing(viewing);
+            setOpen(true);
+          }}
+          onDelete={() => remove(viewing.id)}
+        />
+      )}
     </div>
   );
 }
