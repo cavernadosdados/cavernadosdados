@@ -15,6 +15,32 @@ import dragonborn from "@/assets/glimers/dragonborn.png";
 import shadowblade from "@/assets/glimers/shadowblade.png";
 import celestial from "@/assets/glimers/celestial.png";
 
+import frameBronze from "@/assets/frames/bronze.png";
+import frameSilver from "@/assets/frames/silver.png";
+import frameVines from "@/assets/frames/vines.png";
+import frameRunes from "@/assets/frames/runes.png";
+import frameGold from "@/assets/frames/gold.png";
+import frameEmerald from "@/assets/frames/emerald.png";
+import frameRuby from "@/assets/frames/ruby.png";
+import frameObsidian from "@/assets/frames/obsidian.png";
+import frameCrystal from "@/assets/frames/crystal.png";
+import frameDragon from "@/assets/frames/dragon.png";
+import frameVoid from "@/assets/frames/void.png";
+import frameCelestial from "@/assets/frames/celestial.png";
+
+import coverTavern from "@/assets/covers/tavern.jpg";
+import coverForest from "@/assets/covers/forest.jpg";
+import coverMountains from "@/assets/covers/mountains.jpg";
+import coverLibrary from "@/assets/covers/library.jpg";
+import coverDungeon from "@/assets/covers/dungeon.jpg";
+import coverCastle from "@/assets/covers/castle.jpg";
+import coverSwamp from "@/assets/covers/swamp.jpg";
+import coverOcean from "@/assets/covers/ocean.jpg";
+import coverDesert from "@/assets/covers/desert.jpg";
+import coverSnowfield from "@/assets/covers/snowfield.jpg";
+import coverBattlefield from "@/assets/covers/battlefield.jpg";
+import coverStars from "@/assets/covers/stars.jpg";
+
 export const GLIMER_ASSETS: Record<string, string> = {
   wanderer,
   apprentice,
@@ -28,6 +54,32 @@ export const GLIMER_ASSETS: Record<string, string> = {
   dragonborn,
   shadowblade,
   celestial,
+  // Frames (keyed by full DB slug)
+  "frame-bronze": frameBronze,
+  "frame-silver": frameSilver,
+  "frame-vines": frameVines,
+  "frame-runes": frameRunes,
+  "frame-gold": frameGold,
+  "frame-emerald": frameEmerald,
+  "frame-ruby": frameRuby,
+  "frame-obsidian": frameObsidian,
+  "frame-crystal": frameCrystal,
+  "frame-dragon": frameDragon,
+  "frame-void": frameVoid,
+  "frame-celestial": frameCelestial,
+  // Covers
+  "cover-tavern": coverTavern,
+  "cover-forest": coverForest,
+  "cover-mountains": coverMountains,
+  "cover-library": coverLibrary,
+  "cover-dungeon": coverDungeon,
+  "cover-castle": coverCastle,
+  "cover-swamp": coverSwamp,
+  "cover-ocean": coverOcean,
+  "cover-desert": coverDesert,
+  "cover-snowfield": coverSnowfield,
+  "cover-battlefield": coverBattlefield,
+  "cover-stars": coverStars,
 };
 
 export function resolveCosmeticImage(slug: string | null | undefined): string | undefined {
