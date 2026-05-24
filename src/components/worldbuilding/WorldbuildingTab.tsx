@@ -2,7 +2,12 @@ import { useState, useMemo, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ImageCropUpload } from "@/components/ImageCropUpload";
 import { MasterPrepSection } from "@/components/worldbuilding/MasterPrepSection";
+import { LoreDetailsDialog } from "@/components/worldbuilding/LoreDetailsDialog";
 import {
   Select,
   SelectContent,
@@ -196,66 +202,68 @@ function useLore<T = AnyRow>(table: string, tableId: string, orderBy = "created_
 export function WorldbuildingTab({ tableId, isMaster }: Props) {
   return (
     <div className="space-y-4">
-      <Tabs defaultValue="npcs" className="w-full">
-        <div className="overflow-x-auto scrollbar-hide -mx-3 sm:mx-0">
-          <TabsList className="w-max sm:w-full sm:justify-start bg-card border border-border mx-3 sm:mx-0">
-            <TabsTrigger value="npcs" className="gap-1 min-h-10">
-              <Users className="h-4 w-4" /> NPCs
-            </TabsTrigger>
-            <TabsTrigger value="locations" className="gap-1 min-h-10">
-              <MapPin className="h-4 w-4" /> Locais
-            </TabsTrigger>
-            <TabsTrigger value="factions" className="gap-1 min-h-10">
-              <Flag className="h-4 w-4" /> Facções
-            </TabsTrigger>
-            <TabsTrigger value="deities" className="gap-1 min-h-10">
-              <Sparkles className="h-4 w-4" /> Panteão
-            </TabsTrigger>
-            <TabsTrigger value="items" className="gap-1 min-h-10">
-              <Gem className="h-4 w-4" /> Itens
-            </TabsTrigger>
-            <TabsTrigger value="timeline" className="gap-1 min-h-10">
-              <Clock3 className="h-4 w-4" /> Linha do Tempo
-            </TabsTrigger>
-            <TabsTrigger value="codex" className="gap-1 min-h-10">
-              <BookMarked className="h-4 w-4" /> Códex
-            </TabsTrigger>
-            {isMaster && (
-              <TabsTrigger value="prep" className="gap-1 min-h-10">
-                <ClipboardList className="h-4 w-4" /> Prep
-              </TabsTrigger>
-            )}
-          </TabsList>
-        </div>
-
-        <TabsContent value="npcs" className="mt-6">
+      <Accordion
+        type="multiple"
+        defaultValue={["npcs"]}
+        className="w-full space-y-2"
+      >
+        <LoreAccordionItem value="npcs" icon={<Users className="h-4 w-4" />} label="NPCs">
           <NpcsSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
-        <TabsContent value="locations" className="mt-6">
+        </LoreAccordionItem>
+        <LoreAccordionItem value="locations" icon={<MapPin className="h-4 w-4" />} label="Locais">
           <LocationsSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
-        <TabsContent value="factions" className="mt-6">
+        </LoreAccordionItem>
+        <LoreAccordionItem value="factions" icon={<Flag className="h-4 w-4" />} label="Facções">
           <FactionsSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
-        <TabsContent value="deities" className="mt-6">
+        </LoreAccordionItem>
+        <LoreAccordionItem value="deities" icon={<Sparkles className="h-4 w-4" />} label="Panteão">
           <DeitiesSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
-        <TabsContent value="items" className="mt-6">
+        </LoreAccordionItem>
+        <LoreAccordionItem value="items" icon={<Gem className="h-4 w-4" />} label="Itens lendários">
           <ItemsSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
-        <TabsContent value="timeline" className="mt-6">
+        </LoreAccordionItem>
+        <LoreAccordionItem value="timeline" icon={<Clock3 className="h-4 w-4" />} label="Linha do Tempo">
           <TimelineSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
-        <TabsContent value="codex" className="mt-6">
+        </LoreAccordionItem>
+        <LoreAccordionItem value="codex" icon={<BookMarked className="h-4 w-4" />} label="Códex">
           <CodexSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
+        </LoreAccordionItem>
         {isMaster && (
-          <TabsContent value="prep" className="mt-6">
+          <LoreAccordionItem value="prep" icon={<ClipboardList className="h-4 w-4" />} label="Prep do Mestre">
             <MasterPrepSection tableId={tableId} />
-          </TabsContent>
+          </LoreAccordionItem>
         )}
-      </Tabs>
+      </Accordion>
     </div>
+  );
+}
+
+function LoreAccordionItem({
+  value,
+  icon,
+  label,
+  children,
+}: {
+  value: string;
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <AccordionItem
+      value={value}
+      className="border border-border rounded-lg bg-card/40 overflow-hidden"
+    >
+      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-card/60 [&[data-state=open]]:bg-card/60">
+        <span className="flex items-center gap-2 text-base font-semibold text-[hsl(var(--cavern-gold))]">
+          {icon}
+          {label}
+        </span>
+      </AccordionTrigger>
+      <AccordionContent className="px-4 pb-4 pt-2">
+        {children}
+      </AccordionContent>
+    </AccordionItem>
   );
 }
 
@@ -328,6 +336,7 @@ function NpcsSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -372,7 +381,11 @@ function NpcsSection({ tableId, isMaster }: Props) {
             const status = NPC_STATUSES.find((s) => s.value === n.status) ?? NPC_STATUSES[0];
             const StatusIcon = status.icon;
             return (
-              <Card key={n.id} className="border-border bg-card/60 group">
+              <Card
+                key={n.id}
+                onClick={() => setViewing(n)}
+                className="border-border bg-card/60 group cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80"
+              >
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start gap-3">
                     <Avatar className="h-14 w-14 border border-primary/30">
@@ -411,7 +424,8 @@ function NpcsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setEditing(n);
                           setOpen(true);
                         }}
@@ -422,7 +436,10 @@ function NpcsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                        onClick={() => remove(n.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          remove(n.id);
+                        }}
                       >
                         <Trash2 className="h-3 w-3 mr-1" /> Remover
                       </Button>
@@ -442,6 +459,33 @@ function NpcsSection({ tableId, isMaster }: Props) {
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_npcs", tableId] })}
       />
+      {viewing && (
+        <LoreDetailsDialog
+          open={!!viewing}
+          onOpenChange={(v) => !v && setViewing(null)}
+          title={viewing.name}
+          subtitle="NPC"
+          imageUrl={viewing.portrait_url}
+          badges={[
+            ...(viewing.faction ? [{ label: viewing.faction }] : []),
+            (() => {
+              const s = NPC_STATUSES.find((x) => x.value === viewing.status) ?? NPC_STATUSES[0];
+              return { label: s.label, className: s.className };
+            })(),
+          ]}
+          fields={[
+            { label: "Facção", value: viewing.faction },
+            { label: "Relação com o grupo", value: viewing.relationship },
+          ]}
+          description={viewing.description}
+          isMaster={isMaster}
+          onEdit={() => {
+            setEditing(viewing);
+            setOpen(true);
+          }}
+          onDelete={() => remove(viewing.id)}
+        />
+      )}
     </div>
   );
 }
@@ -601,6 +645,7 @@ function DeitiesSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -639,7 +684,11 @@ function DeitiesSection({ tableId, isMaster }: Props) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((d: AnyRow) => (
-            <Card key={d.id} className="border-border bg-card/60">
+            <Card
+              key={d.id}
+              onClick={() => setViewing(d)}
+              className="border-border bg-card/60 cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80"
+            >
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-start gap-3">
                   <Avatar className="h-14 w-14 border border-primary/30">
@@ -667,14 +716,14 @@ function DeitiesSection({ tableId, isMaster }: Props) {
                   <div className="flex gap-2 pt-2 border-t border-border">
                     <Button
                       size="sm" variant="ghost" className="h-7 px-2 text-xs"
-                      onClick={() => { setEditing(d); setOpen(true); }}
+                      onClick={(e) => { e.stopPropagation(); setEditing(d); setOpen(true); }}
                     >
                       <Pencil className="h-3 w-3 mr-1" /> Editar
                     </Button>
                     <Button
                       size="sm" variant="ghost"
                       className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                      onClick={() => remove(d.id)}
+                      onClick={(e) => { e.stopPropagation(); remove(d.id); }}
                     >
                       <Trash2 className="h-3 w-3 mr-1" /> Remover
                     </Button>
@@ -692,6 +741,28 @@ function DeitiesSection({ tableId, isMaster }: Props) {
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_deities", tableId] })}
       />
+      {viewing && (
+        <LoreDetailsDialog
+          open={!!viewing}
+          onOpenChange={(v) => !v && setViewing(null)}
+          title={viewing.name}
+          subtitle="Divindade"
+          imageUrl={viewing.symbol_url}
+          imageFallback={<Sparkles className="h-6 w-6" />}
+          badges={[
+            ...(viewing.domain ? [{ label: viewing.domain }] : []),
+            ...(viewing.alignment ? [{ label: viewing.alignment }] : []),
+          ]}
+          fields={[
+            { label: "Domínio", value: viewing.domain },
+            { label: "Alinhamento", value: viewing.alignment },
+          ]}
+          description={viewing.description}
+          isMaster={isMaster}
+          onEdit={() => { setEditing(viewing); setOpen(true); }}
+          onDelete={() => remove(viewing.id)}
+        />
+      )}
     </div>
   );
 }
@@ -814,6 +885,7 @@ function LocationsSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -851,7 +923,11 @@ function LocationsSection({ tableId, isMaster }: Props) {
           {filtered.map((l: AnyRow) => {
             const kind = LOCATION_KINDS.find((k) => k.value === l.kind) ?? LOCATION_KINDS[0];
             return (
-              <Card key={l.id} className="border-border bg-card/60">
+              <Card
+                key={l.id}
+                onClick={() => setViewing(l)}
+                className="border-border bg-card/60 cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80"
+              >
                 <CardContent className="p-4 space-y-3">
                   {l.map_url && (
                     <img
@@ -881,7 +957,8 @@ function LocationsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setEditing(l);
                           setOpen(true);
                         }}
@@ -892,7 +969,10 @@ function LocationsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                        onClick={() => remove(l.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          remove(l.id);
+                        }}
                       >
                         <Trash2 className="h-3 w-3 mr-1" /> Remover
                       </Button>
@@ -911,6 +991,28 @@ function LocationsSection({ tableId, isMaster }: Props) {
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_locations", tableId] })}
       />
+      {viewing && (
+        <LoreDetailsDialog
+          open={!!viewing}
+          onOpenChange={(v) => !v && setViewing(null)}
+          title={viewing.name}
+          subtitle="Local"
+          icon={<MapPin className="h-5 w-5 text-primary" />}
+          imageUrl={viewing.map_url}
+          imageMode="wide"
+          badges={[
+            (() => {
+              const k = LOCATION_KINDS.find((x) => x.value === viewing.kind) ?? LOCATION_KINDS[0];
+              return { label: k.label };
+            })(),
+          ]}
+          fields={[{ label: "Tipo", value: (LOCATION_KINDS.find((x) => x.value === viewing.kind) ?? LOCATION_KINDS[0]).label }]}
+          description={viewing.description}
+          isMaster={isMaster}
+          onEdit={() => { setEditing(viewing); setOpen(true); }}
+          onDelete={() => remove(viewing.id)}
+        />
+      )}
     </div>
   );
 }
@@ -1045,6 +1147,7 @@ function FactionsSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -1088,7 +1191,11 @@ function FactionsSection({ tableId, isMaster }: Props) {
             const tier = reputationLabel(rep);
             const pct = ((rep + 100) / 200) * 100;
             return (
-              <Card key={f.id} className="border-border bg-card/60">
+              <Card
+                key={f.id}
+                onClick={() => setViewing(f)}
+                className="border-border bg-card/60 cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80"
+              >
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start gap-3">
                     <Avatar className="h-12 w-12 border border-primary/30">
@@ -1134,7 +1241,7 @@ function FactionsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="outline"
                         className="h-7 px-2 text-xs"
-                        onClick={() => updateRep(f.id, -10, rep)}
+                        onClick={(e) => { e.stopPropagation(); updateRep(f.id, -10, rep); }}
                       >
                         <ArrowDown className="h-3 w-3 mr-1" /> -10
                       </Button>
@@ -1142,7 +1249,7 @@ function FactionsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="outline"
                         className="h-7 px-2 text-xs"
-                        onClick={() => updateRep(f.id, 10, rep)}
+                        onClick={(e) => { e.stopPropagation(); updateRep(f.id, 10, rep); }}
                       >
                         <ArrowUp className="h-3 w-3 mr-1" /> +10
                       </Button>
@@ -1150,7 +1257,8 @@ function FactionsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs ml-auto"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setEditing(f);
                           setOpen(true);
                         }}
@@ -1161,7 +1269,7 @@ function FactionsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                        onClick={() => remove(f.id)}
+                        onClick={(e) => { e.stopPropagation(); remove(f.id); }}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -1180,6 +1288,30 @@ function FactionsSection({ tableId, isMaster }: Props) {
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_factions", tableId] })}
       />
+      {viewing && (() => {
+        const rep = viewing.reputation ?? 0;
+        const tier = reputationLabel(rep);
+        return (
+          <LoreDetailsDialog
+            open={!!viewing}
+            onOpenChange={(v) => !v && setViewing(null)}
+            title={viewing.name}
+            subtitle="Facção"
+            icon={<Flag className="h-5 w-5 text-primary" />}
+            imageUrl={viewing.symbol_url}
+            imageFallback={<Flag className="h-6 w-6" />}
+            badges={[{ label: tier.label, className: tier.className }]}
+            fields={[
+              { label: "Reputação", value: rep > 0 ? `+${rep}` : rep, mono: true },
+              { label: "Status", value: tier.label },
+            ]}
+            description={viewing.description}
+            isMaster={isMaster}
+            onEdit={() => { setEditing(viewing); setOpen(true); }}
+            onDelete={() => remove(viewing.id)}
+          />
+        );
+      })()}
     </div>
   );
 }
@@ -1305,6 +1437,7 @@ function ItemsSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -1342,7 +1475,11 @@ function ItemsSection({ tableId, isMaster }: Props) {
           {filtered.map((i: AnyRow) => {
             const status = ITEM_STATUSES.find((s) => s.value === i.status) ?? ITEM_STATUSES[0];
             return (
-              <Card key={i.id} className="border-border bg-card/60">
+              <Card
+                key={i.id}
+                onClick={() => setViewing(i)}
+                className="border-border bg-card/60 cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80"
+              >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <Gem className="h-5 w-5 text-primary mt-0.5 shrink-0" />
@@ -1370,7 +1507,8 @@ function ItemsSection({ tableId, isMaster }: Props) {
                           size="sm"
                           variant="ghost"
                           className="h-7 w-7 p-0"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setEditing(i);
                             setOpen(true);
                           }}
@@ -1381,7 +1519,7 @@ function ItemsSection({ tableId, isMaster }: Props) {
                           size="sm"
                           variant="ghost"
                           className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                          onClick={() => remove(i.id)}
+                          onClick={(e) => { e.stopPropagation(); remove(i.id); }}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
@@ -1401,6 +1539,27 @@ function ItemsSection({ tableId, isMaster }: Props) {
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_items", tableId] })}
       />
+      {viewing && (() => {
+        const status = ITEM_STATUSES.find((s) => s.value === viewing.status) ?? ITEM_STATUSES[0];
+        return (
+          <LoreDetailsDialog
+            open={!!viewing}
+            onOpenChange={(v) => !v && setViewing(null)}
+            title={viewing.name}
+            subtitle="Item lendário"
+            icon={<Gem className="h-5 w-5 text-primary" />}
+            badges={[{ label: status.label }]}
+            fields={[
+              { label: "Status", value: status.label },
+              { label: "Em poder de", value: viewing.holder },
+            ]}
+            description={viewing.description}
+            isMaster={isMaster}
+            onEdit={() => { setEditing(viewing); setOpen(true); }}
+            onDelete={() => remove(viewing.id)}
+          />
+        );
+      })()}
     </div>
   );
 }
@@ -1529,6 +1688,7 @@ function TimelineSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
   const [dateFilter, setDateFilter] = useState("");
   const [orderMin, setOrderMin] = useState<string>("");
   const [orderMax, setOrderMax] = useState<string>("");
@@ -1680,6 +1840,7 @@ function TimelineSection({ tableId, isMaster }: Props) {
                     setOpen(true);
                   }}
                   onRemove={() => remove(e.id)}
+                  onView={() => setViewing(e)}
                   showEditActions={isMaster}
                 />
               ))}
@@ -1700,6 +1861,27 @@ function TimelineSection({ tableId, isMaster }: Props) {
         nextOrder={(items[items.length - 1]?.event_order ?? 0) + 10}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_timeline", tableId] })}
       />
+      {viewing && (
+        <LoreDetailsDialog
+          open={!!viewing}
+          onOpenChange={(v) => !v && setViewing(null)}
+          title={viewing.title}
+          subtitle="Evento da linha do tempo"
+          icon={<Clock3 className="h-5 w-5 text-primary" />}
+          badges={[
+            ...(viewing.event_date ? [{ label: viewing.event_date }] : []),
+            { label: `Ordem ${viewing.event_order ?? 0}` },
+          ]}
+          fields={[
+            { label: "Data", value: viewing.event_date },
+            { label: "Ordem", value: viewing.event_order, mono: true },
+          ]}
+          description={viewing.description}
+          isMaster={isMaster}
+          onEdit={() => { setEditing(viewing); setOpen(true); }}
+          onDelete={() => remove(viewing.id)}
+        />
+      )}
     </div>
   );
 }
@@ -1710,12 +1892,14 @@ function SortableTimelineItem({
   showEditActions,
   onEdit,
   onRemove,
+  onView,
 }: {
   event: AnyRow;
   isMaster: boolean;
   showEditActions: boolean;
   onEdit: () => void;
   onRemove: () => void;
+  onView: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: e.id,
@@ -1730,7 +1914,10 @@ function SortableTimelineItem({
   return (
     <div ref={setNodeRef} style={style} className="relative">
       <div className="absolute -left-[18px] top-2 h-3 w-3 rounded-full bg-primary border-2 border-background shadow-[0_0_8px_hsl(var(--cavern-gold)/0.6)]" />
-      <Card className={`border-border bg-card/60 ${isDragging ? "ring-2 ring-primary/50" : ""}`}>
+      <Card
+        onClick={onView}
+        className={`border-border bg-card/60 cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80 ${isDragging ? "ring-2 ring-primary/50" : ""}`}
+      >
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-2 flex-wrap">
             <div className="flex items-start gap-2 min-w-0 flex-1">
@@ -1739,6 +1926,7 @@ function SortableTimelineItem({
                   type="button"
                   {...attributes}
                   {...listeners}
+                  onClick={(ev) => ev.stopPropagation()}
                   className="touch-none cursor-grab active:cursor-grabbing text-muted-foreground hover:text-primary p-1 -ml-1 mt-0.5"
                   aria-label="Arrastar para reordenar"
                 >
@@ -1763,14 +1951,19 @@ function SortableTimelineItem({
             </div>
             {showEditActions && (
               <div className="flex gap-1 shrink-0">
-                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={onEdit}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0"
+                  onClick={(ev) => { ev.stopPropagation(); onEdit(); }}
+                >
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
                   className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                  onClick={onRemove}
+                  onClick={(ev) => { ev.stopPropagation(); onRemove(); }}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
@@ -1891,6 +2084,7 @@ function CodexSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -1926,7 +2120,11 @@ function CodexSection({ tableId, isMaster }: Props) {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {filtered.map((c: AnyRow) => (
-            <Card key={c.id} className="border-border bg-card/60">
+            <Card
+              key={c.id}
+              onClick={() => setViewing(c)}
+              className="border-border bg-card/60 cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80"
+            >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
@@ -1943,7 +2141,8 @@ function CodexSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 w-7 p-0"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setEditing(c);
                           setOpen(true);
                         }}
@@ -1954,7 +2153,7 @@ function CodexSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                        onClick={() => remove(c.id)}
+                        onClick={(e) => { e.stopPropagation(); remove(c.id); }}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
@@ -1973,6 +2172,19 @@ function CodexSection({ tableId, isMaster }: Props) {
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_codex", tableId] })}
       />
+      {viewing && (
+        <LoreDetailsDialog
+          open={!!viewing}
+          onOpenChange={(v) => !v && setViewing(null)}
+          title={viewing.term}
+          subtitle="Verbete do códex"
+          icon={<BookMarked className="h-5 w-5 text-primary" />}
+          description={viewing.definition}
+          isMaster={isMaster}
+          onEdit={() => { setEditing(viewing); setOpen(true); }}
+          onDelete={() => remove(viewing.id)}
+        />
+      )}
     </div>
   );
 }
