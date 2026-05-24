@@ -21,7 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RARITY_STYLES } from "@/lib/glimers";
 import { cn } from "@/lib/utils";
 
-type Kind = "frame" | "cover";
+type Kind = "glimer" | "frame" | "cover";
 type Rarity = "common" | "rare" | "epic" | "legendary";
 type UnlockType = "free" | "purchase" | "xp" | "achievement";
 
@@ -54,7 +54,7 @@ export default function AdminCosmeticos() {
       const { data, error } = await supabase
         .from("cosmetic_items")
         .select("id, slug, kind, name, description, rarity, price_tokens, unlock_rule, image_url, is_active, sort_order, created_at")
-        .in("kind", ["frame", "cover"])
+        .in("kind", ["glimer", "frame", "cover"])
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -140,7 +140,7 @@ export default function AdminCosmeticos() {
 
     setSubmitting(true);
     try {
-      const ext = (file.name.split(".").pop() || (kind === "frame" ? "png" : "jpg")).toLowerCase();
+      const ext = (file.name.split(".").pop() || (kind === "cover" ? "jpg" : "png")).toLowerCase();
       const path = `${kind}s/${finalSlug}-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("cosmetics").upload(path, file, {
         contentType: file.type || undefined,
@@ -197,7 +197,7 @@ export default function AdminCosmeticos() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">Cosméticos personalizados</h1>
-            <p className="text-sm text-muted-foreground">Publique molduras e capas exclusivas direto na loja.</p>
+            <p className="text-sm text-muted-foreground">Publique Glimers, molduras e capas exclusivas direto na loja.</p>
           </div>
         </div>
 
@@ -217,6 +217,7 @@ export default function AdminCosmeticos() {
                     <Select value={kind} onValueChange={(v) => setKind(v as Kind)}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="glimer">Glimer (avatar PNG transparente)</SelectItem>
                         <SelectItem value="frame">Moldura (PNG transparente)</SelectItem>
                         <SelectItem value="cover">Capa (16:9)</SelectItem>
                       </SelectContent>
@@ -307,21 +308,21 @@ export default function AdminCosmeticos() {
                     <Label>Arquivo de imagem</Label>
                     <Input
                       type="file"
-                      accept={kind === "frame" ? "image/png" : "image/jpeg,image/png,image/webp"}
+                      accept={kind === "cover" ? "image/jpeg,image/png,image/webp" : "image/png"}
                       onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
                       required
                     />
                     <p className="text-xs text-muted-foreground">
-                      {kind === "frame"
-                        ? "PNG quadrado com fundo transparente (recomendado: 512×512)."
-                        : "JPG/PNG/WebP em 16:9 (recomendado: 1280×720, máx ~500KB)."}
+                      {kind === "cover"
+                        ? "JPG/PNG/WebP em 16:9 (recomendado: 1280×720, máx ~500KB)."
+                        : "PNG quadrado com fundo transparente (recomendado: 512×512)."}
                     </p>
                     {previewUrl && (
                       <div className={cn(
                         "mt-2 border rounded-lg overflow-hidden bg-muted/30 flex items-center justify-center",
                         kind === "cover" ? "aspect-video" : "aspect-square max-w-xs",
                       )}>
-                        <img src={previewUrl} alt="preview" className={kind === "frame" ? "h-full w-full object-contain p-4" : "h-full w-full object-cover"} />
+                        <img src={previewUrl} alt="preview" className={kind === "cover" ? "h-full w-full object-cover" : "h-full w-full object-contain p-4"} />
                       </div>
                     )}
                   </div>
@@ -387,7 +388,7 @@ function CatalogGrid({
                 <img
                   src={it.image_url}
                   alt={it.name}
-                  className={it.kind === "frame" ? "h-full w-full object-contain p-3" : "h-full w-full object-cover"}
+                  className={it.kind === "cover" ? "h-full w-full object-cover" : "h-full w-full object-contain p-3"}
                 />
               ) : (
                 <div className="h-full w-full flex items-center justify-center"><ImageIcon className="h-8 w-8 text-muted-foreground" /></div>

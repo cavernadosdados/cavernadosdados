@@ -17,6 +17,7 @@ interface OwnedGlimer {
     name: string;
     kind: string;
     rarity: string;
+    image_url: string | null;
   };
 }
 
@@ -31,7 +32,7 @@ export function GlimerPicker() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("user_cosmetics")
-        .select("item_id, cosmetic_items!inner(id, slug, name, kind, rarity)")
+        .select("item_id, cosmetic_items!inner(id, slug, name, kind, rarity, image_url)")
         .eq("cosmetic_items.kind", "glimer");
       if (error) throw error;
       return (data ?? []) as unknown as OwnedGlimer[];
@@ -72,7 +73,7 @@ export function GlimerPicker() {
     <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
       {owned.map((row) => {
         const item = row.cosmetic_items;
-        const src = resolveCosmeticImage(item.slug);
+        const src = resolveCosmeticImage(item.slug, item.image_url);
         const isEquipped = equipped?.glimer_slug === item.slug;
         return (
           <button
