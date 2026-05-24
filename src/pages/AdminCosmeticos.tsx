@@ -51,6 +51,7 @@ export default function AdminCosmeticos() {
   const [submitting, setSubmitting] = useState(false);
 
   const [editing, setEditing] = useState<any | null>(null);
+  const [catalogKind, setCatalogKind] = useState<"all" | Kind>("all");
 
   const { data: items, isLoading: loadingItems } = useQuery({
     queryKey: ["admin-cosmetics-all"],
