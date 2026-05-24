@@ -1088,6 +1088,7 @@ function FactionsSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewingFaction, setViewingFaction] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
