@@ -1491,12 +1491,13 @@ function ItemDialog({
     description: "",
     status: "unknown",
     holder: "",
+    image_url: "",
   });
   const [saving, setSaving] = useState(false);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useMemo(() => {
-    setForm(editing ?? { name: "", description: "", status: "unknown", holder: "" });
+    setForm(editing ?? { name: "", description: "", status: "unknown", holder: "", image_url: "" });
   }, [editing, open]);
 
   const save = async () => {
@@ -1563,6 +1564,14 @@ function ItemDialog({
               value={form.holder}
               placeholder="Personagem, NPC ou local..."
               onChange={(e) => setForm({ ...form, holder: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label>URL da imagem</Label>
+            <Input
+              value={form.image_url ?? ""}
+              placeholder="https://..."
+              onChange={(e) => setForm({ ...form, image_url: e.target.value })}
             />
           </div>
           <div>
