@@ -202,66 +202,68 @@ function useLore<T = AnyRow>(table: string, tableId: string, orderBy = "created_
 export function WorldbuildingTab({ tableId, isMaster }: Props) {
   return (
     <div className="space-y-4">
-      <Tabs defaultValue="npcs" className="w-full">
-        <div className="overflow-x-auto scrollbar-hide -mx-3 sm:mx-0">
-          <TabsList className="w-max sm:w-full sm:justify-start bg-card border border-border mx-3 sm:mx-0">
-            <TabsTrigger value="npcs" className="gap-1 min-h-10">
-              <Users className="h-4 w-4" /> NPCs
-            </TabsTrigger>
-            <TabsTrigger value="locations" className="gap-1 min-h-10">
-              <MapPin className="h-4 w-4" /> Locais
-            </TabsTrigger>
-            <TabsTrigger value="factions" className="gap-1 min-h-10">
-              <Flag className="h-4 w-4" /> Facções
-            </TabsTrigger>
-            <TabsTrigger value="deities" className="gap-1 min-h-10">
-              <Sparkles className="h-4 w-4" /> Panteão
-            </TabsTrigger>
-            <TabsTrigger value="items" className="gap-1 min-h-10">
-              <Gem className="h-4 w-4" /> Itens
-            </TabsTrigger>
-            <TabsTrigger value="timeline" className="gap-1 min-h-10">
-              <Clock3 className="h-4 w-4" /> Linha do Tempo
-            </TabsTrigger>
-            <TabsTrigger value="codex" className="gap-1 min-h-10">
-              <BookMarked className="h-4 w-4" /> Códex
-            </TabsTrigger>
-            {isMaster && (
-              <TabsTrigger value="prep" className="gap-1 min-h-10">
-                <ClipboardList className="h-4 w-4" /> Prep
-              </TabsTrigger>
-            )}
-          </TabsList>
-        </div>
-
-        <TabsContent value="npcs" className="mt-6">
+      <Accordion
+        type="multiple"
+        defaultValue={["npcs"]}
+        className="w-full space-y-2"
+      >
+        <LoreAccordionItem value="npcs" icon={<Users className="h-4 w-4" />} label="NPCs">
           <NpcsSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
-        <TabsContent value="locations" className="mt-6">
+        </LoreAccordionItem>
+        <LoreAccordionItem value="locations" icon={<MapPin className="h-4 w-4" />} label="Locais">
           <LocationsSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
-        <TabsContent value="factions" className="mt-6">
+        </LoreAccordionItem>
+        <LoreAccordionItem value="factions" icon={<Flag className="h-4 w-4" />} label="Facções">
           <FactionsSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
-        <TabsContent value="deities" className="mt-6">
+        </LoreAccordionItem>
+        <LoreAccordionItem value="deities" icon={<Sparkles className="h-4 w-4" />} label="Panteão">
           <DeitiesSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
-        <TabsContent value="items" className="mt-6">
+        </LoreAccordionItem>
+        <LoreAccordionItem value="items" icon={<Gem className="h-4 w-4" />} label="Itens lendários">
           <ItemsSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
-        <TabsContent value="timeline" className="mt-6">
+        </LoreAccordionItem>
+        <LoreAccordionItem value="timeline" icon={<Clock3 className="h-4 w-4" />} label="Linha do Tempo">
           <TimelineSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
-        <TabsContent value="codex" className="mt-6">
+        </LoreAccordionItem>
+        <LoreAccordionItem value="codex" icon={<BookMarked className="h-4 w-4" />} label="Códex">
           <CodexSection tableId={tableId} isMaster={isMaster} />
-        </TabsContent>
+        </LoreAccordionItem>
         {isMaster && (
-          <TabsContent value="prep" className="mt-6">
+          <LoreAccordionItem value="prep" icon={<ClipboardList className="h-4 w-4" />} label="Prep do Mestre">
             <MasterPrepSection tableId={tableId} />
-          </TabsContent>
+          </LoreAccordionItem>
         )}
-      </Tabs>
+      </Accordion>
     </div>
+  );
+}
+
+function LoreAccordionItem({
+  value,
+  icon,
+  label,
+  children,
+}: {
+  value: string;
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <AccordionItem
+      value={value}
+      className="border border-border rounded-lg bg-card/40 overflow-hidden"
+    >
+      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-card/60 [&[data-state=open]]:bg-card/60">
+        <span className="flex items-center gap-2 text-base font-semibold text-[hsl(var(--cavern-gold))]">
+          {icon}
+          {label}
+        </span>
+      </AccordionTrigger>
+      <AccordionContent className="px-4 pb-4 pt-2">
+        {children}
+      </AccordionContent>
+    </AccordionItem>
   );
 }
 
