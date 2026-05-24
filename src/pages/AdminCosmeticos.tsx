@@ -384,7 +384,7 @@ export default function AdminCosmeticos() {
                       <Card>
                         <CardHeader className="pb-2"><CardTitle className="text-base">Personalizados ({custom.length})</CardTitle></CardHeader>
                         <CardContent>
-                          {custom.length === 1 ? (
+                          {custom.length === 0 ? (
                             <p className="text-sm text-muted-foreground">Nenhum {k} personalizado ainda.</p>
                           ) : (
                             <CatalogGrid items={custom} onToggle={toggleActive.mutate} onDelete={deleteItem.mutate} onEdit={setEditing} />
