@@ -8,6 +8,22 @@
     <meta name="author" content="Glimer" />
     <meta name="keywords" content="RPG, mestres de RPG, jogadores de RPG, D&D, RPG de mesa, campanha, one-shot" />
     <link rel="icon" href="/favicon.png" type="image/png" />
+    <script>
+      // Apply persisted theme synchronously to avoid flash on navigation/refresh.
+      (function () {
+        try {
+          var raw = localStorage.getItem('glimer:theme');
+          if (!raw) return;
+          var parsed = JSON.parse(raw);
+          if (!parsed || !parsed.tokens) return;
+          var root = document.documentElement;
+          Object.keys(parsed.tokens).forEach(function (k) {
+            root.style.setProperty(k, parsed.tokens[k]);
+          });
+          if (parsed.slug) root.setAttribute('data-theme', parsed.slug);
+        } catch (e) {}
+      })();
+    </script>
 
     
     
