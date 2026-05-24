@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Sparkles, Upload, Loader2, Trash2, Eye, EyeOff, ImageIcon, Pencil } from "lucide-react";
+import { Sparkles, Upload, Loader2, Trash2, Eye, EyeOff, ImageIcon, Pencil, User, Square, Image, LayoutGrid } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
