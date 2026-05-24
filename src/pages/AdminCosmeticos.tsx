@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Sparkles, Upload, Loader2, Trash2, Eye, EyeOff, ImageIcon } from "lucide-react";
+import { Sparkles, Upload, Loader2, Trash2, Eye, EyeOff, ImageIcon, Pencil } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -46,6 +49,8 @@ export default function AdminCosmeticos() {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
+
+  const [editing, setEditing] = useState<any | null>(null);
 
   const { data: items, isLoading: loadingItems } = useQuery({
     queryKey: ["admin-cosmetics-all"],
@@ -350,31 +355,42 @@ export default function AdminCosmeticos() {
                     {customItems.length === 0 ? (
                       <p className="text-sm text-muted-foreground">Nenhum cosmético personalizado ainda.</p>
                     ) : (
-                      <CatalogGrid items={customItems} onToggle={toggleActive.mutate} onDelete={deleteItem.mutate} />
+                      <CatalogGrid items={customItems} onToggle={toggleActive.mutate} onDelete={deleteItem.mutate} onEdit={setEditing} />
                     )}
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="pb-2"><CardTitle className="text-base text-muted-foreground">Catálogo padrão ({bundledItems.length})</CardTitle></CardHeader>
                   <CardContent>
-                    <CatalogGrid items={bundledItems} onToggle={toggleActive.mutate} readOnly />
+                    <CatalogGrid items={bundledItems} onToggle={toggleActive.mutate} onEdit={setEditing} readOnly />
                   </CardContent>
                 </Card>
               </>
             )}
           </TabsContent>
         </Tabs>
+
+        <EditCosmeticDialog
+          item={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            qc.invalidateQueries({ queryKey: ["admin-cosmetics-all"] });
+            qc.invalidateQueries({ queryKey: ["cosmetic-items"] });
+          }}
+        />
       </div>
     </DashboardLayout>
   );
 }
 
 function CatalogGrid({
-  items, onToggle, onDelete, readOnly,
+  items, onToggle, onDelete, onEdit, readOnly,
 }: {
   items: any[];
   onToggle: (v: { id: string; active: boolean }) => void;
   onDelete?: (id: string) => void;
+  onEdit?: (item: any) => void;
   readOnly?: boolean;
 }) {
   return (
@@ -410,6 +426,17 @@ function CatalogGrid({
                 >
                   {it.is_active ? <><EyeOff className="h-3 w-3 mr-1" /> Ocultar</> : <><Eye className="h-3 w-3 mr-1" /> Mostrar</>}
                 </Button>
+                {onEdit && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2"
+                    onClick={() => onEdit(it)}
+                    title="Editar"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                )}
                 {!readOnly && onDelete && (
                   <Button
                     size="sm"
@@ -426,5 +453,222 @@ function CatalogGrid({
         );
       })}
     </div>
+  );
+}
+
+function EditCosmeticDialog({
+  item, onClose, onSaved,
+}: {
+  item: any | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const { toast } = useToast();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [rarity, setRarity] = useState<Rarity>("common");
+  const [unlockType, setUnlockType] = useState<UnlockType>("free");
+  const [priceTokens, setPriceTokens] = useState("10");
+  const [xpRequired, setXpRequired] = useState("100");
+  const [achievementCode, setAchievementCode] = useState("");
+  const [sortOrder, setSortOrder] = useState("100");
+  const [isActive, setIsActive] = useState(true);
+  const [newFile, setNewFile] = useState<File | null>(null);
+  const [newPreview, setNewPreview] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const isCustom = !!item?.image_url && String(item.image_url).includes("/storage/");
+
+  useEffect(() => {
+    if (!item) return;
+    setName(item.name ?? "");
+    setDescription(item.description ?? "");
+    setRarity((item.rarity ?? "common") as Rarity);
+    const rule = item.unlock_rule ?? { type: "free" };
+    setUnlockType((rule.type ?? "free") as UnlockType);
+    setPriceTokens(String(item.price_tokens ?? 10));
+    setXpRequired(String(rule.type === "xp" ? rule.value ?? 100 : 100));
+    setAchievementCode(rule.type === "achievement" ? String(rule.value ?? "") : "");
+    setSortOrder(String(item.sort_order ?? 100));
+    setIsActive(!!item.is_active);
+    setNewFile(null);
+    setNewPreview("");
+  }, [item?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleClose = () => {
+    if (newPreview) URL.revokeObjectURL(newPreview);
+    setName(""); setDescription(""); setRarity("common");
+    setUnlockType("free"); setPriceTokens("10"); setXpRequired("100");
+    setAchievementCode(""); setSortOrder("100"); setIsActive(true);
+    setNewFile(null); setNewPreview("");
+    onClose();
+  };
+
+  const handleFile = (f: File | null) => {
+    setNewFile(f);
+    if (newPreview) URL.revokeObjectURL(newPreview);
+    setNewPreview(f ? URL.createObjectURL(f) : "");
+  };
+
+  const onSave = async () => {
+    if (!item) return;
+    if (!name.trim()) {
+      toast({ title: "Nome obrigatório", variant: "destructive" }); return;
+    }
+
+    let unlock_rule: any;
+    let price: number | null = null;
+    if (unlockType === "free") unlock_rule = { type: "free" };
+    else if (unlockType === "purchase") {
+      const p = parseInt(priceTokens, 10);
+      if (!p || p <= 0) { toast({ title: "Preço inválido", variant: "destructive" }); return; }
+      unlock_rule = { type: "purchase" }; price = p;
+    } else if (unlockType === "xp") {
+      const v = parseInt(xpRequired, 10);
+      if (!v || v <= 0) { toast({ title: "XP inválido", variant: "destructive" }); return; }
+      unlock_rule = { type: "xp", value: v };
+    } else {
+      if (!achievementCode.trim()) { toast({ title: "Código de conquista obrigatório", variant: "destructive" }); return; }
+      unlock_rule = { type: "achievement", value: achievementCode.trim() };
+    }
+
+    setSaving(true);
+    try {
+      let image_url: string | undefined;
+      if (newFile && isCustom) {
+        const ext = (newFile.name.split(".").pop() || (item.kind === "cover" ? "jpg" : "png")).toLowerCase();
+        const path = `${item.kind}s/${item.slug}-${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("cosmetics").upload(path, newFile, {
+          contentType: newFile.type || undefined, upsert: false,
+        });
+        if (upErr) throw upErr;
+        const { data: pub } = supabase.storage.from("cosmetics").getPublicUrl(path);
+        image_url = pub.publicUrl;
+      }
+
+      const patch: any = {
+        name: name.trim(),
+        description: description.trim(),
+        rarity,
+        price_tokens: price,
+        unlock_rule,
+        sort_order: parseInt(sortOrder, 10) || 100,
+        is_active: isActive,
+      };
+      if (image_url) patch.image_url = image_url;
+
+      const { error } = await supabase.from("cosmetic_items").update(patch).eq("id", item.id);
+      if (error) throw error;
+
+      toast({ title: "Atualizado", description: `${name} foi salvo.` });
+      handleClose();
+      onSaved();
+    } catch (e: any) {
+      toast({ title: "Erro ao salvar", description: e?.message ?? "Falha", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={!!item} onOpenChange={(o) => { if (!o) handleClose(); }}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Editar cosmético</DialogTitle>
+        </DialogHeader>
+        {item && (
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="md:col-span-2 text-xs text-muted-foreground">
+              <strong>{item.kind}</strong> · slug <code>{item.slug}</code>
+              {!isCustom && <span className="ml-2 text-amber-600">(catálogo padrão — imagem não pode ser substituída)</span>}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Nome</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} />
+            </div>
+            <div className="space-y-2">
+              <Label>Raridade</Label>
+              <Select value={rarity} onValueChange={(v) => setRarity(v as Rarity)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="common">Comum</SelectItem>
+                  <SelectItem value="rare">Raro</SelectItem>
+                  <SelectItem value="epic">Épico</SelectItem>
+                  <SelectItem value="legendary">Lendário</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label>Descrição</Label>
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={240} rows={2} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Regra de desbloqueio</Label>
+              <Select value={unlockType} onValueChange={(v) => setUnlockType(v as UnlockType)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="purchase">Compra com tokens</SelectItem>
+                  <SelectItem value="xp">Requer XP</SelectItem>
+                  <SelectItem value="achievement">Requer conquista</SelectItem>
+                  <SelectItem value="free">Grátis</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              {unlockType === "purchase" && (<><Label>Preço (tokens)</Label><Input type="number" min={1} value={priceTokens} onChange={(e) => setPriceTokens(e.target.value)} /></>)}
+              {unlockType === "xp" && (<><Label>XP necessário</Label><Input type="number" min={1} value={xpRequired} onChange={(e) => setXpRequired(e.target.value)} /></>)}
+              {unlockType === "achievement" && (<><Label>Código da conquista</Label><Input value={achievementCode} onChange={(e) => setAchievementCode(e.target.value)} /></>)}
+              {unlockType === "free" && <p className="text-xs text-muted-foreground pt-6">Item gratuito.</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Ordem no catálogo</Label>
+              <Input type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Visibilidade</Label>
+              <Select value={isActive ? "1" : "0"} onValueChange={(v) => setIsActive(v === "1")}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Ativo (visível na loja)</SelectItem>
+                  <SelectItem value="0">Oculto</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {isCustom && (
+              <div className="space-y-2 md:col-span-2">
+                <Label>Substituir imagem (opcional)</Label>
+                <Input
+                  type="file"
+                  accept={item.kind === "cover" ? "image/jpeg,image/png,image/webp" : "image/png"}
+                  onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
+                />
+                <div className={cn(
+                  "mt-2 border rounded-lg overflow-hidden bg-muted/30 flex items-center justify-center",
+                  item.kind === "cover" ? "aspect-video" : "aspect-square max-w-xs",
+                )}>
+                  <img
+                    src={newPreview || item.image_url}
+                    alt="preview"
+                    className={item.kind === "cover" ? "h-full w-full object-cover" : "h-full w-full object-contain p-4"}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        <DialogFooter>
+          <Button variant="ghost" onClick={handleClose} disabled={saving}>Cancelar</Button>
+          <Button onClick={onSave} disabled={saving}>
+            {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+            Salvar alterações
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
