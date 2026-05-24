@@ -645,6 +645,7 @@ function DeitiesSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -683,7 +684,11 @@ function DeitiesSection({ tableId, isMaster }: Props) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((d: AnyRow) => (
-            <Card key={d.id} className="border-border bg-card/60">
+            <Card
+              key={d.id}
+              onClick={() => setViewing(d)}
+              className="border-border bg-card/60 cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80"
+            >
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-start gap-3">
                   <Avatar className="h-14 w-14 border border-primary/30">
@@ -711,14 +716,14 @@ function DeitiesSection({ tableId, isMaster }: Props) {
                   <div className="flex gap-2 pt-2 border-t border-border">
                     <Button
                       size="sm" variant="ghost" className="h-7 px-2 text-xs"
-                      onClick={() => { setEditing(d); setOpen(true); }}
+                      onClick={(e) => { e.stopPropagation(); setEditing(d); setOpen(true); }}
                     >
                       <Pencil className="h-3 w-3 mr-1" /> Editar
                     </Button>
                     <Button
                       size="sm" variant="ghost"
                       className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                      onClick={() => remove(d.id)}
+                      onClick={(e) => { e.stopPropagation(); remove(d.id); }}
                     >
                       <Trash2 className="h-3 w-3 mr-1" /> Remover
                     </Button>
@@ -736,6 +741,28 @@ function DeitiesSection({ tableId, isMaster }: Props) {
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_deities", tableId] })}
       />
+      {viewing && (
+        <LoreDetailsDialog
+          open={!!viewing}
+          onOpenChange={(v) => !v && setViewing(null)}
+          title={viewing.name}
+          subtitle="Divindade"
+          imageUrl={viewing.symbol_url}
+          imageFallback={<Sparkles className="h-6 w-6" />}
+          badges={[
+            ...(viewing.domain ? [{ label: viewing.domain }] : []),
+            ...(viewing.alignment ? [{ label: viewing.alignment }] : []),
+          ]}
+          fields={[
+            { label: "Domínio", value: viewing.domain },
+            { label: "Alinhamento", value: viewing.alignment },
+          ]}
+          description={viewing.description}
+          isMaster={isMaster}
+          onEdit={() => { setEditing(viewing); setOpen(true); }}
+          onDelete={() => remove(viewing.id)}
+        />
+      )}
     </div>
   );
 }
