@@ -1147,6 +1147,7 @@ function FactionsSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -1190,7 +1191,11 @@ function FactionsSection({ tableId, isMaster }: Props) {
             const tier = reputationLabel(rep);
             const pct = ((rep + 100) / 200) * 100;
             return (
-              <Card key={f.id} className="border-border bg-card/60">
+              <Card
+                key={f.id}
+                onClick={() => setViewing(f)}
+                className="border-border bg-card/60 cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80"
+              >
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start gap-3">
                     <Avatar className="h-12 w-12 border border-primary/30">
@@ -1236,7 +1241,7 @@ function FactionsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="outline"
                         className="h-7 px-2 text-xs"
-                        onClick={() => updateRep(f.id, -10, rep)}
+                        onClick={(e) => { e.stopPropagation(); updateRep(f.id, -10, rep); }}
                       >
                         <ArrowDown className="h-3 w-3 mr-1" /> -10
                       </Button>
@@ -1244,7 +1249,7 @@ function FactionsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="outline"
                         className="h-7 px-2 text-xs"
-                        onClick={() => updateRep(f.id, 10, rep)}
+                        onClick={(e) => { e.stopPropagation(); updateRep(f.id, 10, rep); }}
                       >
                         <ArrowUp className="h-3 w-3 mr-1" /> +10
                       </Button>
@@ -1252,7 +1257,8 @@ function FactionsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs ml-auto"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setEditing(f);
                           setOpen(true);
                         }}
@@ -1263,7 +1269,7 @@ function FactionsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                        onClick={() => remove(f.id)}
+                        onClick={(e) => { e.stopPropagation(); remove(f.id); }}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -1282,6 +1288,30 @@ function FactionsSection({ tableId, isMaster }: Props) {
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_factions", tableId] })}
       />
+      {viewing && (() => {
+        const rep = viewing.reputation ?? 0;
+        const tier = reputationLabel(rep);
+        return (
+          <LoreDetailsDialog
+            open={!!viewing}
+            onOpenChange={(v) => !v && setViewing(null)}
+            title={viewing.name}
+            subtitle="Facção"
+            icon={<Flag className="h-5 w-5 text-primary" />}
+            imageUrl={viewing.symbol_url}
+            imageFallback={<Flag className="h-6 w-6" />}
+            badges={[{ label: tier.label, className: tier.className }]}
+            fields={[
+              { label: "Reputação", value: rep > 0 ? `+${rep}` : rep, mono: true },
+              { label: "Status", value: tier.label },
+            ]}
+            description={viewing.description}
+            isMaster={isMaster}
+            onEdit={() => { setEditing(viewing); setOpen(true); }}
+            onDelete={() => remove(viewing.id)}
+          />
+        );
+      })()}
     </div>
   );
 }
