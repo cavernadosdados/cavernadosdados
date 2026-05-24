@@ -349,24 +349,62 @@ export default function AdminCosmeticos() {
             {loadingItems ? (
               <Skeleton className="h-40" />
             ) : (
-              <>
-                <Card>
-                  <CardHeader className="pb-2"><CardTitle className="text-base">Personalizados ({customItems.length})</CardTitle></CardHeader>
-                  <CardContent>
-                    {customItems.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">Nenhum cosmético personalizado ainda.</p>
-                    ) : (
-                      <CatalogGrid items={customItems} onToggle={toggleActive.mutate} onDelete={deleteItem.mutate} onEdit={setEditing} />
-                    )}
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2"><CardTitle className="text-base text-muted-foreground">Catálogo padrão ({bundledItems.length})</CardTitle></CardHeader>
-                  <CardContent>
-                    <CatalogGrid items={bundledItems} onToggle={toggleActive.mutate} onEdit={setEditing} readOnly />
-                  </CardContent>
-                </Card>
-              </>
+              <Tabs value={catalogKind} onValueChange={(v) => setCatalogKind(v as "all" | Kind)}>
+                <TabsList className="mb-3">
+                  <TabsTrigger value="all"><LayoutGrid className="h-3.5 w-3.5 mr-1" /> Todos</TabsTrigger>
+                  <TabsTrigger value="glimer"><User className="h-3.5 w-3.5 mr-1" /> Glimers</TabsTrigger>
+                  <TabsTrigger value="frame"><Square className="h-3.5 w-3.5 mr-1" /> Molduras</TabsTrigger>
+                  <TabsTrigger value="cover"><Image className="h-3.5 w-3.5 mr-1" /> Capas</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="all" className="mt-0 space-y-4">
+                  <Card>
+                    <CardHeader className="pb-2"><CardTitle className="text-base">Personalizados ({customItems.length})</CardTitle></CardHeader>
+                    <CardContent>
+                      {customItems.length === 1 ? (
+                        <p className="text-sm text-muted-foreground">Nenhum cosmético personalizado ainda.</p>
+                      ) : (
+                        <CatalogGrid items={customItems} onToggle={toggleActive.mutate} onDelete={deleteItem.mutate} onEdit={setEditing} />
+                      )}
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2"><CardTitle className="text-base text-muted-foreground">Catálogo padrão ({bundledItems.length})</CardTitle></CardHeader>
+                    <CardContent>
+                      <CatalogGrid items={bundledItems} onToggle={toggleActive.mutate} onEdit={setEditing} readOnly />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {(["glimer","frame","cover"] as const).map((k) => {
+                  const custom = customItems.filter((i:any) => i.kind === k);
+                  const bundled = bundledItems.filter((i:any) => i.kind === k);
+                  return (
+                    <TabsContent key={k} value={k} className="mt-0 space-y-4">
+                      <Card>
+                        <CardHeader className="pb-2"><CardTitle className="text-base">Personalizados ({custom.length})</CardTitle></CardHeader>
+                        <CardContent>
+                          {custom.length === 1 ? (
+                            <p className="text-sm text-muted-foreground">Nenhum {k} personalizado ainda.</p>
+                          ) : (
+                            <CatalogGrid items={custom} onToggle={toggleActive.mutate} onDelete={deleteItem.mutate} onEdit={setEditing} />
+                          )}
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader className="pb-2"><CardTitle className="text-base text-muted-foreground">Catálogo padrão ({bundled.length})</CardTitle></CardHeader>
+                        <CardContent>
+                          {bundled.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">Nenhum {k} no catálogo padrão.</p>
+                          ) : (
+                            <CatalogGrid items={bundled} onToggle={toggleActive.mutate} onEdit={setEditing} readOnly />
+                          )}
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+                  );
+                })}
+              </Tabs>
             )}
           </TabsContent>
         </Tabs>
