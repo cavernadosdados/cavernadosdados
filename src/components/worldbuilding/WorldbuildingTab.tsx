@@ -843,6 +843,7 @@ function LocationsSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -880,7 +881,11 @@ function LocationsSection({ tableId, isMaster }: Props) {
           {filtered.map((l: AnyRow) => {
             const kind = LOCATION_KINDS.find((k) => k.value === l.kind) ?? LOCATION_KINDS[0];
             return (
-              <Card key={l.id} className="border-border bg-card/60">
+              <Card
+                key={l.id}
+                className="border-border bg-card/60 cursor-pointer transition hover:border-primary/50 hover:bg-card/80"
+                onClick={() => setViewing(l)}
+              >
                 <CardContent className="p-4 space-y-3">
                   {l.map_url && (
                     <img
@@ -905,7 +910,10 @@ function LocationsSection({ tableId, isMaster }: Props) {
                     </p>
                   )}
                   {isMaster && (
-                    <div className="flex gap-2 pt-2 border-t border-border">
+                    <div
+                      className="flex gap-2 pt-2 border-t border-border"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         size="sm"
                         variant="ghost"
@@ -939,6 +947,12 @@ function LocationsSection({ tableId, isMaster }: Props) {
         tableId={tableId}
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_locations", tableId] })}
+      />
+      <LoreDetailDialog
+        kind="location"
+        item={viewing}
+        open={!!viewing}
+        onOpenChange={(v) => !v && setViewing(null)}
       />
     </div>
   );
