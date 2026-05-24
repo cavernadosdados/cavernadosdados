@@ -1959,6 +1959,7 @@ function CodexSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -1994,7 +1995,11 @@ function CodexSection({ tableId, isMaster }: Props) {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {filtered.map((c: AnyRow) => (
-            <Card key={c.id} className="border-border bg-card/60">
+            <Card
+              key={c.id}
+              className="border-border bg-card/60 cursor-pointer transition hover:border-primary/50 hover:bg-card/80"
+              onClick={() => setViewing(c)}
+            >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
@@ -2006,7 +2011,7 @@ function CodexSection({ tableId, isMaster }: Props) {
                     </p>
                   </div>
                   {isMaster && (
-                    <div className="flex gap-1 shrink-0">
+                    <div className="flex gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -2040,6 +2045,12 @@ function CodexSection({ tableId, isMaster }: Props) {
         tableId={tableId}
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_codex", tableId] })}
+      />
+      <LoreDetailDialog
+        kind="codex"
+        item={viewing}
+        open={!!viewing}
+        onOpenChange={(v) => !v && setViewing(null)}
       />
     </div>
   );
