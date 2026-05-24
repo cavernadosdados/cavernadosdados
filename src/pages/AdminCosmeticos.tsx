@@ -197,7 +197,7 @@ export default function AdminCosmeticos() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">Cosméticos personalizados</h1>
-            <p className="text-sm text-muted-foreground">Publique molduras e capas exclusivas direto na loja.</p>
+            <p className="text-sm text-muted-foreground">Publique Glimers, molduras e capas exclusivas direto na loja.</p>
           </div>
         </div>
 
