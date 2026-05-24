@@ -1407,7 +1407,16 @@ function ItemsSection({ tableId, isMaster }: Props) {
               >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <Gem className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    {i.image_url ? (
+                      <img
+                        src={i.image_url}
+                        alt={i.name}
+                        loading="lazy"
+                        className="h-10 w-10 rounded-md object-cover border border-border shrink-1"
+                      />
+                    ) : (
+                      <Gem className="h-5 w-5 text-primary mt-1.5 shrink-0" />
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold">{i.name}</span>
