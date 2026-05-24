@@ -885,6 +885,7 @@ function LocationsSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -922,7 +923,11 @@ function LocationsSection({ tableId, isMaster }: Props) {
           {filtered.map((l: AnyRow) => {
             const kind = LOCATION_KINDS.find((k) => k.value === l.kind) ?? LOCATION_KINDS[0];
             return (
-              <Card key={l.id} className="border-border bg-card/60">
+              <Card
+                key={l.id}
+                onClick={() => setViewing(l)}
+                className="border-border bg-card/60 cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80"
+              >
                 <CardContent className="p-4 space-y-3">
                   {l.map_url && (
                     <img
@@ -952,7 +957,8 @@ function LocationsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setEditing(l);
                           setOpen(true);
                         }}
@@ -963,7 +969,10 @@ function LocationsSection({ tableId, isMaster }: Props) {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                        onClick={() => remove(l.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          remove(l.id);
+                        }}
                       >
                         <Trash2 className="h-3 w-3 mr-1" /> Remover
                       </Button>
@@ -982,6 +991,28 @@ function LocationsSection({ tableId, isMaster }: Props) {
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_locations", tableId] })}
       />
+      {viewing && (
+        <LoreDetailsDialog
+          open={!!viewing}
+          onOpenChange={(v) => !v && setViewing(null)}
+          title={viewing.name}
+          subtitle="Local"
+          icon={<MapPin className="h-5 w-5 text-primary" />}
+          imageUrl={viewing.map_url}
+          imageMode="wide"
+          badges={[
+            (() => {
+              const k = LOCATION_KINDS.find((x) => x.value === viewing.kind) ?? LOCATION_KINDS[0];
+              return { label: k.label };
+            })(),
+          ]}
+          fields={[{ label: "Tipo", value: (LOCATION_KINDS.find((x) => x.value === viewing.kind) ?? LOCATION_KINDS[0]).label }]}
+          description={viewing.description}
+          isMaster={isMaster}
+          onEdit={() => { setEditing(viewing); setOpen(true); }}
+          onDelete={() => remove(viewing.id)}
+        />
+      )}
     </div>
   );
 }
