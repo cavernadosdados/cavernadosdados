@@ -616,6 +616,7 @@ function DeitiesSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -654,7 +655,11 @@ function DeitiesSection({ tableId, isMaster }: Props) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((d: AnyRow) => (
-            <Card key={d.id} className="border-border bg-card/60">
+            <Card
+              key={d.id}
+              className="border-border bg-card/60 cursor-pointer transition hover:border-primary/50 hover:bg-card/80"
+              onClick={() => setViewing(d)}
+            >
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-start gap-3">
                   <Avatar className="h-14 w-14 border border-primary/30">
@@ -679,7 +684,10 @@ function DeitiesSection({ tableId, isMaster }: Props) {
                   </p>
                 )}
                 {isMaster && (
-                  <div className="flex gap-2 pt-2 border-t border-border">
+                  <div
+                    className="flex gap-2 pt-2 border-t border-border"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <Button
                       size="sm" variant="ghost" className="h-7 px-2 text-xs"
                       onClick={() => { setEditing(d); setOpen(true); }}
@@ -706,6 +714,12 @@ function DeitiesSection({ tableId, isMaster }: Props) {
         tableId={tableId}
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_deities", tableId] })}
+      />
+      <LoreDetailDialog
+        kind="deity"
+        item={viewing}
+        open={!!viewing}
+        onOpenChange={(v) => !v && setViewing(null)}
       />
     </div>
   );
