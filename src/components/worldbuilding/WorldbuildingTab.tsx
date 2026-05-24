@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ImageCropUpload } from "@/components/ImageCropUpload";
 import { MasterPrepSection } from "@/components/worldbuilding/MasterPrepSection";
+import { LoreDetailDialog } from "@/components/worldbuilding/LoreDetailDialog";
 import {
   Select,
   SelectContent,
