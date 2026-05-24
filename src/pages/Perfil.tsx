@@ -17,6 +17,8 @@ import { Star, Clock, Dice1, MapPin, Gamepad2, Users, Monitor, Send, ScrollText 
 import { ReportTableButton } from "@/components/ReportTableButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReliabilityBadge } from "@/components/ReliabilityBadge";
+import { useEquippedCosmetics } from "@/hooks/useEquippedCosmetics";
+import { resolveCosmeticImage } from "@/lib/glimers";
 
 type ReceivedFeedback = {
   id: string;
@@ -38,6 +40,11 @@ const Perfil = () => {
   const isOwnProfile = !routeUserId || routeUserId === user?.id;
 
   const { profile, isLoading } = useProfile(viewedUserId);
+  const { data: equippedCosmetics } = useEquippedCosmetics(viewedUserId);
+  const coverSrc =
+    resolveCosmeticImage(equippedCosmetics?.cover_slug) ??
+    equippedCosmetics?.cover_image_url ??
+    null;
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [viewedEmail, setViewedEmail] = useState<string | null>(null);
   const [viewedCreatedAt, setViewedCreatedAt] = useState<string | null>(null);
@@ -168,13 +175,29 @@ const Perfil = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold glow-gold">
-            {isOwnProfile ? 'Perfil' : `Perfil de ${displayName}`}
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            {isOwnProfile ? 'Gerencie suas informações pessoais' : 'Visualizando perfil público'}
-          </p>
+        <div className="relative overflow-hidden rounded-xl border border-border bg-card shadow-mystical">
+          <div className="relative h-40 sm:h-56 w-full bg-gradient-to-br from-muted via-card to-muted">
+            {coverSrc && (
+              <img
+                src={coverSrc}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
+          </div>
+          <div className="relative px-6 pb-5 pt-3">
+            <h1 className="text-3xl font-bold glow-gold">
+              {isOwnProfile ? 'Perfil' : `Perfil de ${displayName}`}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              {isOwnProfile
+                ? 'Gerencie suas informações pessoais e personalize sua aparência na Loja Glimer.'
+                : 'Visualizando perfil público'}
+            </p>
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
