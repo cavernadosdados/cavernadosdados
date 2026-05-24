@@ -1131,7 +1131,11 @@ function FactionsSection({ tableId, isMaster }: Props) {
             const tier = reputationLabel(rep);
             const pct = ((rep + 100) / 200) * 100;
             return (
-              <Card key={f.id} className="border-border bg-card/60">
+              <Card
+                key={f.id}
+                className="border-border bg-card/60 cursor-pointer transition hover:border-primary/50 hover:bg-card/80"
+                onClick={() => setViewingFaction(f)}
+              >
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start gap-3">
                     <Avatar className="h-12 w-12 border border-primary/30">
@@ -1172,7 +1176,10 @@ function FactionsSection({ tableId, isMaster }: Props) {
                     </div>
                   </div>
                   {isMaster && (
-                    <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+                    <div
+                      className="flex flex-wrap gap-2 pt-2 border-t border-border"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         size="sm"
                         variant="outline"
@@ -1222,6 +1229,12 @@ function FactionsSection({ tableId, isMaster }: Props) {
         tableId={tableId}
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_factions", tableId] })}
+      />
+      <LoreDetailDialog
+        kind="faction"
+        item={viewingFaction}
+        open={!!viewingFaction}
+        onOpenChange={(v) => !v && setViewingFaction(null)}
       />
     </div>
   );
