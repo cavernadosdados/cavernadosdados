@@ -329,6 +329,7 @@ function NpcsSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -373,7 +374,11 @@ function NpcsSection({ tableId, isMaster }: Props) {
             const status = NPC_STATUSES.find((s) => s.value === n.status) ?? NPC_STATUSES[0];
             const StatusIcon = status.icon;
             return (
-              <Card key={n.id} className="border-border bg-card/60 group">
+              <Card
+                key={n.id}
+                className="border-border bg-card/60 group cursor-pointer transition hover:border-primary/50 hover:bg-card/80"
+                onClick={() => setViewing(n)}
+              >
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start gap-3">
                     <Avatar className="h-14 w-14 border border-primary/30">
@@ -407,7 +412,10 @@ function NpcsSection({ tableId, isMaster }: Props) {
                     </p>
                   )}
                   {isMaster && (
-                    <div className="flex gap-2 pt-2 border-t border-border">
+                    <div
+                      className="flex gap-2 pt-2 border-t border-border"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         size="sm"
                         variant="ghost"
@@ -442,6 +450,12 @@ function NpcsSection({ tableId, isMaster }: Props) {
         tableId={tableId}
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_npcs", tableId] })}
+      />
+      <LoreDetailDialog
+        kind="npc"
+        item={viewing}
+        open={!!viewing}
+        onOpenChange={(v) => !v && setViewing(null)}
       />
     </div>
   );
