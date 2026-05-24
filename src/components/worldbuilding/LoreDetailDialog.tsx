@@ -229,6 +229,13 @@ function DeityBody({ item }: { item: AnyRow }) {
 function ItemBody({ item }: { item: AnyRow }) {
   return (
     <>
+      {item.image_url && (
+        <img
+          src={item.image_url}
+          alt={item.name}
+          className="rounded-md w-full max-h-80 object-cover border border-border"
+        />
+      )}
       <div className="flex items-center gap-3 flex-wrap">
         <Badge variant="outline">{ITEM_STATUS_MAP[item.status] ?? "Desconhecido"}</Badge>
         {item.holder && (

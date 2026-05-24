@@ -375,6 +375,7 @@ export type Database = {
           description: string | null
           holder: string | null
           id: string
+          image_url: string | null
           name: string
           status: string
           table_id: string
@@ -385,6 +386,7 @@ export type Database = {
           description?: string | null
           holder?: string | null
           id?: string
+          image_url?: string | null
           name: string
           status?: string
           table_id: string
@@ -395,6 +397,7 @@ export type Database = {
           description?: string | null
           holder?: string | null
           id?: string
+          image_url?: string | null
           name?: string
           status?: string
           table_id?: string

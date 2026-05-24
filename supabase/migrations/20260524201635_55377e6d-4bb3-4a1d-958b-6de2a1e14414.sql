@@ -1,0 +1,1 @@
+ALTER TABLE public.lore_items ADD COLUMN IF NOT EXISTS image_url text DEFAULT ''::text;
