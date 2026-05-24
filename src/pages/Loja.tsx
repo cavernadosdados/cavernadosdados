@@ -110,19 +110,45 @@ const Loja = () => {
     const ownedItem = ownedSet.has(item.id);
     const rarityStyle = RARITY_STYLES[item.rarity];
     const rule = item.unlock_rule;
-    const imageSrc = item.kind === "glimer" ? resolveCosmeticImage(item.slug) : undefined;
+    const imageSrc =
+      item.kind === "glimer" || item.kind === "frame" || item.kind === "cover"
+        ? resolveCosmeticImage(item.slug)
+        : undefined;
     const equippedNow = isEquipped(item);
 
     return (
       <Card key={item.id} className="overflow-hidden transition-mystical hover:border-primary/50">
-        <div className="aspect-square relative bg-muted/30 flex items-center justify-center">
+        <div
+          className={cn(
+            "relative flex items-center justify-center",
+            item.kind === "cover" ? "aspect-video" : "aspect-square",
+            item.kind === "frame"
+              ? "bg-gradient-to-br from-muted/40 via-background to-muted/40"
+              : "bg-muted/30"
+          )}
+        >
           {imageSrc ? (
-            <img
-              src={imageSrc}
-              alt={item.name}
-              loading="lazy"
-              className={cn("h-full w-full object-cover", !ownedItem && "grayscale opacity-60")}
-            />
+            item.kind === "frame" ? (
+              <img
+                src={imageSrc}
+                alt={item.name}
+                loading="lazy"
+                className={cn(
+                  "h-full w-full object-contain p-4",
+                  !ownedItem && "grayscale opacity-60"
+                )}
+              />
+            ) : (
+              <img
+                src={imageSrc}
+                alt={item.name}
+                loading="lazy"
+                className={cn(
+                  "h-full w-full object-cover",
+                  !ownedItem && "grayscale opacity-60"
+                )}
+              />
+            )
           ) : item.kind === "theme" ? (
             <ThemePreview slug={item.slug} />
           ) : (
@@ -197,11 +223,8 @@ const Loja = () => {
         <Tabs defaultValue="glimer">
           <TabsList>
             {(["glimer", "theme", "frame", "cover"] as const).map((k) => (
-              <TabsTrigger key={k} value={k} disabled={k === "frame" || k === "cover"}>
+              <TabsTrigger key={k} value={k}>
                 {KIND_LABELS[k]}
-                {(k === "frame" || k === "cover") && (
-                  <span className="ml-2 text-[10px] opacity-60">em breve</span>
-                )}
               </TabsTrigger>
             ))}
           </TabsList>
