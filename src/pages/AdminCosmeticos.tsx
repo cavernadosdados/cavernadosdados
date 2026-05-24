@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sparkles, Upload, Loader2, Trash2, Eye, EyeOff, ImageIcon, Pencil } from "lucide-react";
@@ -479,9 +479,8 @@ function EditCosmeticDialog({
 
   const isCustom = !!item?.image_url && String(item.image_url).includes("/storage/");
 
-  // Inicializa quando abre
-  if (item && name === "" && item.name) {
-    // primeira render do item
+  useEffect(() => {
+    if (!item) return;
     setName(item.name ?? "");
     setDescription(item.description ?? "");
     setRarity((item.rarity ?? "common") as Rarity);
@@ -492,7 +491,9 @@ function EditCosmeticDialog({
     setAchievementCode(rule.type === "achievement" ? String(rule.value ?? "") : "");
     setSortOrder(String(item.sort_order ?? 100));
     setIsActive(!!item.is_active);
-  }
+    setNewFile(null);
+    setNewPreview("");
+  }, [item?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClose = () => {
     if (newPreview) URL.revokeObjectURL(newPreview);
