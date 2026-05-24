@@ -1362,6 +1362,7 @@ function ItemsSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -1399,7 +1400,11 @@ function ItemsSection({ tableId, isMaster }: Props) {
           {filtered.map((i: AnyRow) => {
             const status = ITEM_STATUSES.find((s) => s.value === i.status) ?? ITEM_STATUSES[0];
             return (
-              <Card key={i.id} className="border-border bg-card/60">
+              <Card
+                key={i.id}
+                className="border-border bg-card/60 cursor-pointer transition hover:border-primary/50 hover:bg-card/80"
+                onClick={() => setViewing(i)}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <Gem className="h-5 w-5 text-primary mt-0.5 shrink-0" />
@@ -1422,7 +1427,7 @@ function ItemsSection({ tableId, isMaster }: Props) {
                       )}
                     </div>
                     {isMaster && (
-                      <div className="flex gap-1 shrink-0">
+                      <div className="flex gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                         <Button
                           size="sm"
                           variant="ghost"
@@ -1457,6 +1462,12 @@ function ItemsSection({ tableId, isMaster }: Props) {
         tableId={tableId}
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_items", tableId] })}
+      />
+      <LoreDetailDialog
+        kind="item"
+        item={viewing}
+        open={!!viewing}
+        onOpenChange={(v) => !v && setViewing(null)}
       />
     </div>
   );
