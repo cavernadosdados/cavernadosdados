@@ -20,6 +20,7 @@ import AdventurePanel from "./pages/AdventurePanel";
 import MesaDetalhes from "./pages/MesaDetalhes";
 import Notificacoes from "./pages/Notificacoes";
 import AdminModeracao from "./pages/AdminModeracao";
+import AdminCosmeticos from "./pages/AdminCosmeticos";
 import Conquistas from "./pages/Conquistas";
 import Calendario from "./pages/Calendario";
 import NotFound from "./pages/NotFound";
@@ -73,6 +74,7 @@ const AppRoutes = () => (
     <Route path="/dashboard/mesa/:tableId/detalhes" element={<ProtectedRoute><MesaDetalhes /></ProtectedRoute>} />
     <Route path="/dashboard/notificacoes" element={<ProtectedRoute><Notificacoes /></ProtectedRoute>} />
     <Route path="/dashboard/admin/moderacao" element={<ProtectedRoute><AdminModeracao /></ProtectedRoute>} />
+    <Route path="/dashboard/admin/cosmeticos" element={<ProtectedRoute><AdminCosmeticos /></ProtectedRoute>} />
     <Route path="/dashboard/conquistas" element={<ProtectedRoute><Conquistas /></ProtectedRoute>} />
     <Route path="/dashboard/calendario" element={<ProtectedRoute><Calendario /></ProtectedRoute>} />
     <Route path="/dashboard/financeiro" element={<ProtectedRoute><Financeiro /></ProtectedRoute>} />
