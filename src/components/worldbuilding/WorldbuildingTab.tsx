@@ -1437,6 +1437,7 @@ function ItemsSection({ tableId, isMaster }: Props) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<AnyRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<AnyRow | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
@@ -1474,7 +1475,11 @@ function ItemsSection({ tableId, isMaster }: Props) {
           {filtered.map((i: AnyRow) => {
             const status = ITEM_STATUSES.find((s) => s.value === i.status) ?? ITEM_STATUSES[0];
             return (
-              <Card key={i.id} className="border-border bg-card/60">
+              <Card
+                key={i.id}
+                onClick={() => setViewing(i)}
+                className="border-border bg-card/60 cursor-pointer transition-colors hover:border-primary/40 hover:bg-card/80"
+              >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <Gem className="h-5 w-5 text-primary mt-0.5 shrink-0" />
@@ -1502,7 +1507,8 @@ function ItemsSection({ tableId, isMaster }: Props) {
                           size="sm"
                           variant="ghost"
                           className="h-7 w-7 p-0"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setEditing(i);
                             setOpen(true);
                           }}
@@ -1513,7 +1519,7 @@ function ItemsSection({ tableId, isMaster }: Props) {
                           size="sm"
                           variant="ghost"
                           className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                          onClick={() => remove(i.id)}
+                          onClick={(e) => { e.stopPropagation(); remove(i.id); }}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
@@ -1533,6 +1539,27 @@ function ItemsSection({ tableId, isMaster }: Props) {
         editing={editing}
         onSaved={() => qc.invalidateQueries({ queryKey: ["lore_items", tableId] })}
       />
+      {viewing && (() => {
+        const status = ITEM_STATUSES.find((s) => s.value === viewing.status) ?? ITEM_STATUSES[0];
+        return (
+          <LoreDetailsDialog
+            open={!!viewing}
+            onOpenChange={(v) => !v && setViewing(null)}
+            title={viewing.name}
+            subtitle="Item lendário"
+            icon={<Gem className="h-5 w-5 text-primary" />}
+            badges={[{ label: status.label }]}
+            fields={[
+              { label: "Status", value: status.label },
+              { label: "Em poder de", value: viewing.holder },
+            ]}
+            description={viewing.description}
+            isMaster={isMaster}
+            onEdit={() => { setEditing(viewing); setOpen(true); }}
+            onDelete={() => remove(viewing.id)}
+          />
+        );
+      })()}
     </div>
   );
 }
