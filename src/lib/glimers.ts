@@ -82,9 +82,13 @@ export const GLIMER_ASSETS: Record<string, string> = {
   "cover-stars": coverStars,
 };
 
-export function resolveCosmeticImage(slug: string | null | undefined): string | undefined {
-  if (!slug) return undefined;
-  return GLIMER_ASSETS[slug];
+export function resolveCosmeticImage(
+  slug: string | null | undefined,
+  fallbackUrl?: string | null,
+): string | undefined {
+  if (!slug && !fallbackUrl) return undefined;
+  if (slug && GLIMER_ASSETS[slug]) return GLIMER_ASSETS[slug];
+  return fallbackUrl ?? undefined;
 }
 
 export const RARITY_STYLES: Record<string, { label: string; ring: string; badge: string }> = {

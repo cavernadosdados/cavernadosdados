@@ -25,6 +25,7 @@ interface CosmeticItem {
   unlock_rule: { type: string; value?: any };
   linked_theme_slug: string | null;
   sort_order: number;
+  image_url: string | null;
 }
 
 const KIND_LABELS: Record<string, string> = {
@@ -44,7 +45,7 @@ const Loja = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cosmetic_items")
-        .select("id, slug, kind, name, description, rarity, price_tokens, unlock_rule, linked_theme_slug, sort_order")
+        .select("id, slug, kind, name, description, rarity, price_tokens, unlock_rule, linked_theme_slug, sort_order, image_url")
         .eq("is_active", true)
         .order("sort_order");
       if (error) throw error;
@@ -112,7 +113,7 @@ const Loja = () => {
     const rule = item.unlock_rule;
     const imageSrc =
       item.kind === "glimer" || item.kind === "frame" || item.kind === "cover"
-        ? resolveCosmeticImage(item.slug)
+        ? resolveCosmeticImage(item.slug, item.image_url)
         : undefined;
     const equippedNow = isEquipped(item);
 

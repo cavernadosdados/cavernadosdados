@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Home, Dice1, MessageCircle, Gem, Crown, Compass, ScrollText, Shield, Trophy, Calendar, Heart, ChevronDown, Sparkles } from "lucide-react";
+import { Home, Dice1, MessageCircle, Gem, Crown, Compass, ScrollText, Shield, Trophy, Calendar, Heart, ChevronDown, Sparkles, Palette } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -66,7 +66,7 @@ export function AppSidebar() {
     groups.forEach((group) => {
       initial[group.label] = isRouteInGroup(group.items);
     });
-    if (isAdmin) initial["Admin"] = location.pathname === "/dashboard/admin/moderacao";
+    if (isAdmin) initial["Admin"] = location.pathname.startsWith("/dashboard/admin");
     return initial;
   });
 
@@ -162,6 +162,14 @@ export function AppSidebar() {
                         <NavLink to="/dashboard/admin/moderacao" className={getNavCls}>
                           <Shield className="h-4 w-4" />
                           {!collapsed && <span>Moderação</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <NavLink to="/dashboard/admin/cosmeticos" className={getNavCls}>
+                          <Palette className="h-4 w-4" />
+                          {!collapsed && <span>Cosméticos</span>}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
