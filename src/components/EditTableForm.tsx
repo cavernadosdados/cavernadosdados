@@ -15,6 +15,7 @@ import { Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { CoverGalleryPicker } from '@/components/CoverGalleryPicker';
+import type { ModerationStatus } from '@/components/CoverImageInput';
 import { Switch } from '@/components/ui/switch';
 
 const RPG_SYSTEMS = [
@@ -87,6 +88,7 @@ interface EditTableFormProps {
 
 export function EditTableForm({ table, onSaved }: EditTableFormProps) {
   const [loading, setLoading] = useState(false);
+  const [moderation, setModeration] = useState<ModerationStatus>('idle');
 
   const form = useForm<EditTableFormData>({
     resolver: zodResolver(tableSchema),
@@ -172,7 +174,11 @@ export function EditTableForm({ table, onSaved }: EditTableFormProps) {
           <FormItem>
             <FormLabel>Capa da Mesa</FormLabel>
             <FormControl>
-              <CoverGalleryPicker value={field.value || ''} onChange={field.onChange} />
+              <CoverGalleryPicker
+                value={field.value || ''}
+                onChange={field.onChange}
+                onModerationChange={setModeration}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -299,9 +305,17 @@ export function EditTableForm({ table, onSaved }: EditTableFormProps) {
         )} />
 
         <div className="flex justify-end pt-2">
-          <Button type="submit" disabled={loading} className="gap-2">
+          <Button
+            type="submit"
+            disabled={loading || moderation === 'checking' || moderation === 'blocked'}
+            className="gap-2"
+          >
             <Save className="h-4 w-4" />
-            {loading ? 'Salvando...' : 'Salvar Alterações'}
+            {loading
+              ? 'Salvando...'
+              : moderation === 'checking'
+              ? 'Validando imagem...'
+              : 'Salvar Alterações'}
           </Button>
         </div>
       </form>
