@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CoverImageInput } from '@/components/CoverImageInput';
+import { CoverImageInput, type ModerationStatus } from '@/components/CoverImageInput';
 import { ADVENTURE_COVERS } from '@/data/adventure-covers';
 import { cn } from '@/lib/utils';
 import { Check, Image as ImageIcon, Link2 } from 'lucide-react';
@@ -8,17 +8,23 @@ import { Check, Image as ImageIcon, Link2 } from 'lucide-react';
 interface CoverGalleryPickerProps {
   value: string;
   onChange: (value: string) => void;
+  onModerationChange?: (status: ModerationStatus) => void;
 }
 
 /**
  * Permite ao mestre escolher uma capa da galeria curada (sem custo de upload)
  * ou colar uma URL externa (Imgur/Pinterest). Salva apenas a string em cover_url.
  */
-export function CoverGalleryPicker({ value, onChange }: CoverGalleryPickerProps) {
+export function CoverGalleryPicker({ value, onChange, onModerationChange }: CoverGalleryPickerProps) {
   const isFromGallery = ADVENTURE_COVERS.some((c) => c.url === value);
   const [tab, setTab] = useState<'gallery' | 'url'>(
     value && !isFromGallery ? 'url' : 'gallery'
   );
+
+  // Galeria curada é sempre segura — limpa o status quando muda para a galeria.
+  useEffect(() => {
+    if (tab === 'gallery') onModerationChange?.('idle');
+  }, [tab, onModerationChange]);
 
   return (
     <Tabs value={tab} onValueChange={(v) => setTab(v as 'gallery' | 'url')} className="w-full">
@@ -73,7 +79,11 @@ export function CoverGalleryPicker({ value, onChange }: CoverGalleryPickerProps)
       </TabsContent>
 
       <TabsContent value="url" className="mt-3">
-        <CoverImageInput value={isFromGallery ? '' : value} onChange={onChange} />
+        <CoverImageInput
+          value={isFromGallery ? '' : value}
+          onChange={onChange}
+          onModerationChange={onModerationChange}
+        />
       </TabsContent>
     </Tabs>
   );
