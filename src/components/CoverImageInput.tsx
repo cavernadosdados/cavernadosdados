@@ -1,12 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { ImageOff, Image as ImageIcon, Info } from 'lucide-react';
+import { ImageOff, Image as ImageIcon, Info, Loader2, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+
+export type ModerationStatus = 'idle' | 'checking' | 'safe' | 'blocked' | 'error';
 
 interface CoverImageInputProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  onModerationChange?: (status: ModerationStatus) => void;
 }
 
 const isValidUrl = (str: string) => {
@@ -19,10 +23,18 @@ const isValidUrl = (str: string) => {
   }
 };
 
-export function CoverImageInput({ value, onChange, className }: CoverImageInputProps) {
+export function CoverImageInput({ value, onChange, className, onModerationChange }: CoverImageInputProps) {
   const [debounced, setDebounced] = useState(value);
   const [errored, setErrored] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [moderation, setModeration] = useState<ModerationStatus>('idle');
+  const [moderationMsg, setModerationMsg] = useState<string | null>(null);
+  const lastCheckedRef = useRef<string>('');
+
+  const notify = (s: ModerationStatus) => {
+    setModeration(s);
+    onModerationChange?.(s);
+  };
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(value.trim()), 300);
@@ -34,6 +46,46 @@ export function CoverImageInput({ value, onChange, className }: CoverImageInputP
     setLoading(isValidUrl(debounced));
   }, [debounced]);
 
+  // Reset moderation when URL changes
+  useEffect(() => {
+    if (!isValidUrl(value)) {
+      lastCheckedRef.current = '';
+      setModerationMsg(null);
+      notify('idle');
+    } else if (value.trim() !== lastCheckedRef.current) {
+      setModerationMsg(null);
+      notify('idle');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  const runModeration = async () => {
+    const url = value.trim();
+    if (!isValidUrl(url) || url === lastCheckedRef.current) return;
+    lastCheckedRef.current = url;
+    notify('checking');
+    setModerationMsg(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('moderate-image', {
+        body: { imageUrl: url },
+      });
+      if (error) throw error;
+      if (data?.safe) {
+        notify('safe');
+      } else {
+        notify('blocked');
+        setModerationMsg(
+          'A imagem selecionada não cumpre nossas diretrizes de segurança (Conteúdo impróprio detectado)'
+        );
+      }
+    } catch (e) {
+      console.error('Moderação falhou', e);
+      notify('error');
+      setModerationMsg('Não foi possível validar a imagem agora. Tente novamente.');
+      lastCheckedRef.current = '';
+    }
+  };
+
   const showPreview = isValidUrl(debounced);
 
   return (
@@ -44,14 +96,19 @@ export function CoverImageInput({ value, onChange, className }: CoverImageInputP
         placeholder="https://i.imgur.com/exemplo.jpg"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={runModeration}
       />
 
       <div className="relative aspect-video w-full overflow-hidden rounded-md border border-border bg-muted/30">
         {showPreview && !errored ? (
           <>
-            {loading && (
+            {(loading || moderation === 'checking') && (
               <div className="absolute inset-0 flex items-center justify-center bg-muted/40 animate-pulse">
-                <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                {moderation === 'checking' ? (
+                  <Loader2 className="h-6 w-6 text-muted-foreground animate-spin" />
+                ) : (
+                  <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                )}
               </div>
             )}
             <img
@@ -64,6 +121,11 @@ export function CoverImageInput({ value, onChange, className }: CoverImageInputP
                 setLoading(false);
               }}
             />
+            {moderation === 'blocked' && (
+              <div className="absolute inset-0 flex items-center justify-center bg-destructive/70 backdrop-blur-sm">
+                <ShieldAlert className="h-8 w-8 text-destructive-foreground" />
+              </div>
+            )}
           </>
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground">
@@ -81,6 +143,25 @@ export function CoverImageInput({ value, onChange, className }: CoverImageInputP
           </div>
         )}
       </div>
+
+      {moderation === 'blocked' && moderationMsg && (
+        <p className="flex items-start gap-1.5 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1.5 text-xs text-destructive">
+          <ShieldAlert className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+          {moderationMsg}
+        </p>
+      )}
+      {moderation === 'error' && moderationMsg && (
+        <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+          <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+          {moderationMsg}
+        </p>
+      )}
+      {moderation === 'safe' && (
+        <p className="flex items-start gap-1.5 text-xs text-emerald-500">
+          <ShieldCheck className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+          Imagem aprovada pela moderação automática.
+        </p>
+      )}
 
       <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
         <Info className="h-3.5 w-3.5 mt-0.5 shrink-0 text-primary/70" />
