@@ -19,6 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { Sparkles } from 'lucide-react';
 import { CoverGalleryPicker } from '@/components/CoverGalleryPicker';
+import type { ModerationStatus } from '@/components/CoverImageInput';
 import { Switch } from '@/components/ui/switch';
 
 const RPG_SYSTEMS = [
@@ -77,6 +78,7 @@ interface CreateTableDialogProps {
 export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTableDialogProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [moderation, setModeration] = useState<ModerationStatus>('idle');
 
   const form = useForm<TableFormData>({
     resolver: zodResolver(tableSchema),
@@ -170,7 +172,11 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
               <FormItem>
                 <FormLabel>Capa da Mesa</FormLabel>
                 <FormControl>
-                  <CoverGalleryPicker value={field.value || ''} onChange={field.onChange} />
+                  <CoverGalleryPicker
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                    onModerationChange={setModeration}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -282,8 +288,15 @@ export function CreateTableDialog({ open, onOpenChange, onCreated }: CreateTable
 
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Criando...' : 'Criar Mesa'}
+              <Button
+                type="submit"
+                disabled={loading || moderation === 'checking' || moderation === 'blocked'}
+              >
+                {loading
+                  ? 'Criando...'
+                  : moderation === 'checking'
+                  ? 'Validando imagem...'
+                  : 'Criar Mesa'}
               </Button>
             </div>
           </form>
