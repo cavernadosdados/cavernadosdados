@@ -131,7 +131,7 @@ function NpcBody({ item }: { item: AnyRow }) {
   return (
     <>
       <div className="flex items-start gap-4">
-        <Avatar className="h-20 w-20 border border-primary/30">
+        <Avatar key={item.id || item.portrait_url} className="h-20 w-20 border border-primary/30">
           <AvatarImage src={item.portrait_url || undefined} alt={item.name} />
           <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
             {item.name?.slice(0, 2).toUpperCase()}
