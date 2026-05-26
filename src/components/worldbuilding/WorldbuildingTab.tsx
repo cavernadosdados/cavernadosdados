@@ -164,6 +164,18 @@ const NPC_STATUSES = [
   { value: "missing", label: "Desaparecido", icon: HelpCircle, className: "text-amber-500" },
 ];
 
+const NPC_RELATIONSHIPS = [
+  { value: "aliado", label: "Aliado" },
+  { value: "inimigo", label: "Inimigo" },
+  { value: "neutro", label: "Neutro" },
+  { value: "rival", label: "Rival" },
+  { value: "mentor", label: "Mentor" },
+  { value: "empregador", label: "Empregador" },
+  { value: "mercenario", label: "Mercenário" },
+  { value: "sob_tutela", label: "Sob tutela" },
+  { value: "desconhecida", label: "Desconhecida" },
+];
+
 const LOCATION_KINDS = [
   { value: "city", label: "Cidade" },
   { value: "dungeon", label: "Masmorra" },
@@ -412,7 +424,9 @@ function NpcsSection({ tableId, isMaster }: Props) {
                   {n.relationship && (
                     <div className="text-xs">
                       <span className="text-muted-foreground">Relação: </span>
-                      <span className="text-foreground">{n.relationship}</span>
+                      <span className="text-foreground">
+                        {NPC_RELATIONSHIPS.find((r) => r.value === n.relationship)?.label || n.relationship}
+                      </span>
                     </div>
                   )}
                   {n.description && (
@@ -589,11 +603,22 @@ function NpcDialog({
           </div>
           <div>
             <Label>Relação com o grupo</Label>
-            <Input
-              value={form.relationship}
-              placeholder="Ex: Aliado, Rival, Mentor..."
-              onChange={(e) => setForm({ ...form, relationship: e.target.value })}
-            />
+            <Select
+              value={form.relationship || "__none__"}
+              onValueChange={(v) => setForm({ ...form, relationship: v === "__none__" ? "" : v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecionar relação..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">(Nenhuma)</SelectItem>
+                {NPC_RELATIONSHIPS.map((r) => (
+                  <SelectItem key={r.value} value={r.value}>
+                    {r.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <ImageCropUpload
             value={form.portrait_url || ""}
