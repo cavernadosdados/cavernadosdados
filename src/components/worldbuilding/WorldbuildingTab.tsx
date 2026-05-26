@@ -424,7 +424,9 @@ function NpcsSection({ tableId, isMaster }: Props) {
                   {n.relationship && (
                     <div className="text-xs">
                       <span className="text-muted-foreground">Relação: </span>
-                      <span className="text-foreground">{n.relationship}</span>
+                      <span className="text-foreground">
+                        {NPC_RELATIONSHIPS.find((r) => r.value === n.relationship)?.label || n.relationship}
+                      </span>
                     </div>
                   )}
                   {n.description && (
