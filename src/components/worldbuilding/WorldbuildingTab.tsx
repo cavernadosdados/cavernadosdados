@@ -487,8 +487,7 @@ function NpcDialog({
 
   const { data: factions = [] } = useLore("lore_factions", tableId, "name", true);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useMemo(() => {
+  useEffect(() => {
     const initial = editing ?? {
       name: "",
       faction: "",
@@ -500,7 +499,8 @@ function NpcDialog({
     setForm(initial);
     const exists = factions.some((f: AnyRow) => f.name === initial.faction);
     setCustomFaction(!!initial.faction && !exists);
-  }, [editing, open, factions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing, open]);
 
   const save = async () => {
     if (!form.name?.trim()) return toast({ title: "Nome obrigatório", variant: "destructive" });
@@ -550,10 +550,12 @@ function NpcDialog({
               <Label>Facção</Label>
               {!customFaction ? (
                 <Select
-                  value={form.faction}
+                  value={form.faction || "__none__"}
                   onValueChange={(v) => {
                     if (v === "__custom__") {
                       setCustomFaction(true);
+                      setForm({ ...form, faction: "" });
+                    } else if (v === "__none__") {
                       setForm({ ...form, faction: "" });
                     } else {
                       setForm({ ...form, faction: v });
@@ -564,7 +566,7 @@ function NpcDialog({
                     <SelectValue placeholder="Selecionar facção..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">(Nenhuma)</SelectItem>
+                    <SelectItem value="__none__">(Nenhuma)</SelectItem>
                     {factionNames.map((name: string) => (
                       <SelectItem key={name} value={name}>
                         {name}
