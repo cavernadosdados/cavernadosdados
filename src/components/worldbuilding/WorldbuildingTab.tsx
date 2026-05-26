@@ -483,20 +483,24 @@ function NpcDialog({
     portrait_url: "",
   });
   const [saving, setSaving] = useState(false);
+  const [customFaction, setCustomFaction] = useState(false);
+
+  const { data: factions = [] } = useLore("lore_factions", tableId, "name", true);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useMemo(() => {
-    setForm(
-      editing ?? {
-        name: "",
-        faction: "",
-        status: "alive",
-        relationship: "",
-        description: "",
-        portrait_url: "",
-      },
-    );
-  }, [editing, open]);
+    const initial = editing ?? {
+      name: "",
+      faction: "",
+      status: "alive",
+      relationship: "",
+      description: "",
+      portrait_url: "",
+    };
+    setForm(initial);
+    const exists = factions.some((f: AnyRow) => f.name === initial.faction);
+    setCustomFaction(!!initial.faction && !exists);
+  }, [editing, open, factions]);
 
   const save = async () => {
     if (!form.name?.trim()) return toast({ title: "Nome obrigatório", variant: "destructive" });
@@ -511,6 +515,8 @@ function NpcDialog({
     onSaved();
     onOpenChange(false);
   };
+
+  const factionNames = useMemo(() => factions.map((f: AnyRow) => f.name), [factions]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -542,10 +548,50 @@ function NpcDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Facção</Label>
-              <Input
-                value={form.faction}
-                onChange={(e) => setForm({ ...form, faction: e.target.value })}
-              />
+              {!customFaction ? (
+                <Select
+                  value={form.faction}
+                  onValueChange={(v) => {
+                    if (v === "__custom__") {
+                      setCustomFaction(true);
+                      setForm({ ...form, faction: "" });
+                    } else {
+                      setForm({ ...form, faction: v });
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecionar facção..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">(Nenhuma)</SelectItem>
+                    {factionNames.map((name: string) => (
+                      <SelectItem key={name} value={name}>
+                        {name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="__custom__">+ Nova facção...</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    value={form.faction}
+                    placeholder="Nome da facção"
+                    onChange={(e) => setForm({ ...form, faction: e.target.value })}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 h-10"
+                    onClick={() => setCustomFaction(false)}
+                  >
+                    Voltar
+                  </Button>
+                </div>
+              )}
             </div>
             <div>
               <Label>Status</Label>
