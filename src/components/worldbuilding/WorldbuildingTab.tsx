@@ -164,6 +164,18 @@ const NPC_STATUSES = [
   { value: "missing", label: "Desaparecido", icon: HelpCircle, className: "text-amber-500" },
 ];
 
+const NPC_RELATIONSHIPS = [
+  { value: "aliado", label: "Aliado" },
+  { value: "inimigo", label: "Inimigo" },
+  { value: "neutro", label: "Neutro" },
+  { value: "rival", label: "Rival" },
+  { value: "mentor", label: "Mentor" },
+  { value: "empregador", label: "Empregador" },
+  { value: "mercenario", label: "Mercenário" },
+  { value: "sob_tutela", label: "Sob tutela" },
+  { value: "desconhecida", label: "Desconhecida" },
+];
+
 const LOCATION_KINDS = [
   { value: "city", label: "Cidade" },
   { value: "dungeon", label: "Masmorra" },
