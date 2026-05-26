@@ -142,11 +142,40 @@ function NpcBody({ item }: { item: AnyRow }) {
             <StatusIcon className={`h-4 w-4 ${status.className}`} />
             <span className={`text-sm font-medium ${status.className}`}>{status.label}</span>
           </div>
-          {item.faction && <Badge variant="outline">{item.faction}</Badge>}
+          {item.faction && (
+            <div className="flex flex-wrap gap-1">
+              {item.faction
+                .split(",")
+                .map((f: string) => f.trim())
+                .filter(Boolean)
+                .map((f: string) => (
+                  <Badge key={f} variant="outline" className="text-xs">
+                    {f}
+                  </Badge>
+                ))}
+            </div>
+          )}
         </div>
       </div>
       <Separator />
-      <Field label="Relação com o grupo" value={item.relationship} />
+      <Field
+        label="Relação com o grupo"
+        value={
+          item.relationship
+            ? ({
+                aliado: "Aliado",
+                inimigo: "Inimigo",
+                neutro: "Neutro",
+                rival: "Rival",
+                mentor: "Mentor",
+                empregador: "Empregador",
+                mercenario: "Mercenário",
+                sob_tutela: "Sob tutela",
+                desconhecida: "Desconhecida",
+              }[item.relationship] ?? item.relationship)
+            : undefined
+        }
+      />
       <Field label="Descrição" value={item.description} />
     </>
   );
