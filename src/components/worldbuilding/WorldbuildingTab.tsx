@@ -586,14 +586,6 @@ function NpcDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label>Relação com o grupo</Label>
-              <Input
-                value={form.relationship}
-                placeholder="Ex: Aliado, Rival..."
-                onChange={(e) => setForm({ ...form, relationship: e.target.value })}
-              />
-            </div>
           </div>
           <div>
             <Label>Relação com o grupo</Label>
