@@ -13,6 +13,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ImageCropUpload } from "@/components/ImageCropUpload";
 import { MasterPrepSection } from "@/components/worldbuilding/MasterPrepSection";
 import { LoreDetailDialog } from "@/components/worldbuilding/LoreDetailDialog";
+import { SearchableMultiAdd } from "@/components/SearchableMultiAdd";
 import {
   Select,
   SelectContent,
@@ -394,9 +395,17 @@ function NpcsSection({ tableId, isMaster }: Props) {
                         <span className={status.className}>{status.label}</span>
                       </div>
                       {n.faction && (
-                        <Badge variant="outline" className="mt-1 text-xs">
-                          {n.faction}
-                        </Badge>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {n.faction
+                            .split(",")
+                            .map((f: string) => f.trim())
+                            .filter(Boolean)
+                            .map((f: string) => (
+                              <Badge key={f} variant="outline" className="text-xs">
+                                {f}
+                              </Badge>
+                            ))}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -483,7 +492,6 @@ function NpcDialog({
     portrait_url: "",
   });
   const [saving, setSaving] = useState(false);
-  const [customFaction, setCustomFaction] = useState(false);
 
   const { data: factions = [] } = useLore("lore_factions", tableId, "name", true);
 
@@ -497,8 +505,6 @@ function NpcDialog({
       portrait_url: "",
     };
     setForm(initial);
-    const exists = factions.some((f: AnyRow) => f.name === initial.faction);
-    setCustomFaction(!!initial.faction && !exists);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editing, open]);
 
@@ -517,6 +523,14 @@ function NpcDialog({
   };
 
   const factionNames = useMemo(() => factions.map((f: AnyRow) => f.name), [factions]);
+  const selectedFactions = useMemo(
+    () =>
+      (form.faction || "")
+        .split(",")
+        .map((f: string) => f.trim())
+        .filter(Boolean),
+    [form.faction]
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -545,56 +559,18 @@ function NpcDialog({
             <Label>Nome *</Label>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
+          <div>
+            <Label>Facções</Label>
+            <SearchableMultiAdd
+              options={factionNames}
+              value={selectedFactions}
+              onChange={(vals) => setForm({ ...form, faction: vals.join(", ") })}
+              placeholder="Selecionar facções..."
+              searchPlaceholder="Procurar ou adicionar nova facção..."
+              emptyHint="Nenhuma facção cadastrada."
+            />
+          </div>
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Facção</Label>
-              {!customFaction ? (
-                <Select
-                  value={form.faction || "__none__"}
-                  onValueChange={(v) => {
-                    if (v === "__custom__") {
-                      setCustomFaction(true);
-                      setForm({ ...form, faction: "" });
-                    } else if (v === "__none__") {
-                      setForm({ ...form, faction: "" });
-                    } else {
-                      setForm({ ...form, faction: v });
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecionar facção..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">(Nenhuma)</SelectItem>
-                    {factionNames.map((name: string) => (
-                      <SelectItem key={name} value={name}>
-                        {name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="__custom__">+ Nova facção...</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <div className="flex gap-2">
-                  <Input
-                    value={form.faction}
-                    placeholder="Nome da facção"
-                    onChange={(e) => setForm({ ...form, faction: e.target.value })}
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0 h-10"
-                    onClick={() => setCustomFaction(false)}
-                  >
-                    Voltar
-                  </Button>
-                </div>
-              )}
-            </div>
             <div>
               <Label>Status</Label>
               <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
