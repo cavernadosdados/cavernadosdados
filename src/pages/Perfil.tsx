@@ -216,6 +216,7 @@ const Perfil = () => {
                   fallbackUrl={profile?.avatar_url}
                   fallbackText={initials}
                   className="h-24 w-24"
+                  onClick={() => setAvatarZoomOpen(true)}
                 />
                 <div className="text-center">
                   <h3 className="text-xl font-bold">{displayName}</h3>
