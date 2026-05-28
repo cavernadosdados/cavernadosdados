@@ -13,6 +13,8 @@ interface GlimerAvatarProps {
   className?: string;
   /** If true, hides the equipped frame overlay (useful in dense lists). */
   hideFrame?: boolean;
+  /** Click handler — adds cursor-pointer automatically when provided */
+  onClick?: () => void;
 }
 
 /**
