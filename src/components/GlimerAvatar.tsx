@@ -28,6 +28,7 @@ export function GlimerAvatar({
   fallbackText,
   className,
   hideFrame = false,
+  onClick,
 }: GlimerAvatarProps) {
   const { data: equipped } = useEquippedCosmetics(userId);
 
