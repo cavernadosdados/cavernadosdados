@@ -37,7 +37,7 @@ export function GlimerAvatar({
 
   return (
     <div className={cn("relative inline-block h-10 w-10", className)}>
-      <Avatar className="h-full w-full">
+      <Avatar className="absolute inset-[5%] h-[90%] w-[90%]">
         {glimerSrc && <AvatarImage src={glimerSrc} alt="" />}
         <AvatarFallback>{fallbackText?.slice(0, 2).toUpperCase() ?? "?"}</AvatarFallback>
       </Avatar>
