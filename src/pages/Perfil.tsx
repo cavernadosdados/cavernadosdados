@@ -51,6 +51,7 @@ const Perfil = () => {
     equippedCosmetics?.cover_image_url ??
     null;
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [avatarZoomOpen, setAvatarZoomOpen] = useState(false);
   const [viewedEmail, setViewedEmail] = useState<string | null>(null);
   const [viewedCreatedAt, setViewedCreatedAt] = useState<string | null>(null);
   const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
