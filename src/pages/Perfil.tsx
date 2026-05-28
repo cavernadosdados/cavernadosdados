@@ -590,6 +590,18 @@ const Perfil = () => {
           </div>
         </div>
 
+        <Dialog open={avatarZoomOpen} onOpenChange={setAvatarZoomOpen}>
+          <DialogContent className="flex flex-col items-center justify-center border-border bg-card/95 backdrop-blur-sm sm:max-w-sm">
+            <DialogTitle className="sr-only">Imagem de perfil ampliada</DialogTitle>
+            <GlimerAvatar
+              userId={viewedUserId}
+              fallbackUrl={profile?.avatar_url}
+              fallbackText={initials}
+              className="h-64 w-64"
+            />
+          </DialogContent>
+        </Dialog>
+
         {isOwnProfile && (
           <EditProfileDialog
             open={editDialogOpen}
