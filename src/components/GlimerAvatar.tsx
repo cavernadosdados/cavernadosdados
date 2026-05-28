@@ -13,6 +13,8 @@ interface GlimerAvatarProps {
   className?: string;
   /** If true, hides the equipped frame overlay (useful in dense lists). */
   hideFrame?: boolean;
+  /** Click handler — adds cursor-pointer automatically when provided */
+  onClick?: () => void;
 }
 
 /**
@@ -26,6 +28,7 @@ export function GlimerAvatar({
   fallbackText,
   className,
   hideFrame = false,
+  onClick,
 }: GlimerAvatarProps) {
   const { data: equipped } = useEquippedCosmetics(userId);
 
@@ -36,7 +39,13 @@ export function GlimerAvatar({
     : undefined;
 
   return (
-    <div className={cn("relative inline-block h-10 w-10", className)}>
+    <div
+      className={cn("relative inline-block h-10 w-10", onClick && "cursor-pointer", className)}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") onClick(); } : undefined}
+    >
       <Avatar className="absolute inset-[5%] h-[90%] w-[90%]">
         {glimerSrc && <AvatarImage src={glimerSrc} alt="" />}
         <AvatarFallback>{fallbackText?.slice(0, 2).toUpperCase() ?? "?"}</AvatarFallback>

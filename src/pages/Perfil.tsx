@@ -13,6 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Star, Clock, Dice1, MapPin, Gamepad2, Users, Monitor, Send, ScrollText } from "lucide-react";
 import { ReportTableButton } from "@/components/ReportTableButton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -46,6 +51,7 @@ const Perfil = () => {
     equippedCosmetics?.cover_image_url ??
     null;
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [avatarZoomOpen, setAvatarZoomOpen] = useState(false);
   const [viewedEmail, setViewedEmail] = useState<string | null>(null);
   const [viewedCreatedAt, setViewedCreatedAt] = useState<string | null>(null);
   const [applyTable, setApplyTable] = useState<{ id: string; title: string } | null>(null);
@@ -210,6 +216,7 @@ const Perfil = () => {
                   fallbackUrl={profile?.avatar_url}
                   fallbackText={initials}
                   className="h-24 w-24"
+                  onClick={() => setAvatarZoomOpen(true)}
                 />
                 <div className="text-center">
                   <h3 className="text-xl font-bold">{displayName}</h3>
@@ -582,6 +589,18 @@ const Perfil = () => {
                 </Card>
           </div>
         </div>
+
+        <Dialog open={avatarZoomOpen} onOpenChange={setAvatarZoomOpen}>
+          <DialogContent className="flex flex-col items-center justify-center border-border bg-card/95 backdrop-blur-sm sm:max-w-sm">
+            <DialogTitle className="sr-only">Imagem de perfil ampliada</DialogTitle>
+            <GlimerAvatar
+              userId={viewedUserId}
+              fallbackUrl={profile?.avatar_url}
+              fallbackText={initials}
+              className="h-64 w-64"
+            />
+          </DialogContent>
+        </Dialog>
 
         {isOwnProfile && (
           <EditProfileDialog
