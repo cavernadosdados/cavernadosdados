@@ -275,17 +275,27 @@ const AdventurePanel = () => {
 
       // Se a data armazenada já passou, persiste a limpeza no banco (somente o mestre)
       if (rawDate && cleanedDate === "" && isMaster) {
+        const targetTableId = tableId;
+        if (!targetTableId) return;
         supabase
           .from("campaign_details")
           .update({ next_session_date: null })
-          .eq("table_id", tableId!)
+          .eq("table_id", targetTableId)
           .then(({ error }) => {
-            if (!error) refetchCampaign();
+            if (error) {
+              toast({
+                title: "Não foi possível limpar a próxima sessão",
+                description: error.message,
+                variant: "destructive",
+              });
+              return;
+            }
+            refetchCampaign();
           });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaign, isMaster, discordWebhookUrl]);
+  }, [campaign, isMaster, discordWebhookUrl, tableId]);
 
   // Realtime: listen for table status changes (players detect "evaluation")
   useEffect(() => {

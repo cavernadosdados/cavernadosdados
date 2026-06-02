@@ -602,12 +602,12 @@ const Perfil = () => {
           </DialogContent>
         </Dialog>
 
-        {isOwnProfile && (
+        {isOwnProfile && user?.id && (
           <EditProfileDialog
             open={editDialogOpen}
             onOpenChange={setEditDialogOpen}
             profile={profile}
-            userId={user?.id || ''}
+            userId={user.id}
             isMaster={hasMasterContent}
           />
         )}

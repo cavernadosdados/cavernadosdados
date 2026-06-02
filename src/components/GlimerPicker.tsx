@@ -46,7 +46,7 @@ export function GlimerPicker() {
     },
     onSuccess: () => {
       toast.success("Glimer equipado!");
-      queryClient.invalidateQueries({ queryKey: ["equipped-cosmetics"] });
+      queryClient.invalidateQueries({ queryKey: ["equipped-cosmetics", user?.id] });
     },
     onError: (e: any) => toast.error(e?.message ?? "Erro ao equipar"),
   });

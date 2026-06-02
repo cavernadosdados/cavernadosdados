@@ -22,18 +22,20 @@ export const MesaChat = ({ tableId, tableTitle }: MesaChatProps) => {
   const { user } = useAuth();
   const { messages, isLoading, send, isSending, maxLen } = useMesaChat(tableId);
   const [text, setText] = useState("");
-  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const scrollRootRef = useRef<HTMLDivElement | null>(null);
   const lastCountRef = useRef(0);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
-    if (!scrollRef.current) return;
-    if (messages.length !== lastCountRef.current) {
-      lastCountRef.current = messages.length;
-      requestAnimationFrame(() => {
-        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-      });
-    }
+    if (messages.length === lastCountRef.current) return;
+    lastCountRef.current = messages.length;
+    const viewport = scrollRootRef.current?.querySelector<HTMLDivElement>(
+      "[data-radix-scroll-area-viewport]"
+    );
+    if (!viewport) return;
+    requestAnimationFrame(() => {
+      viewport.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" });
+    });
   }, [messages.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,7 +63,7 @@ export const MesaChat = ({ tableId, tableTitle }: MesaChatProps) => {
         </p>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[420px] px-4" ref={scrollRef as any}>
+        <ScrollArea className="h-[420px] px-4" ref={scrollRootRef as any}>
           {isLoading ? (
             <div className="space-y-3 py-3">
               {[1, 2, 3].map((i) => (

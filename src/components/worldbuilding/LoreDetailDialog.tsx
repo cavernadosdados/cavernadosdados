@@ -78,8 +78,6 @@ function Field({ label, value }: { label: string; value?: React.ReactNode }) {
 }
 
 export function LoreDetailDialog({ open, onOpenChange, kind, item }: Props) {
-  if (!item) return null;
-
   const titleIcon =
     kind === "npc" ? <Users className="h-5 w-5 text-primary" />
     : kind === "location" ? <MapPin className="h-5 w-5 text-primary" />
@@ -90,6 +88,7 @@ export function LoreDetailDialog({ open, onOpenChange, kind, item }: Props) {
     : <BookMarked className="h-5 w-5 text-primary" />;
 
   const title =
+    !item ? "" :
     kind === "codex" ? item.term :
     kind === "timeline" ? item.title :
     item.name;
@@ -106,13 +105,13 @@ export function LoreDetailDialog({ open, onOpenChange, kind, item }: Props) {
         </DialogHeader>
 
         <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
-          {kind === "npc" && <NpcBody item={item} />}
-          {kind === "location" && <LocationBody item={item} />}
-          {kind === "faction" && <FactionBody item={item} />}
-          {kind === "deity" && <DeityBody item={item} />}
-          {kind === "item" && <ItemBody item={item} />}
-          {kind === "timeline" && <TimelineBody item={item} />}
-          {kind === "codex" && <CodexBody item={item} />}
+          {item && kind === "npc" && <NpcBody item={item} />}
+          {item && kind === "location" && <LocationBody item={item} />}
+          {item && kind === "faction" && <FactionBody item={item} />}
+          {item && kind === "deity" && <DeityBody item={item} />}
+          {item && kind === "item" && <ItemBody item={item} />}
+          {item && kind === "timeline" && <TimelineBody item={item} />}
+          {item && kind === "codex" && <CodexBody item={item} />}
         </div>
 
         <DialogFooter className="p-4 border-t border-border">
