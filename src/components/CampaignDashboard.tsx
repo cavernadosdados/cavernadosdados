@@ -99,7 +99,7 @@ export function CampaignDashboard({
     enabled: !!tableId && isMaster,
     queryFn: async () => {
       const { count, error } = await supabase
-        .from("session_presence" as any)
+        .from("session_presence")
         .select("id", { count: "exact", head: true })
         .eq("table_id", tableId)
         .eq("justification_status", "pending");

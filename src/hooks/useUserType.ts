@@ -38,7 +38,7 @@ export const useUserType = () => {
     enabled: !!user,
     staleTime: 60 * 1000,
     queryFn: async () => {
-      const [{ count: masterCount }, { count: appCount }] = await Promise.all([
+      const [mastersRes, appsRes] = await Promise.all([
         supabase
           .from("tables")
           .select("id", { count: "exact", head: true })
@@ -48,9 +48,11 @@ export const useUserType = () => {
           .select("id", { count: "exact", head: true })
           .eq("player_id", user!.id),
       ]);
+      if (mastersRes.error) throw mastersRes.error;
+      if (appsRes.error) throw appsRes.error;
       return {
-        hasMasteredTables: (masterCount ?? 0) > 0,
-        hasPlayerActivity: (appCount ?? 0) > 0,
+        hasMasteredTables: (mastersRes.count ?? 0) > 0,
+        hasPlayerActivity: (appsRes.count ?? 0) > 0,
       };
     },
   });
