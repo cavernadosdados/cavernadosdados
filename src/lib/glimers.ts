@@ -15,6 +15,12 @@ import dragonborn from "@/assets/glimers/dragonborn.png";
 import shadowblade from "@/assets/glimers/shadowblade.png";
 import celestial from "@/assets/glimers/celestial.png";
 
+import noxAsset from "@/assets/glimers/nox.png.asset.json";
+import trixAsset from "@/assets/glimers/trix.png.asset.json";
+import kikiAsset from "@/assets/glimers/kiki.png.asset.json";
+import jipoAsset from "@/assets/glimers/jipo.png.asset.json";
+import jinxAsset from "@/assets/glimers/jinx.png.asset.json";
+
 import frameBronze from "@/assets/frames/bronze.png";
 import frameSilver from "@/assets/frames/silver.png";
 import frameVines from "@/assets/frames/vines.png";
@@ -42,6 +48,11 @@ import coverBattlefield from "@/assets/covers/battlefield.jpg";
 import coverStars from "@/assets/covers/stars.jpg";
 
 export const GLIMER_ASSETS: Record<string, string> = {
+  nox: noxAsset.url,
+  trix: trixAsset.url,
+  kiki: kikiAsset.url,
+  jipo: jipoAsset.url,
+  jinx: jinxAsset.url,
   wanderer,
   apprentice,
   ranger,
