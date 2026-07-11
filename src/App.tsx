@@ -29,6 +29,7 @@ import Favoritos from "./pages/Favoritos";
 import MesaPublica from "./pages/MesaPublica";
 import Privacidade from "./pages/Privacidade";
 import Termos from "./pages/Termos";
+import Guia from "./pages/Guia";
 import EsqueciSenha from "./pages/EsqueciSenha";
 import RedefinirSenha from "./pages/RedefinirSenha";
 import { useAuth } from "@/hooks/useAuth";
@@ -57,6 +58,7 @@ const AppRoutes = () => (
     <Route path="/redefinir-senha" element={<RedefinirSenha />} />
     <Route path="/privacidade" element={<Privacidade />} />
     <Route path="/termos" element={<Termos />} />
+    <Route path="/guia" element={<Guia />} />
     <Route path="/m/:tableId" element={<MesaPublica />} />
     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
     <Route path="/dashboard/mesas" element={<ProtectedRoute><Mesas /></ProtectedRoute>} />
