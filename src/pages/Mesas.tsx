@@ -23,6 +23,7 @@ import {
 import { CreateTableDialog } from "@/components/CreateTableDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
 import { ReportTableButton } from "@/components/ReportTableButton";
+import { CoverImage } from "@/components/CoverImage";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -177,8 +178,8 @@ const Mesas = () => {
             ))}
           </div>
         ) : sortedTables && sortedTables.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            {sortedTables.map((table: any) => {
+          <div className="grid gap-5 md:grid-cols-2">
+            {sortedTables.map((table: any, index: number) => {
               const isOwner = table.master_id === user?.id;
               const appStatus = !isOwner ? getApplicationStatus(table.id) : null;
               const acceptedCount = acceptedCounts?.[table.id] ?? 0;
@@ -189,51 +190,70 @@ const Mesas = () => {
               const isFresh = ageMs < 1000 * 60 * 60 * 48;
               const boostExpires = boostsMap[table.id];
               const isBoosted = !!boostExpires;
+              const isEager = index < 2;
 
               return (
                 <Card
                   key={table.id}
-                  className={`bg-card border-border hover:border-primary transition-all ${
-                    isBoosted ? "border-primary/60 shadow-[0_0_20px_-8px_hsl(var(--primary))]" : ""
+                  className={`group relative rounded-2xl border-border overflow-hidden transition-all duration-300 hover:border-primary/60 hover:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.5)] hover:-translate-y-0.5 min-h-[360px] flex ${
+                    isBoosted
+                      ? "border-primary/60 shadow-[0_0_25px_-8px_hsl(var(--primary)/0.6)]"
+                      : ""
                   }`}
                 >
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start gap-2">
-                      <CardTitle className="text-lg">{table.title}</CardTitle>
-                      <div className="flex flex-col items-end gap-1">
+                  {/* Cover background */}
+                  <CoverImage
+                    src={table.cover_url}
+                    alt={`Capa de ${table.title}`}
+                    eager={isEager}
+                    className="absolute inset-0 h-full w-full brightness-[0.45] transition-all duration-500 group-hover:brightness-[0.6] group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/75 to-black/20" />
+
+                  {/* Top-right badges */}
+                  <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5 z-20 max-w-[60%]">
                         {isBoosted && (
-                          <Badge className="gap-1 bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30">
-                            <Flame className="h-3 w-3" /> Em destaque
+                          <Badge className="gap-1 bg-primary/90 text-primary-foreground border-0 text-xs shadow-lg backdrop-blur-sm">
+                            <Flame className="h-3 w-3" /> Destaque
                           </Badge>
                         )}
-                        <Badge variant={table.status === "open" ? "default" : "secondary"}>
+                        <Badge
+                          variant={table.status === "open" ? "default" : "secondary"}
+                          className="text-xs shadow-lg backdrop-blur-sm"
+                        >
                           {table.status === "open" ? "Aberta" : "Fechada"}
                         </Badge>
                         {table.status === "open" && isAlmostFull && (
-                          <Badge variant="destructive" className="gap-1 animate-pulse">
+                          <Badge variant="destructive" className="gap-1 animate-pulse text-xs shadow-lg backdrop-blur-sm">
                             <AlertTriangle className="h-3 w-3" /> Últimas vagas
                           </Badge>
                         )}
                         {table.status === "open" && !isAlmostFull && isFresh && !isBoosted && (
-                          <Badge className="gap-1 bg-secondary text-secondary-foreground">
+                          <Badge className="gap-1 bg-secondary/90 text-secondary-foreground text-xs shadow-lg backdrop-blur-sm">
                             <Sparkles className="h-3 w-3" /> Nova
                           </Badge>
                         )}
-                      </div>
-                    </div>
-                    {isBoosted && (
-                      <p className="text-[11px] text-primary/80 mt-1">
-                        Destaque expira {formatDistanceToNow(new Date(boostExpires), { addSuffix: true, locale: ptBR })}
-                      </p>
-                    )}
-                    {!isOwner && table.profiles && (
+                  </div>
+
+                  {/* Content */}
+                  <div className="relative z-10 flex flex-col justify-end w-full p-4 sm:p-6 gap-3 sm:gap-4 text-white">
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-bold leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] line-clamp-2">
+                        {table.title}
+                      </h3>
+                      {isBoosted && (
+                        <p className="text-[11px] text-primary mt-1">
+                          Destaque expira {formatDistanceToNow(new Date(boostExpires), { addSuffix: true, locale: ptBR })}
+                        </p>
+                      )}
+                      {!isOwner && table.profiles && (
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/dashboard/perfil/${table.profiles.id}`);
                         }}
-                        className="group mt-2 flex w-full items-center gap-2 rounded-md border border-primary/20 bg-background/40 p-2 text-left transition-mystical hover:border-primary/50"
+                        className="mt-2 flex w-full items-center gap-2 rounded-md border border-white/20 bg-black/40 backdrop-blur-sm p-2 text-left transition-mystical hover:border-primary/60"
                       >
                         <Avatar className="h-8 w-8 border border-primary/40">
                           <AvatarImage src={table.profiles.avatar_url ?? undefined} alt={table.profiles.display_name} />
@@ -242,56 +262,63 @@ const Mesas = () => {
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Mestre</div>
-                          <div className="text-xs font-semibold truncate group-hover:text-primary">
+                          <div className="text-[10px] uppercase tracking-wider text-primary">Mestre</div>
+                          <div className="text-xs font-semibold truncate text-white">
                             {table.profiles.display_name}
                           </div>
                         </div>
-                        <span className="text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                          Ver perfil →
-                        </span>
+                        <span className="text-[10px] text-primary">Ver perfil →</span>
                       </button>
-                    )}
-                  </CardHeader>
-                  <CardContent className="space-y-3">
+                      )}
+                    </div>
+
                     {table.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">{table.description}</p>
+                      <p className="text-sm text-white/80 line-clamp-2 drop-shadow">{table.description}</p>
                     )}
+
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline" className="gap-1">
+                      <Badge variant="outline" className="gap-1 text-xs h-6 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm font-normal">
                         <Gamepad2 className="h-3 w-3" /> {table.system}
                       </Badge>
-                      <Badge variant="outline">{table.theme}</Badge>
-                      <Badge variant="outline" className="gap-1">
+                      <Badge variant="outline" className="text-xs h-6 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm font-normal">
+                        {table.theme}
+                      </Badge>
+                      <Badge variant="outline" className="gap-1 text-xs h-6 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm font-normal">
                         <Clock className="h-3 w-3" /> {table.duration}
                       </Badge>
                       <Badge
-                        variant={isFull ? "secondary" : isAlmostFull ? "destructive" : "outline"}
-                        className="gap-1"
+                        variant="outline"
+                        className={`gap-1 text-xs h-6 px-2 backdrop-blur-sm font-normal ${
+                          isFull
+                            ? "bg-white/10 border-white/20 text-white/80"
+                            : isAlmostFull
+                              ? "bg-destructive/40 border-destructive/50 text-white"
+                              : "bg-primary/25 border-primary/50 text-white"
+                        }`}
                       >
                         <Users className="h-3 w-3" />
                         {acceptedCount}/{table.max_players} vagas
                         {isFull && " · cheia"}
                       </Badge>
-                      <Badge variant="outline" className="gap-1">
+                      <Badge variant="outline" className="gap-1 text-xs h-6 px-2 bg-black/40 border-white/20 text-white backdrop-blur-sm font-normal">
                         <Monitor className="h-3 w-3" /> {table.platform}
                       </Badge>
                       <Badge
                         variant="outline"
-                        className={`gap-1 ${
+                        className={`gap-1 text-xs h-6 px-2 backdrop-blur-sm font-semibold ${
                           isFreeTable(table.price_cents)
-                            ? "border-emerald-500/40 text-emerald-400"
-                            : "border-primary/50 text-primary"
+                            ? "bg-emerald-500/20 border-emerald-400/40 text-emerald-100"
+                            : "bg-primary/25 border-primary/50 text-white"
                         }`}
                       >
                         <Coins className="h-3 w-3" />
                         {formatPriceBRL(table.price_cents)}
                         {!isFreeTable(table.price_cents) && (
-                          <span className="opacity-70 font-normal">/ jogador</span>
+                          <span className="opacity-80 font-normal">/ jogador</span>
                         )}
                       </Badge>
                       {acceptedCount > 0 && !isFull && (
-                        <Badge variant="outline" className="gap-1 border-secondary/50 text-secondary">
+                        <Badge variant="outline" className="gap-1 text-xs h-6 px-2 bg-secondary/25 border-secondary/50 text-white backdrop-blur-sm font-normal">
                           <Flame className="h-3 w-3" /> {acceptedCount} confirmado{acceptedCount > 1 ? "s" : ""}
                         </Badge>
                       )}
@@ -303,7 +330,7 @@ const Mesas = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="gap-1 w-full sm:w-auto min-h-10"
+                          className="gap-1 w-full sm:w-auto min-h-10 bg-black/40 border-white/30 text-white hover:bg-black/60 hover:text-white backdrop-blur-sm"
                           onClick={() => navigate(`/dashboard/mesa/${table.id}/detalhes`)}
                         >
                           <ScrollText className="h-3 w-3" /> Ver Detalhes
@@ -338,7 +365,7 @@ const Mesas = () => {
                             tableId={table.id}
                             tableTitle={table.title}
                             variant="menu-item"
-                            className="text-muted-foreground hover:text-destructive"
+                            className="text-white/70 hover:text-destructive"
                           />
                         )}
                       </div>
@@ -350,7 +377,7 @@ const Mesas = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="gap-1 min-h-10 w-full sm:w-auto"
+                          className="gap-1 min-h-10 w-full sm:w-auto bg-black/40 border-white/30 text-white hover:bg-black/60 hover:text-white backdrop-blur-sm"
                           onClick={() => navigate(`/dashboard/mesa/${table.id}`)}
                         >
                           <ScrollText className="h-3 w-3" /> Gerenciar
@@ -359,7 +386,9 @@ const Mesas = () => {
                           size="sm"
                           variant={isBoosted ? "outline" : "default"}
                           className={`gap-1 min-h-10 w-full sm:w-auto ${
-                            !isBoosted ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""
+                            !isBoosted
+                              ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                              : "bg-black/40 border-white/30 text-white hover:bg-black/60 hover:text-white backdrop-blur-sm"
                           }`}
                           onClick={() => setBoostConfirm({ id: table.id, title: table.title })}
                           title={isBoosted ? "Renovar destaque por +24h" : "Destacar no topo por 24h"}
@@ -377,7 +406,7 @@ const Mesas = () => {
                         </Button>
                       </div>
                     )}
-                  </CardContent>
+                  </div>
                 </Card>
               );
             })}
