@@ -1,66 +1,70 @@
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Dices, Scroll, Users } from "lucide-react";
 
 export const Hero = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative border-b border-zinc-800/80 bg-[#0a0a0f]">
-      <div className="max-w-7xl mx-auto px-6 py-16 lg:py-24 grid lg:grid-cols-2 gap-12 items-center">
-        <div className="z-10 animate-fade-in">
-          <span className="uppercase tracking-[0.28em] text-xs font-semibold text-[#E8B84A] mb-5 block">
-            Destaque da Semana
-          </span>
-          <h1 className="font-display text-5xl sm:text-6xl lg:text-8xl leading-[0.95] mb-6 text-zinc-50">
-            A Forja de <br />
-            <i className="italic font-normal bg-gradient-to-r from-[#24AEFF] via-[#7E3DFF] to-[#C04AFF] bg-clip-text text-transparent">
-              Glimer
-            </i>
-          </h1>
-          <p className="text-base sm:text-lg text-zinc-400 max-w-md mb-8 leading-relaxed">
-            Descubra mesas épicas, conecte-se com mestres lendários e viva aventuras
-            inesquecíveis. Gestão, segurança e diversão em um só lugar.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <button
-              onClick={() => navigate("/auth")}
-              className="px-8 py-4 bg-zinc-50 text-zinc-950 font-bold hover:bg-[#E8B84A] transition-colors uppercase text-sm tracking-tight cursor-pointer"
-            >
-              Encontrar Mesa
-            </button>
-            <button
-              onClick={() => navigate("/auth")}
-              className="px-8 py-4 border border-zinc-700 text-zinc-100 font-bold hover:bg-zinc-900 transition-colors uppercase text-sm tracking-tight cursor-pointer"
-            >
-              Seja um Mestre
-            </button>
-          </div>
-          <div className="flex flex-wrap items-center gap-6 pt-10 text-xs uppercase tracking-widest text-zinc-500">
-            <span><b className="text-zinc-200 font-display text-base normal-case tracking-normal">+500</b> mesas ativas</span>
-            <span className="h-4 w-px bg-zinc-800" />
-            <span><b className="text-zinc-200 font-display text-base normal-case tracking-normal">+2.000</b> jogadores</span>
-            <span className="h-4 w-px bg-zinc-800" />
-            <span><b className="text-zinc-200 font-display text-base normal-case tracking-normal">+150</b> mestres</span>
-          </div>
-        </div>
+    <section className="relative min-h-screen flex items-center justify-center overflow-x-hidden pt-20">
+      {/* Mystical background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-card/50" />
+      
+      {/* Floating particles effect */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-primary rounded-full animate-glow-pulse" />
+        <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-secondary rounded-full animate-glow-pulse" style={{ animationDelay: "1s" }} />
+        <div className="absolute bottom-1/3 left-1/2 w-2 h-2 bg-primary rounded-full animate-glow-pulse" style={{ animationDelay: "2s" }} />
+      </div>
 
-        <div className="relative aspect-[4/5] bg-zinc-900 overflow-hidden shadow-2xl group">
-          <img
-            src="/assets/adventure-covers/dark-fantasy.jpg"
-            alt="Aventureiro em caverna sombria com cristais brilhantes"
-            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
-            loading="eager"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent opacity-80" />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#2323FF]/10 via-transparent to-[#C04AFF]/10 mix-blend-screen" />
-          <div className="absolute bottom-8 left-8 right-8">
-            <div className="p-4 border-l-2 border-[#E8B84A] bg-[#0a0a0f]/70 backdrop-blur-md">
-              <p className="text-sm italic text-zinc-200 font-editorial">
-                "O abismo sussurra segredos que apenas os dados podem revelar."
-              </p>
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-primary/30 mb-4">
+            <Dices className="w-4 h-4 text-primary animate-glow-pulse" />
+            <span className="text-sm font-medium">Gestão, segurança e diversão para RPG</span>
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold leading-tight">
+            Descubra, organize, proteja e evolua suas{" "}
+            <span className="text-primary glow-gold">campanhas de RPG</span>
+          </h1>
+
+          <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            A Glimer conecta mestres e jogadores, mas vai além do encontro: ajuda a gerir mesas,
+            criar um ambiente mais seguro e transformar cada sessão em uma jornada viva.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 w-full max-w-md sm:max-w-none mx-auto">
+            <Button variant="hero" size="lg" className="w-full sm:w-auto sm:min-w-[200px] min-h-12" onClick={() => navigate('/auth')}>
+              <Scroll className="w-5 h-5" />
+              Sou Jogador
+            </Button>
+            <Button variant="mystical" size="lg" className="w-full sm:w-auto sm:min-w-[200px] min-h-12" onClick={() => navigate('/auth')}>
+              <Users className="w-5 h-5" />
+              Sou Mestre
+            </Button>
+          </div>
+
+          {/* Trust indicators */}
+          <div className="flex flex-wrap items-center justify-center gap-8 pt-12 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-primary rounded-full animate-glow-pulse" />
+              <span>+500 Mesas Ativas</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-secondary rounded-full animate-glow-pulse" />
+              <span>+2,000 Jogadores</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-primary rounded-full animate-glow-pulse" />
+              <span>+150 Mestres Certificados</span>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Bottom fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 };
