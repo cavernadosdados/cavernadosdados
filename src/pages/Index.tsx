@@ -1,9 +1,9 @@
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
-import { BeyondMatchmaking } from "@/components/BeyondMatchmaking";
-import { Testimonials } from "@/components/Testimonials";
-import { HowItWorks } from "@/components/HowItWorks";
 import { FeaturedTables } from "@/components/FeaturedTables";
+import { MestresDestaque } from "@/components/home/MestresDestaque";
+import { CronicasNewsletter } from "@/components/home/CronicasNewsletter";
+import { BeyondMatchmaking } from "@/components/BeyondMatchmaking";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -24,14 +24,14 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#0a0a0f] font-editorial text-zinc-100">
       <Header />
       <main>
         <Hero />
-        <BeyondMatchmaking />
-        <Testimonials />
-        <HowItWorks />
         <FeaturedTables />
+        <MestresDestaque />
+        <BeyondMatchmaking />
+        <CronicasNewsletter />
       </main>
       <Footer />
     </div>
