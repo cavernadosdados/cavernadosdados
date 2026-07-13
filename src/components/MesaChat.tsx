@@ -96,7 +96,6 @@ export const MesaChat = ({ tableId, tableTitle }: MesaChatProps) => {
                     >
                       <GlimerAvatar
                         userId={m.user_id}
-                        fallbackUrl={m.author?.avatar_url ?? undefined}
                         fallbackText={initials}
                         className="h-8 w-8"
                       />
