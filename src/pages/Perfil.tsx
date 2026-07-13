@@ -213,7 +213,6 @@ const Perfil = () => {
               <div className="flex flex-col items-center space-y-4">
                 <GlimerAvatar
                   userId={viewedUserId}
-                  fallbackUrl={profile?.avatar_url}
                   fallbackText={initials}
                   className="h-24 w-24"
                   onClick={() => setAvatarZoomOpen(true)}
@@ -595,7 +594,6 @@ const Perfil = () => {
             <DialogTitle className="sr-only">Imagem de perfil ampliada</DialogTitle>
             <GlimerAvatar
               userId={viewedUserId}
-              fallbackUrl={profile?.avatar_url}
               fallbackText={initials}
               className="h-64 w-64"
             />
