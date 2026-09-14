@@ -305,9 +305,15 @@ const AdventurePanel = () => {
         },
         (payload) => {
           const session = payload.new as { id?: string; session_number?: number; notify_players?: boolean };
-          if (!session.id || !session.session_number || session.notify_players === false) return;
+          if (payload.eventType === "DELETE") return;
+          const session = payload.new as { id?: string; session_number?: number; notify_players?: boolean };
+          if (!session.id || !session.session_number || !session.notify_players) return;
           setFeedbackSessionId(session.id);
           setFeedbackSessionNumber(session.session_number);
+          if (table) {
+            setFeedbackTarget(table.master_id);
+            setFeedbackTargetName((table.profiles as any)?.display_name || "Mestre");
+          }
           setShowPlayerOverlay(true);
         }
       )
@@ -438,6 +444,7 @@ const AdventurePanel = () => {
       setFeedbackOpen(true);
       setShowPlayerOverlay(false);
     }
+  };
   };
 
   const handlePlayerFeedbackDone = (submitted = false) => {
