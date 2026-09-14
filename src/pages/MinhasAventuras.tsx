@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlimerAvatar } from "@/components/GlimerAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Compass, Users, Monitor, Gamepad2, Calendar, Clock, ScrollText, X, MessageCircle } from "lucide-react";
 import { ReportTableButton } from "@/components/ReportTableButton";
@@ -141,10 +141,12 @@ const MinhasAventuras = () => {
             <div className="flex-1 min-w-0">
               <CardTitle className="text-lg leading-tight">{t.title}</CardTitle>
               <div className="flex items-center gap-2 mt-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={t.profiles?.avatar_url ?? undefined} />
-                  <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
-                </Avatar>
+                <GlimerAvatar
+                  userId={t.profiles?.id ?? t.master_id}
+                  fallbackText={initials}
+                  label={masterName}
+                  className="h-6 w-6"
+                />
                 <button
                   className="text-sm text-muted-foreground hover:text-primary transition-colors truncate"
                   onClick={() => t.profiles?.id && navigate(`/dashboard/perfil/${t.profiles.id}`)}

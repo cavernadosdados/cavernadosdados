@@ -5,10 +5,10 @@ import { resolveCosmeticImage } from "@/lib/glimers";
 
 interface GlimerAvatarProps {
   userId?: string | null;
-  /** Fallback avatar URL (e.g. user upload from profiles.avatar_url) */
-  fallbackUrl?: string | null;
   /** Initials shown when no image is available */
   fallbackText?: string;
+  /** Accessible name for clickable avatars. */
+  label?: string;
   /** Tailwind size class on the outer wrapper. Default: h-10 w-10 */
   className?: string;
   /** If true, hides the equipped frame overlay (useful in dense lists). */
@@ -24,8 +24,8 @@ interface GlimerAvatarProps {
  */
 export function GlimerAvatar({
   userId,
-  fallbackUrl,
   fallbackText,
+  label,
   className,
   hideFrame = false,
   onClick,
@@ -33,7 +33,7 @@ export function GlimerAvatar({
   const { data: equipped } = useEquippedCosmetics(userId);
 
   const glimerSrc =
-    resolveCosmeticImage(equipped?.glimer_slug) ?? fallbackUrl ?? undefined;
+    resolveCosmeticImage(equipped?.glimer_slug) ?? equipped?.glimer_image_url ?? undefined;
   const frameSrc = !hideFrame
     ? resolveCosmeticImage(equipped?.frame_slug) ?? equipped?.frame_image_url ?? undefined
     : undefined;
@@ -43,12 +43,15 @@ export function GlimerAvatar({
       className={cn("relative inline-block h-10 w-10", onClick && "cursor-pointer", className)}
       onClick={onClick}
       role={onClick ? "button" : undefined}
+      aria-label={onClick ? label ?? "Abrir imagem de perfil" : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") onClick(); } : undefined}
     >
       <Avatar className="absolute inset-[5%] h-[90%] w-[90%]">
-        {glimerSrc && <AvatarImage src={glimerSrc} alt="" />}
-        <AvatarFallback>{fallbackText?.slice(0, 2).toUpperCase() ?? "?"}</AvatarFallback>
+        {glimerSrc && <AvatarImage src={glimerSrc} alt={label ?? ""} />}
+        <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+          {fallbackText?.slice(0, 2).toUpperCase() ?? "?"}
+        </AvatarFallback>
       </Avatar>
       {frameSrc && (
         <img

@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlimerAvatar } from "@/components/GlimerAvatar";
 import { useToast } from "@/hooks/use-toast";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useAuth } from "@/hooks/useAuth";
@@ -346,10 +346,11 @@ export default function AdminModeracao() {
                 {usersList?.map((u: any) => (
                   <Card key={u.id}>
                     <CardContent className="p-3 flex items-center gap-3 flex-wrap">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={u.avatar_url ?? undefined} />
-                        <AvatarFallback>{u.display_name?.[0]?.toUpperCase() ?? "?"}</AvatarFallback>
-                      </Avatar>
+                      <GlimerAvatar
+                        userId={u.id}
+                        fallbackText={u.display_name ?? "?"}
+                        label={u.display_name ?? "Usuário"}
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-medium truncate">{u.display_name ?? "Sem nome"}</span>

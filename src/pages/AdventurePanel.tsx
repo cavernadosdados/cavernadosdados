@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { GlimerAvatar } from "@/components/GlimerAvatar";
 import { SessionFeedbackDialog } from "@/components/SessionFeedbackDialog";
 import { CampaignDiary } from "@/components/CampaignDiary";
 import { MesaChat } from "@/components/MesaChat";
@@ -702,12 +702,12 @@ const AdventurePanel = () => {
                     onClick={() => navigate(`/dashboard/perfil/${(table.profiles as any).id ?? table.master_id}`)}
                     className="group mb-4 flex w-full items-center gap-3 rounded-lg border border-primary/20 bg-background/40 p-3 text-left transition-mystical hover:border-primary/50 hover:bg-background/60"
                   >
-                    <Avatar className="h-12 w-12 border-2 border-primary/40 group-hover:border-primary transition-mystical">
-                      <AvatarImage src={(table.profiles as any).avatar_url ?? undefined} alt={(table.profiles as any).display_name ?? "Mestre"} />
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                        {((table.profiles as any).display_name ?? "M").slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <GlimerAvatar
+                      userId={(table.profiles as any).id ?? table.master_id}
+                      fallbackText={(table.profiles as any).display_name ?? "M"}
+                      label={(table.profiles as any).display_name ?? "Mestre"}
+                      className="h-12 w-12"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="text-xs text-muted-foreground">Mestre</div>
                       <div className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-mystical">

@@ -38,7 +38,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlimerAvatar } from "@/components/GlimerAvatar";
 import { useActiveTableBoosts, useBoostTable } from "@/hooks/useTableBoosts";
 import { useTokens } from "@/hooks/useTokens";
 import { formatDistanceToNow } from "date-fns";
@@ -255,12 +255,12 @@ const Mesas = () => {
                         }}
                         className="mt-2 flex w-full items-center gap-2 rounded-md border border-white/20 bg-black/40 backdrop-blur-sm p-2 text-left transition-mystical hover:border-primary/60"
                       >
-                        <Avatar className="h-8 w-8 border border-primary/40">
-                          <AvatarImage src={table.profiles.avatar_url ?? undefined} alt={table.profiles.display_name} />
-                          <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                            {(table.profiles.display_name || "?").slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                        <GlimerAvatar
+                          userId={table.profiles.id}
+                          fallbackText={table.profiles.display_name}
+                          label={table.profiles.display_name}
+                          className="h-8 w-8"
+                        />
                         <div className="flex-1 min-w-0">
                           <div className="text-[10px] uppercase tracking-wider text-primary">Mestre</div>
                           <div className="text-xs font-semibold truncate text-white">

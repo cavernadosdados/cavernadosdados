@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlimerAvatar } from "@/components/GlimerAvatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Check, X, ShieldCheck, UserCheck, AlertTriangle, MessageSquare } from "lucide-react";
@@ -32,13 +32,13 @@ const useAcceptedPlayers = (tableId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("table_applications")
-        .select("player_id, profiles:player_id(display_name, avatar_url)")
+        .select("player_id, profiles:player_id(id, display_name)")
         .eq("table_id", tableId)
         .eq("status", "accepted");
       if (error) throw error;
       return (data ?? []) as Array<{
         player_id: string;
-        profiles?: { display_name: string | null; avatar_url: string | null } | null;
+        profiles?: { id: string; display_name: string | null } | null;
       }>;
     },
   });
@@ -109,10 +109,12 @@ export function SessionPresencePanel({
                 key={pl.player_id}
                 className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-background/40 p-3"
               >
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={pl.profiles?.avatar_url ?? undefined} />
-                  <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
-                </Avatar>
+                <GlimerAvatar
+                  userId={pl.player_id}
+                  fallbackText={name}
+                  label={name}
+                  className="h-9 w-9"
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-medium truncate">{name}</p>
