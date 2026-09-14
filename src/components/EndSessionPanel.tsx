@@ -102,7 +102,9 @@ export function EndSessionPanel({
           compliments: [],
         }));
 
-      const { data, error } = await supabase.rpc("close_table_session", {
+      // The RPC is introduced by the accompanying migration; keep this call
+      // untyped until Lovable Cloud regenerates the database client types.
+      const { data, error } = await (supabase.rpc as any)("close_table_session", {
         _table_id: tableId,
         _session_date: sessionDate,
         _title: title.trim(),
@@ -113,7 +115,7 @@ export function EndSessionPanel({
       });
 
       if (error) throw error;
-      const result = data as { session_log_id: string; session_number: number };
+      const result = data as unknown as { session_log_id: string; session_number: number };
 
       let discordSent = true;
       if (publishDiscord && hasDiscord) discordSent = await sendDiscord(result.session_number);
