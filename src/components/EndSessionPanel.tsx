@@ -66,7 +66,7 @@ export function EndSessionPanel({
     setPublishDiscord(hasDiscord);
     setPresence(Object.fromEntries(players.map((player) => [player.player_id, "attended"])));
     setRatings({});
-  }, [open, players, hasDiscord]);
+  }, [open]);
 
   const attendedCount = useMemo(
     () => Object.values(presence).filter((status) => status === "attended").length,

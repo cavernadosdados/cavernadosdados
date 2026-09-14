@@ -304,8 +304,8 @@ const AdventurePanel = () => {
           filter: `table_id=eq.${tableId}`,
         },
         (payload) => {
-          const session = payload.new as { id?: string; session_number?: number };
-          if (!session.id || !session.session_number) return;
+          const session = payload.new as { id?: string; session_number?: number; notify_players?: boolean };
+          if (!session.id || !session.session_number || session.notify_players === false) return;
           setFeedbackSessionId(session.id);
           setFeedbackSessionNumber(session.session_number);
           setShowPlayerOverlay(true);
