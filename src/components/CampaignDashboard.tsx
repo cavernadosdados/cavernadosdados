@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlimerAvatar } from "@/components/GlimerAvatar";
 import { Separator } from "@/components/ui/separator";
 import {
   CalendarClock,
@@ -359,12 +359,12 @@ export function CampaignDashboard({
                   key={p.player_id}
                   className="flex items-center gap-2 rounded-md border border-border bg-background/40 px-2 py-1.5"
                 >
-                  <Avatar className="h-7 w-7">
-                    <AvatarImage src={p.profiles?.avatar_url ?? undefined} />
-                    <AvatarFallback className="text-[10px]">
-                      {name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <GlimerAvatar
+                    userId={p.player_id}
+                    fallbackText={name}
+                    label={name}
+                    className="h-7 w-7"
+                  />
                   <span className="text-xs text-foreground truncate flex-1">{name}</span>
                   {nextSessionDate && <AttendanceDot status={status} />}
                 </div>

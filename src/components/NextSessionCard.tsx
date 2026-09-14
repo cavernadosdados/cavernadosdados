@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlimerAvatar } from "@/components/GlimerAvatar";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
@@ -283,10 +283,12 @@ function AttendanceGroup({
           const initial = name.charAt(0).toUpperCase();
           return (
             <div key={p.player_id} className="flex items-center gap-1.5 bg-background/60 rounded-full pl-1 pr-2 py-0.5 text-xs text-foreground">
-              <Avatar className="h-5 w-5">
-                <AvatarImage src={p.profiles?.avatar_url ?? undefined} />
-                <AvatarFallback className="text-[10px]">{initial}</AvatarFallback>
-              </Avatar>
+              <GlimerAvatar
+                userId={p.player_id}
+                fallbackText={initial}
+                label={name}
+                className="h-5 w-5"
+              />
               <span className="truncate max-w-[120px]">{name}</span>
             </div>
           );

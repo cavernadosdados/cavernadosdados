@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlimerAvatar } from "@/components/GlimerAvatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -152,14 +152,12 @@ const Mensagens = () => {
                           className={cn("flex gap-3 group", isMe && "flex-row-reverse")}
                         >
                           <Link to={`/dashboard/perfil/${m.user_id}`} className="shrink-0">
-                            <Avatar className="h-9 w-9">
-                              {m.author?.avatar_url && (
-                                <AvatarImage src={m.author.avatar_url} alt={name} />
-                              )}
-                              <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                                {initials}
-                              </AvatarFallback>
-                            </Avatar>
+                            <GlimerAvatar
+                              userId={m.user_id}
+                              fallbackText={initials}
+                              label={name}
+                              className="h-9 w-9"
+                            />
                           </Link>
                           <div
                             className={cn(

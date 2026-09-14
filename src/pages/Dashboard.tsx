@@ -4,7 +4,7 @@ import { useUserType } from "@/hooks/useUserType";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlimerAvatar } from "@/components/GlimerAvatar";
 import {
   Calendar,
   Compass,
@@ -284,12 +284,11 @@ const MasterView = ({
                   className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/50 transition-mystical cursor-pointer"
                   onClick={() => navigate(`/dashboard/mesa/${p.table_id}`)}
                 >
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={p.profiles?.avatar_url ?? undefined} />
-                    <AvatarFallback>
-                      {(p.profiles?.display_name ?? "??").substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <GlimerAvatar
+                    userId={p.profiles?.id}
+                    fallbackText={p.profiles?.display_name ?? "??"}
+                    label={p.profiles?.display_name ?? "Jogador"}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">
                       {p.profiles?.display_name ?? "Jogador"}{" "}
@@ -433,12 +432,11 @@ const PlayerView = ({
                   className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/50 transition-mystical cursor-pointer"
                   onClick={() => navigate(`/dashboard/mesa/${a.table_id}`)}
                 >
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={a.tables?.profiles?.avatar_url ?? undefined} />
-                    <AvatarFallback>
-                      {(a.tables?.profiles?.display_name ?? "??").substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <GlimerAvatar
+                    userId={a.tables?.master_id}
+                    fallbackText={a.tables?.profiles?.display_name ?? "??"}
+                    label={a.tables?.profiles?.display_name ?? "Mestre"}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate text-primary">{a.tables?.title}</p>
                     <p className="text-sm text-muted-foreground truncate">

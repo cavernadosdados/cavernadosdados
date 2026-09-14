@@ -4,7 +4,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { GlimerAvatar } from '@/components/GlimerAvatar';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Check, X, Star } from 'lucide-react';
@@ -25,7 +25,7 @@ export function TableApplicationsDialog({ open, onOpenChange, tableId, tableTitl
     queryFn: async () => {
       const { data, error } = await supabase
         .from('table_applications')
-        .select('*, profiles(display_name, avatar_url)')
+        .select('*, profiles(id, display_name)')
         .eq('table_id', tableId)
         // Priority first, then by priority_at desc, then by created_at asc (older first within same priority)
         .order('is_priority', { ascending: false })
@@ -93,10 +93,12 @@ export function TableApplicationsDialog({ open, onOpenChange, tableId, tableTitl
               >
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2 min-w-0">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={app.profiles?.avatar_url} />
-                      <AvatarFallback>{app.profiles?.display_name?.[0] || '?'}</AvatarFallback>
-                    </Avatar>
+                    <GlimerAvatar
+                      userId={app.profiles?.id ?? app.player_id}
+                      fallbackText={app.profiles?.display_name ?? "?"}
+                      label={app.profiles?.display_name ?? "Jogador"}
+                      className="h-8 w-8"
+                    />
                     <span className="font-medium text-sm truncate">{app.profiles?.display_name || 'Jogador'}</span>
                     {app.is_priority && (
                       <Badge className="gap-1 bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30 shrink-0">
