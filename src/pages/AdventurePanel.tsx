@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { GlimerAvatar } from "@/components/GlimerAvatar";
 import { SessionFeedbackDialog } from "@/components/SessionFeedbackDialog";
+import { EndSessionPanel } from "@/components/EndSessionPanel";
 import { CampaignDiary } from "@/components/CampaignDiary";
 import { MesaChat } from "@/components/MesaChat";
 import { ChipSelector } from "@/components/ChipSelector";
@@ -43,16 +44,6 @@ const CHIPS = {
   absence_policy: ["NPC controlado pelo mestre", "Personagem fica em background", "Sessão cancelada se >2 faltas", "Aviso com 24h de antecedência", "Tolerância máxima de 3 faltas"],
   lateness_policy: ["Tolerância de 15min", "Tolerância de 30min", "Sessão começa no horário", "Resumo rápido para atrasados", "Sem tolerância"],
 };
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import {
   ArrowLeft,
   Save,
@@ -136,9 +127,10 @@ const AdventurePanel = () => {
   const [saving, setSaving] = useState(false);
   const [confirmEndOpen, setConfirmEndOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
-  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [feedbackTarget, setFeedbackTarget] = useState<string>("");
   const [feedbackTargetName, setFeedbackTargetName] = useState<string>("");
+  const [feedbackSessionId, setFeedbackSessionId] = useState<string>("");
+  const [feedbackSessionNumber, setFeedbackSessionNumber] = useState(0);
 
   // Player overlay state (triggered by realtime)
   const [showPlayerOverlay, setShowPlayerOverlay] = useState(false);
@@ -297,25 +289,26 @@ const AdventurePanel = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaign, isMaster, discordWebhookUrl, tableId]);
 
-  // Realtime: listen for table status changes (players detect "evaluation")
+  // Realtime: a new diary entry identifies the exact session players may review.
   useEffect(() => {
     if (!tableId || isMaster) return;
 
     const channel = supabase
-      .channel(`table-status-${tableId}`)
+      .channel(`session-close-${tableId}`)
       .on(
         "postgres_changes",
         {
-          event: "UPDATE",
+          event: "INSERT",
           schema: "public",
-          table: "tables",
-          filter: `id=eq.${tableId}`,
+          table: "session_logs",
+          filter: `table_id=eq.${tableId}`,
         },
         (payload) => {
-          const newStatus = (payload.new as any).status;
-          if (newStatus === "evaluation") {
-            setShowPlayerOverlay(true);
-          }
+          const session = payload.new as { id?: string; session_number?: number };
+          if (!session.id || !session.session_number) return;
+          setFeedbackSessionId(session.id);
+          setFeedbackSessionNumber(session.session_number);
+          setShowPlayerOverlay(true);
         }
       )
       .subscribe();
@@ -325,12 +318,35 @@ const AdventurePanel = () => {
     };
   }, [tableId, isMaster]);
 
-  // Check if table is already in evaluation on load (player)
+  // Offer only the latest session that this player has not reviewed yet.
   useEffect(() => {
-    if (!isMaster && table?.status === "evaluation") {
-      setShowPlayerOverlay(true);
-    }
-  }, [table, isMaster]);
+    if (isMaster || !tableId || !user) return;
+    let active = true;
+    const loadPendingFeedback = async () => {
+      const { data: latest } = await supabase
+        .from("session_logs")
+        .select("id, session_number")
+        .eq("table_id", tableId)
+        .order("session_number", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!latest || !active) return;
+      const { data: existing } = await supabase
+        .from("session_feedback")
+        .select("id")
+        .eq("session_log_id", latest.id)
+        .eq("reviewer_id", user.id)
+        .eq("reviewed_id", table?.master_id ?? "")
+        .maybeSingle();
+      if (!existing && active) {
+        setFeedbackSessionId(latest.id);
+        setFeedbackSessionNumber(latest.session_number);
+        setShowPlayerOverlay(true);
+      }
+    };
+    loadPendingFeedback();
+    return () => { active = false; };
+  }, [isMaster, tableId, table?.master_id, user]);
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -356,15 +372,18 @@ const AdventurePanel = () => {
     }
   };
 
-  const sendDiscordSessionEnd = async () => {
+  const sendDiscordSessionEnd = async (sessionNumber: number) => {
     const webhookUrl = form.discord_webhook_url || (campaign as any)?.discord_webhook_url;
-    if (!webhookUrl) return;
+    if (!webhookUrl) return true;
     try {
-      await supabase.functions.invoke("discord-webhook", {
-        body: { webhook_url: webhookUrl, type: "session_end", table_title: table?.title, table_id: tableId },
+      const result = await supabase.functions.invoke("discord-webhook", {
+        body: { webhook_url: webhookUrl, type: "session_end", table_title: table?.title, table_id: tableId, session_number: sessionNumber },
       });
+      if (result.error || result.data?.error) throw result.error ?? new Error(result.data.error);
+      return true;
     } catch (err) {
       console.error("Discord webhook error:", err);
+      return false;
     }
   };
 
@@ -404,61 +423,6 @@ const AdventurePanel = () => {
       setSaving(false);
     }
   };
-
-  // Master: confirm end session
-  const handleConfirmEndSession = async () => {
-    if (!tableId) return;
-    setConfirmEndOpen(false);
-
-    // Update table status to 'evaluation'
-    const { error } = await supabase
-      .from("tables")
-      .update({ status: "evaluation" })
-      .eq("id", tableId);
-
-    if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
-      return;
-    }
-
-    refetchTable();
-
-    // Send Discord notification
-    await sendDiscordSessionEnd();
-
-    // Start sequential player evaluation
-    if (acceptedPlayers && acceptedPlayers.length > 0) {
-      setCurrentPlayerIndex(0);
-      const first = acceptedPlayers[0];
-      setFeedbackTarget(first.player_id);
-      setFeedbackTargetName((first.profiles as any)?.display_name || "Jogador");
-      setFeedbackOpen(true);
-    } else {
-      toast({ title: "Sem jogadores", description: "Nenhum jogador aceito para avaliar." });
-      // Revert status
-      await supabase.from("tables").update({ status: "open" }).eq("id", tableId);
-      refetchTable();
-    }
-  };
-
-  // Master: cycle through players after each feedback
-  const handleMasterFeedbackSubmitted = useCallback(() => {
-    if (!acceptedPlayers) return;
-    const nextIdx = currentPlayerIndex + 1;
-    if (nextIdx < acceptedPlayers.length) {
-      setCurrentPlayerIndex(nextIdx);
-      const next = acceptedPlayers[nextIdx];
-      setFeedbackTarget(next.player_id);
-      setFeedbackTargetName((next.profiles as any)?.display_name || "Jogador");
-      setTimeout(() => setFeedbackOpen(true), 400);
-    } else {
-      // All players evaluated, restore table status
-      toast({ title: "Avaliações concluídas!", description: "Todas as avaliações foram enviadas." });
-      if (tableId) {
-        supabase.from("tables").update({ status: "open" }).eq("id", tableId).then(() => refetchTable());
-      }
-    }
-  }, [acceptedPlayers, currentPlayerIndex, tableId]);
 
   // Player: submit feedback from overlay
   const handlePlayerOverlayFeedback = () => {
@@ -1255,23 +1219,24 @@ const AdventurePanel = () => {
       </main>
 
 
-      {/* Confirmation dialog for ending session */}
-      <AlertDialog open={confirmEndOpen} onOpenChange={setConfirmEndOpen}>
-        <AlertDialogContent className="border-[hsl(var(--cavern-gold))]/30">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="glow-gold">Finalizar Sessão?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Deseja encerrar a sessão de hoje e iniciar as avaliações? Os jogadores serão notificados em tempo real para avaliar o mestre.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmEndSession}>
-              Encerrar e Avaliar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {isMaster && tableId && (
+        <EndSessionPanel
+          open={confirmEndOpen}
+          onOpenChange={setConfirmEndOpen}
+          tableId={tableId}
+          tableTitle={table.title}
+          players={(acceptedPlayers ?? []) as any}
+          hasDiscord={Boolean(form.discord_webhook_url || discordWebhookUrl)}
+          sendDiscord={sendDiscordSessionEnd}
+          onCompleted={() => {
+            queryClient.invalidateQueries({ queryKey: ["session_logs", tableId] });
+            queryClient.invalidateQueries({ queryKey: ["session-presence"] });
+            queryClient.invalidateQueries({ queryKey: ["tables"] });
+            refetchTable();
+            setActiveTab("diary");
+          }}
+        />
+      )}
 
       {/* Feedback Dialog */}
       <SessionFeedbackDialog
@@ -1286,11 +1251,10 @@ const AdventurePanel = () => {
         reviewedId={feedbackTarget}
         reviewedName={feedbackTargetName}
         reviewerRole={isMaster ? "master" : "player"}
-        sessionNumber={1}
+        sessionNumber={feedbackSessionNumber}
+        sessionLogId={feedbackSessionId}
         onSubmitted={() => {
-          if (isMaster) {
-            handleMasterFeedbackSubmitted();
-          } else {
+          if (!isMaster) {
             handlePlayerFeedbackDone();
           }
         }}
