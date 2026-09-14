@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ interface SessionFeedbackDialogProps {
   reviewedName?: string;
   reviewerRole: "master" | "player";
   sessionNumber: number;
+  sessionLogId: string;
   onSubmitted?: () => void;
 }
 
@@ -66,6 +67,7 @@ export function SessionFeedbackDialog({
   reviewedName,
   reviewerRole,
   sessionNumber,
+  sessionLogId,
   onSubmitted,
 }: SessionFeedbackDialogProps) {
   const { user } = useAuth();
@@ -77,6 +79,12 @@ export function SessionFeedbackDialog({
   const availableCompliments = reviewerRole === "player" ? masterCompliments : playerCompliments;
 
   const allRated = ratings.every((r) => r > 0);
+
+  useEffect(() => {
+    if (!open) return;
+    setRatings([0, 0, 0]);
+    setCompliments([]);
+  }, [open, reviewedId, sessionLogId]);
 
   const toggleCompliment = (c: string) => {
     setCompliments((prev) =>
@@ -90,6 +98,7 @@ export function SessionFeedbackDialog({
     try {
       const { error } = await supabase.from("session_feedback").insert({
         table_id: tableId,
+        session_log_id: sessionLogId,
         session_number: sessionNumber,
         reviewer_id: user.id,
         reviewed_id: reviewedId,

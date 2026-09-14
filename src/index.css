@@ -61,6 +61,7 @@
     --shadow-gold: 0 4px 20px hsl(158 84% 39% / 0.35);
     --shadow-copper: 0 4px 16px hsl(43 96% 56% / 0.25);
     --shadow-deep: 0 8px 32px hsl(150 30% 2% / 0.9);
+    --shadow-session: 0 24px 80px hsl(150 30% 2% / 0.92), 0 0 48px hsl(var(--primary) / 0.1);
 
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 

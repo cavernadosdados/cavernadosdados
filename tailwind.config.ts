@@ -71,6 +71,10 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        heading: ["Sora", "ui-sans-serif", "system-ui"],
+        sans: ["Manrope", "ui-sans-serif", "system-ui"],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
