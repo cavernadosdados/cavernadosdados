@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlimerAvatar } from "@/components/GlimerAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { composeSchedule, parseSchedule } from "@/components/WeekdaySelector";
 import { FullRulesDialog } from "@/components/FullRulesDialog";
@@ -342,12 +342,12 @@ const MesaDetalhes = () => {
                 onClick={() => navigate(`/dashboard/perfil/${(table.profiles as any).id ?? table.master_id}`)}
                 className="group inline-flex items-center gap-2 text-sm text-white/90 hover:text-primary transition-colors w-fit"
               >
-                <Avatar className="h-7 w-7 border border-white/40">
-                  <AvatarImage src={(table.profiles as any).avatar_url ?? undefined} />
-                  <AvatarFallback className="text-xs bg-black/40">
-                    {((table.profiles as any).display_name ?? "M").slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <GlimerAvatar
+                  userId={(table.profiles as any).id ?? table.master_id}
+                  fallbackText={(table.profiles as any).display_name ?? "M"}
+                  label={(table.profiles as any).display_name ?? "Mestre"}
+                  className="h-7 w-7"
+                />
                 <span className="text-[10px] uppercase tracking-wider text-primary">Mestre</span>
                 <span className="font-medium">
                   {(table.profiles as any).display_name ?? "Mestre"}
