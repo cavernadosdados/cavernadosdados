@@ -328,8 +328,8 @@ const AdventurePanel = () => {
     if (isMaster || !tableId || !user) return;
     let active = true;
     const loadPendingFeedback = async () => {
-      const { data: latest } = await supabase
-        .from("session_logs")
+      // These columns are added by the pending session-closure migration.
+      const { data: latest } = await (supabase.from("session_logs") as any)
         .select("id, session_number, session_date, notify_players")
         .eq("table_id", tableId)
         .gte("session_date", new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toLocaleDateString("en-CA"))
@@ -338,8 +338,7 @@ const AdventurePanel = () => {
         .limit(1)
         .maybeSingle();
       if (!latest || !active) return;
-      const { data: existing } = await supabase
-        .from("session_feedback")
+      const { data: existing } = await (supabase.from("session_feedback") as any)
         .select("id")
         .eq("session_log_id", latest.id)
         .eq("reviewer_id", user.id)
