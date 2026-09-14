@@ -298,7 +298,7 @@ const AdventurePanel = () => {
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "session_logs",
           filter: `table_id=eq.${tableId}`,
@@ -327,7 +327,7 @@ const AdventurePanel = () => {
         .from("session_logs")
         .select("id, session_number, session_date, notify_players")
         .eq("table_id", tableId)
-        .eq("session_date", new Date().toISOString().slice(0, 10))
+        .gte("session_date", new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toLocaleDateString("en-CA"))
         .eq("notify_players", true)
         .order("session_number", { ascending: false })
         .limit(1)
@@ -343,6 +343,10 @@ const AdventurePanel = () => {
       if (!existing && active) {
         setFeedbackSessionId(latest.id);
         setFeedbackSessionNumber(latest.session_number);
+        if (table) {
+          setFeedbackTarget(table.master_id);
+          setFeedbackTargetName((table.profiles as any)?.display_name || "Mestre");
+        }
         setShowPlayerOverlay(true);
       }
     };
@@ -432,12 +436,15 @@ const AdventurePanel = () => {
       setFeedbackTarget(table.master_id);
       setFeedbackTargetName((table.profiles as any)?.display_name || "Mestre");
       setFeedbackOpen(true);
+      setShowPlayerOverlay(false);
     }
   };
 
-  const handlePlayerFeedbackDone = () => {
+  const handlePlayerFeedbackDone = (submitted = false) => {
     setShowPlayerOverlay(false);
-    toast({ title: "Obrigado!", description: "Sua avaliação foi enviada." });
+    if (submitted) {
+      toast({ title: "Obrigado!", description: "Sua avaliação foi enviada." });
+    }
   };
 
   if (!table || (!isMaster && loadingApp)) {
@@ -1246,7 +1253,7 @@ const AdventurePanel = () => {
         onOpenChange={(open) => {
           setFeedbackOpen(open);
           if (!open && !isMaster) {
-            handlePlayerFeedbackDone();
+            handlePlayerFeedbackDone(false);
           }
         }}
         tableId={tableId!}
@@ -1257,7 +1264,7 @@ const AdventurePanel = () => {
         sessionLogId={feedbackSessionId}
         onSubmitted={() => {
           if (!isMaster) {
-            handlePlayerFeedbackDone();
+            handlePlayerFeedbackDone(true);
           }
         }}
       />
