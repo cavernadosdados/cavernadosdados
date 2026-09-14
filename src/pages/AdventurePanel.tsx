@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -294,7 +294,7 @@ const AdventurePanel = () => {
     if (!tableId || isMaster) return;
 
     const channel = supabase
-      .channel(`session-close-${tableId}`)
+      .channel(`table-status-${tableId}`)
       .on(
         "postgres_changes",
         {
@@ -325,8 +325,10 @@ const AdventurePanel = () => {
     const loadPendingFeedback = async () => {
       const { data: latest } = await supabase
         .from("session_logs")
-        .select("id, session_number")
+        .select("id, session_number, session_date, notify_players")
         .eq("table_id", tableId)
+        .eq("session_date", new Date().toISOString().slice(0, 10))
+        .eq("notify_players", true)
         .order("session_number", { ascending: false })
         .limit(1)
         .maybeSingle();

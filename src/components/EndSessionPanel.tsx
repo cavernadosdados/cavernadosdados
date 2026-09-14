@@ -102,6 +102,7 @@ export function EndSessionPanel({
       const result = data as unknown as { session_log_id: string; session_number: number };
 
       const completedRatings = Object.entries(ratings).filter(([, values]) => values.every((value) => value > 0));
+      let feedbackSaved = true;
       if (completedRatings.length > 0) {
         const { error: feedbackError } = await supabase.from("session_feedback").insert(
           completedRatings.map(([reviewedId, values]) => ({
@@ -117,15 +118,22 @@ export function EndSessionPanel({
             compliments: [],
           })) as any,
         );
-        if (feedbackError) throw feedbackError;
+        if (feedbackError) {
+          feedbackSaved = false;
+          console.error("Session feedback error:", feedbackError);
+        }
       }
 
       let discordSent = true;
       if (publishDiscord && hasDiscord) discordSent = await sendDiscord(result.session_number);
       toast({
         title: `Sessão ${result.session_number} encerrada`,
-        description: discordSent ? "Diário e presenças foram registrados." : "Tudo foi salvo, mas o aviso no Discord falhou.",
-        variant: discordSent ? "default" : "destructive",
+        description: !discordSent
+          ? "Tudo foi salvo, mas o aviso no Discord falhou."
+          : !feedbackSaved
+            ? "A sessão foi salva, mas algumas avaliações não foram registradas."
+            : "Diário, presenças e avaliações foram registrados.",
+        variant: discordSent && feedbackSaved ? "default" : "destructive",
       });
       onCompleted(result.session_log_id, result.session_number);
       onOpenChange(false);
