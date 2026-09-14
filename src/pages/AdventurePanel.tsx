@@ -582,7 +582,7 @@ const AdventurePanel = () => {
               <Button
                 variant="destructive"
                 size="sm"
-                className="hidden sm:inline-flex min-h-10"
+                className="min-h-10"
                 onClick={() => setConfirmEndOpen(true)}
               >
                 <Flag className="h-4 w-4 mr-1" />
