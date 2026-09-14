@@ -35,7 +35,7 @@ const presenceOptions: Array<{ value: PresenceStatus; label: string; icon: typeo
   { value: "no_show", label: "No-show", icon: X },
 ];
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
 
 export function EndSessionPanel({
   open,
@@ -58,14 +58,15 @@ export function EndSessionPanel({
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
-    setSessionDate(today());
-    setTitle("");
-    setNarrative("");
-    setNotifyPlayers(true);
-    setPublishDiscord(hasDiscord);
-    setPresence(Object.fromEntries(players.map((player) => [player.player_id, "attended"])));
-    setRatings({});
+    if (open) {
+      setSessionDate(today());
+      setTitle("");
+      setNarrative("");
+      setNotifyPlayers(true);
+      setPublishDiscord(hasDiscord);
+      setPresence(Object.fromEntries(players.map((p) => [p.player_id, "attended"])));
+      setRatings({});
+    }
   }, [open]);
 
   const attendedCount = useMemo(
@@ -90,57 +91,45 @@ export function EndSessionPanel({
         status: presence[player.player_id] ?? "attended",
         had_prior_notice: false,
       }));
-      const { data, error } = await supabase.rpc("close_table_session" as any, {
+
+      const feedback = Object.entries(ratings)
+        .filter(([, values]) => values.every((v) => v > 0))
+        .map(([reviewedId, values]) => ({
+          reviewed_id: reviewedId,
+          rating_1: values[0],
+          rating_2: values[1],
+          rating_3: values[2],
+          compliments: [],
+        }));
+
+      const { data, error } = await supabase.rpc("close_table_session", {
         _table_id: tableId,
         _session_date: sessionDate,
         _title: title.trim(),
         _master_narrative: narrative.trim(),
         _presence: attendance,
+        _feedback: feedback,
         _notify_players: notifyPlayers,
-      } as any);
-      if (error) throw error;
-      const result = data as unknown as { session_log_id: string; session_number: number };
+      });
 
-      const completedRatings = Object.entries(ratings).filter(([, values]) => values.every((value) => value > 0));
-      let feedbackSaved = true;
-      if (completedRatings.length > 0) {
-        const { error: feedbackError } = await supabase.from("session_feedback").insert(
-          completedRatings.map(([reviewedId, values]) => ({
-            table_id: tableId,
-            session_log_id: result.session_log_id,
-            session_number: result.session_number,
-            reviewer_id: user.id,
-            reviewed_id: reviewedId,
-            reviewer_role: "master",
-            rating_1: values[0],
-            rating_2: values[1],
-            rating_3: values[2],
-            compliments: [],
-          })) as any,
-        );
-        if (feedbackError) {
-          feedbackSaved = false;
-          console.error("Session feedback error:", feedbackError);
-        }
-      }
+      if (error) throw error;
+      const result = data as { session_log_id: string; session_number: number };
 
       let discordSent = true;
       if (publishDiscord && hasDiscord) discordSent = await sendDiscord(result.session_number);
+
       toast({
         title: `Sessão ${result.session_number} encerrada`,
-        description: !discordSent
-          ? "Tudo foi salvo, mas o aviso no Discord falhou."
-          : !feedbackSaved
-            ? "A sessão foi salva, mas algumas avaliações não foram registradas."
-            : "Diário, presenças e avaliações foram registrados.",
-        variant: discordSent && feedbackSaved ? "default" : "destructive",
+        description: discordSent ? "Diário, presenças e avaliações registrados." : "Tudo foi salvo, mas o aviso no Discord falhou.",
+        variant: discordSent ? "default" : "destructive",
       });
+      
       onCompleted(result.session_log_id, result.session_number);
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Não foi possível encerrar",
-        description: error instanceof Error ? error.message : "Tente novamente.",
+        description: error.message || "Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -150,7 +139,7 @@ export function EndSessionPanel({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !submitting && onOpenChange(next)}>
-      <DialogContent className="w-[calc(100%-1rem)] max-w-5xl gap-0 overflow-hidden border-secondary/25 bg-card p-0 shadow-[var(--shadow-session)] sm:rounded-xl">
+      <DialogContent className="max-w-5xl gap-0 overflow-hidden border-secondary/25 bg-card p-0 shadow-[var(--shadow-session)] sm:rounded-xl">
         <DialogHeader className="relative border-b border-secondary/20 bg-gradient-to-r from-secondary/10 via-primary/5 to-transparent px-5 py-5 text-left sm:px-8 sm:py-6">
           <Sparkles className="pointer-events-none absolute right-8 top-3 h-20 w-20 text-secondary/10" />
           <DialogTitle className="font-heading text-2xl text-secondary sm:text-3xl">Selar registro da sessão</DialogTitle>
@@ -208,13 +197,13 @@ export function EndSessionPanel({
                     return (
                       <div key={player.player_id} className="space-y-2">
                         <p className="text-xs font-medium">{name}</p>
-                        {["Pontualidade", "Engajamento", "Equipe"].map((criterion, criterionIndex) => (
+                        {["Pontualidade", "Engajamento", "Equipe"].map((criterion, idx) => (
                           <div key={criterion} className="flex items-center justify-between gap-3">
                             <span className="text-[11px] text-muted-foreground">{criterion}</span>
                             <div className="flex gap-0.5">
-                              {[1, 2, 3, 4, 5].map((value) => (
-                                <Button key={value} type="button" variant="ghost" size="icon" className="h-7 w-7" aria-label={`${criterion}: ${value}`} onClick={() => setRating(player.player_id, criterionIndex, value)}>
-                                  <Star className={cn("h-4 w-4", value <= values[criterionIndex] ? "fill-secondary text-secondary" : "text-muted-foreground/30")} />
+                              {[1, 2, 3, 4, 5].map((v) => (
+                                <Button key={v} type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setRating(player.player_id, idx, v)}>
+                                  <Star className={cn("h-4 w-4", v <= values[idx] ? "fill-secondary text-secondary" : "text-muted-foreground/30")} />
                                 </Button>
                               ))}
                             </div>
@@ -232,43 +221,46 @@ export function EndSessionPanel({
             <div className="grid gap-4 sm:grid-cols-[1fr_10rem]">
               <div className="space-y-2">
                 <label htmlFor="session-title" className="text-xs font-bold uppercase text-secondary">Título do capítulo</label>
-                <Input id="session-title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Ex.: O eco sob a montanha" maxLength={100} />
+                <Input id="session-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: O eco sob a montanha" maxLength={100} />
               </div>
               <div className="space-y-2">
                 <label htmlFor="session-date" className="text-xs font-bold uppercase text-secondary">Data</label>
-                <div className="relative"><CalendarDays className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input id="session-date" type="date" value={sessionDate} onChange={(event) => setSessionDate(event.target.value)} className="pl-9" /></div>
+                <div className="relative">
+                  <CalendarDays className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input id="session-date" type="date" value={sessionDate} onChange={(e) => setSessionDate(e.target.value)} className="pl-9" />
+                </div>
               </div>
             </div>
             <div className="space-y-2">
               <label htmlFor="session-narrative" className="flex items-center gap-2 text-xs font-bold uppercase text-secondary"><ScrollText className="h-4 w-4" /> Diário do mestre</label>
-              <Textarea id="session-narrative" value={narrative} onChange={(event) => setNarrative(event.target.value)} className="min-h-40 resize-y bg-background/50" placeholder="Registre os acontecimentos, decisões e consequências desta sessão..." />
+              <Textarea id="session-narrative" value={narrative} onChange={(e) => setNarrative(e.target.value)} className="min-h-40 resize-y bg-background/50" placeholder="Registre os acontecimentos..." />
               <p className="text-xs text-muted-foreground">O relato poderá ser revisado depois no Diário.</p>
             </div>
 
             <div className="space-y-3">
               <div className="flex items-center gap-4 rounded-md border border-border bg-background/35 p-4">
-                <div className="min-w-0 flex-1"><p className="text-sm font-medium">Convidar jogadores para avaliar</p><p className="text-xs text-muted-foreground">O convite se refere somente a esta nova sessão.</p></div>
-                <Switch checked={notifyPlayers} onCheckedChange={setNotifyPlayers} aria-label="Convidar jogadores para avaliar" />
+                <div className="min-w-0 flex-1"><p className="text-sm font-medium">Convidar jogadores para avaliar</p></div>
+                <Switch checked={notifyPlayers} onCheckedChange={setNotifyPlayers} />
               </div>
               <div className="flex items-center gap-4 rounded-md border border-border bg-background/35 p-4">
-                <div className="min-w-0 flex-1"><p className="flex items-center gap-2 text-sm font-medium"><Send className="h-4 w-4 text-secondary" /> Avisar no Discord</p><p className="text-xs text-muted-foreground">{hasDiscord ? "Publica o encerramento no canal configurado." : "Configure a integração para habilitar."}</p></div>
-                <Switch checked={publishDiscord} onCheckedChange={setPublishDiscord} disabled={!hasDiscord} aria-label="Avisar no Discord" />
+                <div className="min-w-0 flex-1"><p className="flex items-center gap-2 text-sm font-medium"><Send className="h-4 w-4 text-secondary" /> Avisar no Discord</p></div>
+                <Switch checked={publishDiscord} onCheckedChange={setPublishDiscord} disabled={!hasDiscord} />
               </div>
             </div>
 
             <div className="rounded-md border border-primary/20 bg-primary/5 p-4 text-xs text-muted-foreground">
               <p className="mb-1 font-semibold text-foreground">Ao selar este registro</p>
-              <p>Um novo capítulo será criado, {players.length} presença(s) serão registradas e a mesa continuará aberta normalmente.</p>
+              <p>Um novo capítulo será criado, {players.length} presença(s) registradas e a mesa continuará aberta.</p>
             </div>
           </section>
         </div>
 
         <footer className="flex flex-col-reverse gap-3 border-t border-secondary/20 bg-background/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p className="text-center text-xs text-muted-foreground sm:text-left">Avaliações incompletas serão ignoradas e poderão ser feitas depois.</p>
+          <p className="text-center text-xs text-muted-foreground sm:text-left">Avaliações incompletas serão ignoradas.</p>
           <div className="flex gap-2">
             <Button type="button" variant="ghost" className="flex-1 sm:flex-none" onClick={() => onOpenChange(false)} disabled={submitting}>Cancelar</Button>
             <Button type="button" className="flex-1 bg-gradient-to-r from-primary to-secondary font-bold sm:flex-none" onClick={handleClose} disabled={submitting || !title.trim()}>
-              {submitting ? <Loader2 className="animate-spin" /> : <Sparkles />} {submitting ? "Selando..." : "Selar sessão"}
+              {submitting ? <Loader2 className="animate-spin mr-2" /> : <Sparkles className="mr-2" />} {submitting ? "Selando..." : "Selar sessão"}
             </Button>
           </div>
         </footer>
