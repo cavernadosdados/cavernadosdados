@@ -304,7 +304,6 @@ const AdventurePanel = () => {
           filter: `table_id=eq.${tableId}`,
         },
         (payload) => {
-          const session = payload.new as { id?: string; session_number?: number; notify_players?: boolean };
           if (payload.eventType === "DELETE") return;
           const session = payload.new as { id?: string; session_number?: number; notify_players?: boolean };
           if (!session.id || !session.session_number || !session.notify_players) return;
@@ -444,7 +443,6 @@ const AdventurePanel = () => {
       setFeedbackOpen(true);
       setShowPlayerOverlay(false);
     }
-  };
   };
 
   const handlePlayerFeedbackDone = (submitted = false) => {
