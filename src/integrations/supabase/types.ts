@@ -1000,6 +1000,7 @@ export type Database = {
           reviewed_id: string
           reviewer_id: string
           reviewer_role: string
+          session_log_id: string | null
           session_number: number
           table_id: string
         }
@@ -1014,6 +1015,7 @@ export type Database = {
           reviewed_id: string
           reviewer_id: string
           reviewer_role?: string
+          session_log_id?: string | null
           session_number?: number
           table_id: string
         }
@@ -1028,10 +1030,18 @@ export type Database = {
           reviewed_id?: string
           reviewer_id?: string
           reviewer_role?: string
+          session_log_id?: string | null
           session_number?: number
           table_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "session_feedback_session_log_id_fkey"
+            columns: ["session_log_id"]
+            isOneToOne: false
+            referencedRelation: "session_logs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "session_feedback_table_id_fkey"
             columns: ["table_id"]
@@ -1047,6 +1057,7 @@ export type Database = {
           created_at: string
           id: string
           master_narrative: string | null
+          notify_players: boolean
           pinned_report_id: string | null
           sent_to_discord: boolean
           session_date: string
@@ -1060,6 +1071,7 @@ export type Database = {
           created_at?: string
           id?: string
           master_narrative?: string | null
+          notify_players?: boolean
           pinned_report_id?: string | null
           sent_to_discord?: boolean
           session_date?: string
@@ -1073,6 +1085,7 @@ export type Database = {
           created_at?: string
           id?: string
           master_narrative?: string | null
+          notify_players?: boolean
           pinned_report_id?: string | null
           sent_to_discord?: boolean
           session_date?: string
@@ -1540,6 +1553,18 @@ export type Database = {
       }
       check_and_unlock_achievements: { Args: never; Returns: Json }
       claim_onboarding_reward: { Args: { _step_key: string }; Returns: Json }
+      close_table_session: {
+        Args: {
+          _feedback?: Json
+          _master_narrative: string
+          _notify_players?: boolean
+          _presence?: Json
+          _session_date: string
+          _table_id: string
+          _title: string
+        }
+        Returns: Json
+      }
       compute_achievement_metric: {
         Args: { _metric: string; _user: string }
         Returns: number
