@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { GlimerAvatar } from "@/components/GlimerAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Compass, Users, Monitor, Gamepad2, Calendar, Clock, ScrollText, X, MessageCircle } from "lucide-react";
+import { Compass, Users, Monitor, Gamepad2, Calendar, Clock, ScrollText, X, MessageCircle, IdCard } from "lucide-react";
 import { ReportTableButton } from "@/components/ReportTableButton";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { CharacterSheetsDialog } from "@/components/CharacterSheetsDialog";
 
 type AppRow = {
   id: string;
@@ -47,6 +48,7 @@ const MinhasAventuras = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [sheetsTable, setSheetsTable] = useState<{ id: string; title: string } | null>(null);
 
   const { data: applications, isLoading } = useQuery({
     queryKey: ["my-adventures", user?.id],
@@ -227,9 +229,14 @@ const MinhasAventuras = () => {
 
           <div className="pt-2 space-y-2">
             {kind === "in_progress" ? (
-              <Button className="w-full" onClick={() => navigate(`/dashboard/mesa/${t.id}`)}>
-                Ver mesa
-              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button className="w-full" onClick={() => navigate(`/dashboard/mesa/${t.id}`)}>
+                  Ver mesa
+                </Button>
+                <Button variant="outline" className="w-full gap-2" onClick={() => setSheetsTable({ id: t.id, title: t.title })}>
+                  <IdCard className="h-4 w-4" /> Fichas
+                </Button>
+              </div>
             ) : (
               <Button
                 variant="outline"
@@ -372,6 +379,15 @@ const MinhasAventuras = () => {
           </>
         )}
       </div>
+      {sheetsTable && (
+        <CharacterSheetsDialog
+          open={!!sheetsTable}
+          onOpenChange={(nextOpen) => !nextOpen && setSheetsTable(null)}
+          tableId={sheetsTable.id}
+          tableTitle={sheetsTable.title}
+          canEditOwnSheet
+        />
+      )}
     </DashboardLayout>
   );
 };
