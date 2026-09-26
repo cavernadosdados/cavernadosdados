@@ -119,6 +119,7 @@ export function CharacterSheetsDialog({
   const { data: sheets = [], isLoading, error } = useQuery({
     queryKey: ["character-sheets", tableId],
     enabled: open && !!user,
+    retry: false,
     queryFn: async () => {
       const { data, error: sheetsError } = await db
         .from("character_sheets")
