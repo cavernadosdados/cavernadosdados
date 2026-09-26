@@ -165,6 +165,78 @@ export type Database = {
           },
         ]
       }
+      character_sheets: {
+        Row: {
+          ancestry: string | null
+          archetype: string | null
+          attributes: string | null
+          character_name: string
+          created_at: string
+          defense: string | null
+          external_url: string | null
+          health: string | null
+          id: string
+          image_paths: string[]
+          level: number | null
+          notes: string | null
+          owner_id: string
+          pdf_path: string | null
+          table_id: string
+          updated_at: string
+        }
+        Insert: {
+          ancestry?: string | null
+          archetype?: string | null
+          attributes?: string | null
+          character_name: string
+          created_at?: string
+          defense?: string | null
+          external_url?: string | null
+          health?: string | null
+          id?: string
+          image_paths?: string[]
+          level?: number | null
+          notes?: string | null
+          owner_id: string
+          pdf_path?: string | null
+          table_id: string
+          updated_at?: string
+        }
+        Update: {
+          ancestry?: string | null
+          archetype?: string | null
+          attributes?: string | null
+          character_name?: string
+          created_at?: string
+          defense?: string | null
+          external_url?: string | null
+          health?: string | null
+          id?: string
+          image_paths?: string[]
+          level?: number | null
+          notes?: string | null
+          owner_id?: string
+          pdf_path?: string | null
+          table_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_sheets_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_sheets_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_reports: {
         Row: {
           created_at: string
@@ -1542,6 +1614,10 @@ export type Database = {
       }
       boost_table: { Args: { _table_id: string }; Returns: string }
       buy_slot_boost: { Args: never; Returns: string }
+      can_access_character_sheet: {
+        Args: { _owner_id: string; _table_id: string }
+        Returns: boolean
+      }
       can_create_session_feedback: {
         Args: {
           _reviewed_id: string
@@ -1549,6 +1625,18 @@ export type Database = {
           _reviewer_role: string
           _table_id: string
         }
+        Returns: boolean
+      }
+      can_manage_character_sheet: {
+        Args: { _owner_id: string; _table_id: string }
+        Returns: boolean
+      }
+      character_sheet_file_readable: {
+        Args: { _name: string }
+        Returns: boolean
+      }
+      character_sheet_file_writable: {
+        Args: { _name: string }
         Returns: boolean
       }
       check_and_unlock_achievements: { Args: never; Returns: Json }
