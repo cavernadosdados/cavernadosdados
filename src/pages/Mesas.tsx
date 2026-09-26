@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   Rocket,
   Coins,
+  IdCard,
 } from "lucide-react";
 import { CreateTableDialog } from "@/components/CreateTableDialog";
 import { ApplyTableDialog } from "@/components/ApplyTableDialog";
@@ -44,6 +45,7 @@ import { useTokens } from "@/hooks/useTokens";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { formatPriceBRL, isFreeTable } from "@/lib/price";
+import { CharacterSheetsDialog } from "@/components/CharacterSheetsDialog";
 
 const Mesas = () => {
   const { user } = useAuth();
@@ -53,6 +55,7 @@ const Mesas = () => {
   const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [boostConfirm, setBoostConfirm] = useState<{ id: string; title: string } | null>(null);
+  const [sheetsTable, setSheetsTable] = useState<{ id: string; title: string } | null>(null);
 
   const { boostsMap } = useActiveTableBoosts();
   const { balance } = useTokens();
@@ -384,6 +387,14 @@ const Mesas = () => {
                         </Button>
                         <Button
                           size="sm"
+                          variant="outline"
+                          className="gap-1 min-h-10 w-full sm:w-auto bg-black/40 border-white/30 text-white hover:bg-black/60 hover:text-white backdrop-blur-sm"
+                          onClick={() => setSheetsTable({ id: table.id, title: table.title })}
+                        >
+                          <IdCard className="h-3 w-3" /> Fichas
+                        </Button>
+                        <Button
+                          size="sm"
                           variant={isBoosted ? "outline" : "default"}
                           className={`gap-1 min-h-10 w-full sm:w-auto ${
                             !isBoosted
@@ -427,6 +438,16 @@ const Mesas = () => {
       </div>
 
       <CreateTableDialog open={createOpen} onOpenChange={setCreateOpen} onCreated={refetch} />
+
+      {sheetsTable && (
+        <CharacterSheetsDialog
+          open={!!sheetsTable}
+          onOpenChange={(nextOpen) => !nextOpen && setSheetsTable(null)}
+          tableId={sheetsTable.id}
+          tableTitle={sheetsTable.title}
+          canEditOwnSheet={false}
+        />
+      )}
 
       {applyTable && (
         <ApplyTableDialog
