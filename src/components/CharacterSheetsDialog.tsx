@@ -22,6 +22,7 @@ import {
   FileText,
   Image as ImageIcon,
   Loader2,
+  Pencil,
   Save,
   ScrollText,
   Upload,
