@@ -27,6 +27,8 @@ import { TableApplicationsList } from "@/components/TableApplicationsList";
 import { NextSessionCard } from "@/components/NextSessionCard";
 import { CampaignDashboard } from "@/components/CampaignDashboard";
 import { WorldbuildingTab } from "@/components/worldbuilding/WorldbuildingTab";
+import { CharacterSheetsDialog } from "@/components/CharacterSheetsDialog";
+import { ScrollText } from "lucide-react";
 
 // Chip presets for quick-fill multi-select
 const CHIPS = {
@@ -625,6 +627,10 @@ const AdventurePanel = () => {
                 <Globe2 className="h-4 w-4" />
                 Mundo & Lore
               </TabsTrigger>
+              <TabsTrigger value="sheets" className="gap-1 min-h-10">
+                <ScrollText className="h-4 w-4" />
+                Fichas
+              </TabsTrigger>
               <TabsTrigger value="chat" className="gap-1 min-h-10">
                 <MessageSquare className="h-4 w-4" />
                 Chat
@@ -1105,6 +1111,18 @@ const AdventurePanel = () => {
           {/* ===== WORLDBUILDING & LORE ===== */}
           <TabsContent value="worldbuilding" className="space-y-6">
             <WorldbuildingTab tableId={tableId!} isMaster={isMaster} />
+          </TabsContent>
+
+          {/* ===== FICHAS ===== */}
+          <TabsContent value="sheets" className="space-y-6">
+            <CharacterSheetsDialog
+              inline
+              open={activeTab === "sheets"}
+              onOpenChange={() => {}}
+              tableId={tableId!}
+              tableTitle={table.title}
+              canEditOwnSheet={!isMaster}
+            />
           </TabsContent>
 
           {/* ===== CHAT DA MESA ===== */}

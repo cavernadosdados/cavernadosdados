@@ -22,6 +22,7 @@ import {
   FileText,
   Image as ImageIcon,
   Loader2,
+  Pencil,
   Save,
   ScrollText,
   Upload,
@@ -83,6 +84,7 @@ interface CharacterSheetsDialogProps {
   tableId: string;
   tableTitle: string;
   canEditOwnSheet: boolean;
+  inline?: boolean;
 }
 
 const safeFileName = (name: string) =>
@@ -103,6 +105,7 @@ export function CharacterSheetsDialog({
   tableId,
   tableTitle,
   canEditOwnSheet,
+  inline = false,
 }: CharacterSheetsDialogProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -325,17 +328,8 @@ export function CharacterSheetsDialog({
     setEditing(false);
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[92dvh] max-h-[92dvh] w-[calc(100vw-1rem)] max-w-6xl overflow-hidden p-0 sm:w-[calc(100vw-2rem)]">
-        <DialogHeader className="border-b border-border px-5 py-4 pr-12 sm:px-6">
-          <DialogTitle className="flex items-center gap-2 font-heading text-xl">
-            <ScrollText className="h-5 w-5 text-primary" /> Fichas da mesa
-          </DialogTitle>
-          <DialogDescription>{tableTitle} · acesso restrito aos participantes aceitos</DialogDescription>
-        </DialogHeader>
-
-        {isLoading ? (
+  const body = (
+        isLoading ? (
           <div className="flex flex-1 items-center justify-center py-24"><Loader2 className="h-7 w-7 animate-spin text-primary" /></div>
         ) : error ? (
           <div className="m-6 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
@@ -426,7 +420,7 @@ export function CharacterSheetsDialog({
                       <GlimerAvatar userId={selectedSheet.owner_id} fallbackText={selectedSheet.profile?.display_name ?? selectedSheet.character_name} label={selectedSheet.profile?.display_name ?? "Jogador"} className="h-14 w-14 shrink-0" />
                       <div><h3 className="font-heading text-2xl font-bold">{selectedSheet.character_name}</h3><p className="text-sm text-muted-foreground">{selectedSheet.profile?.display_name ?? "Jogador"}</p></div>
                     </div>
-                    {canEdit && <Button type="button" variant="outline" onClick={() => setEditing(true)}>Editar minha ficha</Button>}
+                    {canEdit && <Button type="button" variant="outline" className="gap-2" onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /> Editar ficha</Button>}
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     {[['Classe / arquétipo', selectedSheet.archetype], ['Nível', selectedSheet.level?.toString()], ['Espécie / origem', selectedSheet.ancestry], ['Pontos de vida', selectedSheet.health], ['Defesa', selectedSheet.defense]].filter((item) => item[1]).map(([label, value]) => <div key={label} className="rounded-md border border-border bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 font-medium">{value}</p></div>)}
@@ -434,14 +428,40 @@ export function CharacterSheetsDialog({
                   {selectedSheet.attributes && <section><h4 className="mb-2 font-semibold">Atributos principais</h4><p className="whitespace-pre-wrap rounded-md border border-border p-4 text-sm">{selectedSheet.attributes}</p></section>}
                   {selectedSheet.notes && <section><h4 className="mb-2 font-semibold">Observações</h4><p className="whitespace-pre-wrap rounded-md border border-border p-4 text-sm text-muted-foreground">{selectedSheet.notes}</p></section>}
                   {selectedSheet.external_url && <Button asChild variant="outline" className="gap-2"><a href={selectedSheet.external_url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /> Abrir ficha externa</a></Button>}
-                  {signedFiles?.pdf && <section className="space-y-2"><div className="flex items-center justify-between"><h4 className="font-semibold">PDF</h4><Button asChild size="sm" variant="outline"><a href={signedFiles.pdf} target="_blank" rel="noopener noreferrer"><ExternalLink className="mr-2 h-4 w-4" /> Abrir</a></Button></div><iframe title={`PDF de ${selectedSheet.character_name}`} src={signedFiles.pdf} className="h-[520px] w-full rounded-md border border-border bg-muted" /></section>}
+                  {signedFiles?.pdf && <section className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/20 p-4"><span className="flex items-center gap-2 font-medium"><FileText className="h-5 w-5 text-primary" /> PDF da ficha</span><Button asChild size="sm"><a href={signedFiles.pdf} target="_blank" rel="noopener noreferrer"><ExternalLink className="mr-2 h-4 w-4" /> Abrir em nova aba</a></Button></section>}
                   {!!signedFiles?.images.length && <section className="space-y-2"><h4 className="font-semibold">Imagens</h4><div className="grid gap-3 sm:grid-cols-2">{signedFiles.images.map((item, index) => <a key={item.path} href={item.url} target="_blank" rel="noopener noreferrer" className="overflow-hidden rounded-md border border-border"><img src={item.url} alt={`Ficha de ${selectedSheet.character_name}, imagem ${index + 1}`} className="aspect-[4/3] h-full w-full object-contain bg-muted/20" /></a>)}</div></section>}
                   {!selectedSheet.attributes && !selectedSheet.notes && !selectedSheet.external_url && !selectedSheet.pdf_path && selectedSheet.image_paths.length === 0 && <p className="rounded-md border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Esta ficha ainda não possui detalhes ou anexos.</p>}
                 </div>
               )}
             </ScrollArea>
           </div>
-        )}
+        )
+  );
+
+  if (inline) {
+    return (
+      <div className="flex min-h-[600px] flex-col overflow-hidden rounded-lg border border-border bg-card">
+        <div className="border-b border-border px-5 py-4 sm:px-6">
+          <h2 className="flex items-center gap-2 font-heading text-xl font-semibold">
+            <ScrollText className="h-5 w-5 text-primary" /> Fichas dos jogadores
+          </h2>
+          <p className="text-sm text-muted-foreground">Acesso restrito aos participantes aceitos</p>
+        </div>
+        {body}
+      </div>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="h-[92dvh] max-h-[92dvh] w-[calc(100vw-1rem)] max-w-6xl overflow-hidden p-0 sm:w-[calc(100vw-2rem)]">
+        <DialogHeader className="border-b border-border px-5 py-4 pr-12 sm:px-6">
+          <DialogTitle className="flex items-center gap-2 font-heading text-xl">
+            <ScrollText className="h-5 w-5 text-primary" /> Fichas da mesa
+          </DialogTitle>
+          <DialogDescription>{tableTitle} · acesso restrito aos participantes aceitos</DialogDescription>
+        </DialogHeader>
+        {body}
       </DialogContent>
     </Dialog>
   );
