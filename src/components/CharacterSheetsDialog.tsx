@@ -260,7 +260,7 @@ export function CharacterSheetsDialog({
   const savePdfFields = async (bytes: Uint8Array) => {
     if (!user || !selectedSheet?.id) return;
     const oldPath = selectedSheet.pdf_path;
-    const file = new File([bytes], "ficha-preenchida.pdf", { type: "application/pdf" });
+    const file = new File([bytes as BlobPart], "ficha-preenchida.pdf", { type: "application/pdf" });
     const newPath = await uploadFile(file, "pdf");
     const { error: updError } = await db.from("character_sheets").update({ pdf_path: newPath }).eq("id", selectedSheet.id);
     if (updError) {
