@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GlimerAvatar } from "@/components/GlimerAvatar";
+import { PdfFormEditor } from "@/components/PdfFormEditor";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -118,6 +119,18 @@ export function CharacterSheetsDialog({
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [removePdf, setRemovePdf] = useState(false);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
+  const [fillingPdf, setFillingPdf] = useState(false);
+
+  useEffect(() => {
+    if (!open || !tableId) return;
+    const channel = supabase
+      .channel(`sheets-${tableId}-${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "character_sheets", filter: `table_id=eq.${tableId}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ["character-sheets", tableId] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [open, tableId, queryClient]);
 
   const { data: sheets = [], isLoading, error } = useQuery({
     queryKey: ["character-sheets", tableId],
@@ -242,6 +255,22 @@ export function CharacterSheetsDialog({
       return toast({ title: "Imagem não aceita", description: getFileError(invalid, "image") ?? undefined, variant: "destructive" });
     }
     setImageFiles((current) => [...current, ...files]);
+  };
+
+  const savePdfFields = async (bytes: Uint8Array) => {
+    if (!user || !selectedSheet?.id) return;
+    const oldPath = selectedSheet.pdf_path;
+    const file = new File([bytes], "ficha-preenchida.pdf", { type: "application/pdf" });
+    const newPath = await uploadFile(file, "pdf");
+    const { error: updError } = await db.from("character_sheets").update({ pdf_path: newPath }).eq("id", selectedSheet.id);
+    if (updError) {
+      await supabase.storage.from(BUCKET).remove([newPath]);
+      throw updError;
+    }
+    if (oldPath) await supabase.storage.from(BUCKET).remove([oldPath]);
+    await queryClient.invalidateQueries({ queryKey: ["character-sheets", tableId] });
+    setFillingPdf(false);
+    toast({ title: "PDF salvo", description: "O mestre já pode ver a versão atualizada." });
   };
 
   const uploadFile = async (file: File, folder: "pdf" | "images") => {
@@ -428,7 +457,8 @@ export function CharacterSheetsDialog({
                   {selectedSheet.attributes && <section><h4 className="mb-2 font-semibold">Atributos principais</h4><p className="whitespace-pre-wrap rounded-md border border-border p-4 text-sm">{selectedSheet.attributes}</p></section>}
                   {selectedSheet.notes && <section><h4 className="mb-2 font-semibold">Observações</h4><p className="whitespace-pre-wrap rounded-md border border-border p-4 text-sm text-muted-foreground">{selectedSheet.notes}</p></section>}
                   {selectedSheet.external_url && <Button asChild variant="outline" className="gap-2"><a href={selectedSheet.external_url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /> Abrir ficha externa</a></Button>}
-                  {signedFiles?.pdf && <section className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/20 p-4"><span className="flex items-center gap-2 font-medium"><FileText className="h-5 w-5 text-primary" /> PDF da ficha</span><Button asChild size="sm"><a href={signedFiles.pdf} target="_blank" rel="noopener noreferrer"><ExternalLink className="mr-2 h-4 w-4" /> Abrir em nova aba</a></Button></section>}
+                  {signedFiles?.pdf && <section className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-muted/20 p-4"><span className="flex items-center gap-2 font-medium"><FileText className="h-5 w-5 text-primary" /> PDF da ficha</span><div className="flex gap-2">{canEdit && !fillingPdf && <Button size="sm" variant="outline" onClick={() => setFillingPdf(true)}><Pencil className="mr-2 h-4 w-4" /> Preencher PDF</Button>}<Button asChild size="sm"><a href={signedFiles.pdf} target="_blank" rel="noopener noreferrer"><ExternalLink className="mr-2 h-4 w-4" /> Abrir em nova aba</a></Button></div></section>}
+                  {fillingPdf && canEdit && signedFiles?.pdf && <PdfFormEditor url={signedFiles.pdf} onCancel={() => setFillingPdf(false)} onSave={savePdfFields} />}
                   {!!signedFiles?.images.length && <section className="space-y-2"><h4 className="font-semibold">Imagens</h4><div className="grid gap-3 sm:grid-cols-2">{signedFiles.images.map((item, index) => <a key={item.path} href={item.url} target="_blank" rel="noopener noreferrer" className="overflow-hidden rounded-md border border-border"><img src={item.url} alt={`Ficha de ${selectedSheet.character_name}, imagem ${index + 1}`} className="aspect-[4/3] h-full w-full object-contain bg-muted/20" /></a>)}</div></section>}
                   {!selectedSheet.attributes && !selectedSheet.notes && !selectedSheet.external_url && !selectedSheet.pdf_path && selectedSheet.image_paths.length === 0 && <p className="rounded-md border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Esta ficha ainda não possui detalhes ou anexos.</p>}
                 </div>
