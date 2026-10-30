@@ -84,7 +84,7 @@ export function AppSidebar() {
     <Sidebar className={collapsed ? "w-14" : "w-60"} collapsible="icon">
       <SidebarContent className="bg-sidebar border-r border-sidebar-border">
         <div className="p-4 flex items-center justify-center border-b border-sidebar-border">
-          <img
+          <img data-no-lightbox
             src={logoGlimer}
             alt="Glimer"
             className={`transition-all object-contain ${collapsed ? "h-8" : "h-10"}`}

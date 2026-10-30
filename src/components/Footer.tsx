@@ -10,7 +10,7 @@ export const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center">
-              <img src={logoGlimer} alt="Glimer" className="h-10 w-auto object-contain" />
+              <img data-no-lightbox src={logoGlimer} alt="Glimer" className="h-10 w-auto object-contain" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               A plataforma que conecta mestres e jogadores para aventuras inesquecíveis.

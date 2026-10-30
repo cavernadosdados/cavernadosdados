@@ -22,7 +22,7 @@ export const Header = () => {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="max-w-screen-xl mx-auto w-full px-3 sm:px-4 h-16 sm:h-20 flex items-center justify-between gap-2">
         <Link to="/" className="flex items-center gap-2 sm:gap-4 min-w-0" onClick={closeMenu}>
-          <img src={logoGlimer} alt="Glimer" className="h-10 sm:h-12 w-auto object-contain animate-float shrink-0" />
+          <img data-no-lightbox src={logoGlimer} alt="Glimer" className="h-10 sm:h-12 w-auto object-contain animate-float shrink-0" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
