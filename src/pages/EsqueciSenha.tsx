@@ -73,7 +73,7 @@ const EsqueciSenha = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-4 mb-4">
-            <img src={logoGlimer} alt="Glimer" className="h-16 w-auto object-contain animate-float" />
+            <img data-no-lightbox src={logoGlimer} alt="Glimer" className="h-16 w-auto object-contain animate-float" />
             
           </div>
           <p className="text-muted-foreground">Recupere o acesso à sua conta</p>

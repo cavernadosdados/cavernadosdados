@@ -40,6 +40,7 @@ export function GlimerAvatar({
 
   return (
     <div
+      data-no-lightbox
       className={cn("relative inline-block h-10 w-10", onClick && "cursor-pointer", className)}
       onClick={onClick}
       role={onClick ? "button" : undefined}
