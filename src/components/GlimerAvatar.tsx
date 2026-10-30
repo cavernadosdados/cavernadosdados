@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useEquippedCosmetics } from "@/hooks/useEquippedCosmetics";
 import { resolveCosmeticImage } from "@/lib/glimers";
+import { DEFAULT_GLIMER_SCALE, measureFrameFit } from "@/lib/frameFit";
 
 interface GlimerAvatarProps {
   userId?: string | null;
@@ -38,6 +40,17 @@ export function GlimerAvatar({
     ? resolveCosmeticImage(equipped?.frame_slug) ?? equipped?.frame_image_url ?? undefined
     : undefined;
 
+  // Shrink the Glimer just enough that it never peeks out between a frame's
+  // spikes/ornaments. Measured once per frame image and cached.
+  const [scale, setScale] = useState(DEFAULT_GLIMER_SCALE);
+  useEffect(() => {
+    if (!frameSrc) { setScale(DEFAULT_GLIMER_SCALE); return; }
+    let alive = true;
+    measureFrameFit(frameSrc).then((s) => { if (alive) setScale(s); });
+    return () => { alive = false; };
+  }, [frameSrc]);
+  const inset = (100 - scale) / 2;
+
   return (
     <div
       data-no-lightbox
@@ -48,7 +61,10 @@ export function GlimerAvatar({
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") onClick(); } : undefined}
     >
-      <Avatar className="absolute inset-[5%] h-[90%] w-[90%]">
+      <Avatar
+        className="absolute h-auto w-auto"
+        style={{ inset: `${inset}%`, width: `${scale}%`, height: `${scale}%` }}
+      >
         {glimerSrc && <AvatarImage src={glimerSrc} alt={label ?? ""} />}
         <AvatarFallback className="bg-primary/20 text-primary font-semibold">
           {fallbackText?.slice(0, 2).toUpperCase() ?? "?"}
